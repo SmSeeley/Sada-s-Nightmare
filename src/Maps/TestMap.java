@@ -1,5 +1,6 @@
 package Maps;
 
+import EnhancedMapTiles.Door;
 import EnhancedMapTiles.PushableRock;
 import Level.*;
 import NPCs.Bug;
@@ -25,6 +26,9 @@ public class TestMap extends Map {
 
         PushableRock pushableRock = new PushableRock(getMapTile(2, 7).getLocation());
         enhancedMapTiles.add(pushableRock);
+
+        // NEW: add a Door at tile (5,5) that shows a message on Space
+        enhancedMapTiles.add(new Door(getMapTile(17, 19).getLocation()));
 
         return enhancedMapTiles;
     }
