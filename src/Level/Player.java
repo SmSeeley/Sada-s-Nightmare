@@ -1,8 +1,5 @@
 package Level;
 
-import java.awt.Color;
-
-import Engine.GraphicsHandler;
 import Engine.Key;
 import Engine.KeyLocker;
 import Engine.Keyboard;
@@ -41,12 +38,17 @@ public abstract class Player extends GameObject {
 
     protected boolean isLocked = false;
 
+    // Health system variables
+    protected int health;
+    protected final int MAX_HEALTH = 10;
+
     public Player(SpriteSheet spriteSheet, float x, float y, String startingAnimationName) {
         super(spriteSheet, x, y, startingAnimationName);
         facingDirection = Direction.RIGHT;
         playerState = PlayerState.STANDING;
         previousPlayerState = playerState;
         this.affectedByTriggers = true;
+        this.health = MAX_HEALTH;
     }
 
     public void update() {
@@ -253,6 +255,11 @@ public abstract class Player extends GameObject {
         else if (direction == Direction.RIGHT) {
             moveX(speed);
         }
+    }
+
+    // Health Method 
+    public int getHealth() {
+        return health;
     }
 
     // Uncomment this to have game draw player's bounds to make it easier to visualize

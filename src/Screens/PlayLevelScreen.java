@@ -8,6 +8,10 @@ import Level.*;
 import Maps.TestMap;
 import Players.Cat;
 import Utils.Direction;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 
 // This class is for when the RPG game is actually being played
 public class PlayLevelScreen extends Screen implements GameListener {
@@ -17,6 +21,14 @@ public class PlayLevelScreen extends Screen implements GameListener {
     protected PlayLevelScreenState playLevelScreenState;
     protected WinScreen winScreen;
     protected FlagManager flagManager;
+
+    // Heart images for health bar
+    private BufferedImage fullHeartImage;
+    private BufferedImage halfHeartImage;
+    private BufferedImage emptyHeartImage;
+
+    private final int heartWidth = 25;
+    private final int heartHeight = 25;
 
     public PlayLevelScreen(ScreenCoordinator screenCoordinator) {
         this.screenCoordinator = screenCoordinator;
@@ -54,6 +66,16 @@ public class PlayLevelScreen extends Screen implements GameListener {
         map.preloadScripts();
 
         winScreen = new WinScreen(this);
+
+        // Load heart images //
+        try {
+            fullHeartImage = ImageIO.read(new File("Resources/Full-Heart.png"));
+            halfHeartImage = ImageIO.read(new File("Resources/Half-Heart.png"));
+            emptyHeartImage = ImageIO.read(new File("Resources/Empty-Heart.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Error loading heart images");
+        }
     }
 
     public void update() {
@@ -82,6 +104,33 @@ public class PlayLevelScreen extends Screen implements GameListener {
         switch (playLevelScreenState) {
             case RUNNING:
                 map.draw(player, graphicsHandler);
+                
+                // Health Bar Drawing
+
+                // Location of Hearts
+                int startX = 20;
+                int startY = 20;
+
+                // Players current health from player class
+                int currentHealth = player.getHealth();
+
+                // Loop to draw 5 hearts
+                for (int i = 0; i < 5; i++) {
+                    // Calculates the X position for current heart
+                    int heartX = startX + (i * (heartWidth + heartHeight));
+
+                    int heartValue = (i * 2) + 2;
+
+                    if(currentHealth >= heartValue) {
+                        // Players health at full hearts 
+                        graphicsHandler.drawImage(fullHeartImage, heartX, startY, heartWidth, heartHeight);
+                    } else if (currentHealth == heartValue - 1) {
+                        graphicsHandler.drawImage(halfHeartImage, heartX, startY, heartWidth, heartHeight);     
+                    } else {
+                        graphicsHandler.drawImage(emptyHeartImage, heartX, startY, heartWidth, heartHeight);
+                    }
+                }
+
                 break;
             case LEVEL_COMPLETED:
                 winScreen.draw(graphicsHandler);
