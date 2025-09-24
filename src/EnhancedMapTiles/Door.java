@@ -14,28 +14,32 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
+/*
+ * This file creates an enhanced map object "Door" that allows users to open the door and enter, teleporting them to a set location.
+ */
+
 public class Door extends EnhancedMapTile {
     private boolean isOpen = false;
 
-    // The object the engine caches & draws
+    // The object the engine will draw
     private GameObject doorObj;
 
     // Frames
     private Frame closedFrame;
     private Frame openFrame;
 
-    // Teleport destination & one-shot flag
+    // Teleport destination
     private Point afterOpenTarget;
     private boolean hasTeleported = false;
 
     public Door(Point location) {
-        // Start CLOSED and blocking
+        // load image and assign image accurate width and height, update variables to change it.
         super(location.x, location.y,
               new SpriteSheet(ImageLoader.load("door_close.png"), 16, 32),
               TileType.NOT_PASSABLE);
-        setIsUncollidable(false); // block until opened
+        setIsUncollidable(false); // The door will remained blocked until it is opened, change to true to make the door passable.
 
-        // Default: one tile inside (above) the doorway
+        // Default: one tile inside (above) the doorway, use this so that the door image appears above the ground and doesnt "sink" into the floor
         this.afterOpenTarget = new Point(location.x, location.y - 700);
 
         setInteractScript(new Script() {
@@ -53,10 +57,11 @@ public class Door extends EnhancedMapTile {
                 actions.add(new ScriptAction() {
                     @Override
                     public Level.ScriptState execute() {
+                        //print in command line to track program
                         System.out.println("[Door] opening...");
                         isOpen = true;
 
-                        // Make walk-through
+                        // Make walk-through once the door is opened. 
                         setIsUncollidable(true);
 
                         // Swap the frame on the SAME bottom-layer object the engine draws
@@ -91,13 +96,16 @@ public class Door extends EnhancedMapTile {
         // Lift sprite 16px so it sits on ground
         doorObj = new GameObject(x, y - 16, closedFrame);
         return doorObj; // engine caches & draws this
+
+
+        //assign for bottom frame of the door object
     }
 
     @Override
     public void update(Player player) {
         super.update(player);
 
-        // After opening, teleport once when player steps into the doorway
+        // After opening, teleport once when player steps into the doorway, takes a second for user to teleport once entering blank doorway.
         if (isOpen && !hasTeleported && player != null) {
             if (insidePortal(player)) {
                 if (movePlayerTo(player, afterOpenTarget)) {
@@ -107,7 +115,7 @@ public class Door extends EnhancedMapTile {
         }
     }
 
-    // ---------------- helpers ----------------
+    // helper methods for teleporting the player to set location
 
     /** Robust "inside doorway" test: try multiple overlap strategies. */
     private boolean insidePortal(Player player) {
@@ -128,7 +136,7 @@ public class Door extends EnhancedMapTile {
         // (3) Coordinate check: is player's center inside the door's 16x32 area?
         float px = getNumeric(player, "getX", "x");
         float py = getNumeric(player, "getY", "y");
-        // Door rectangle: x..x+16, (y-16)..(y+16) because sprite is lifted by 16
+        // Door rectangle: x..x+16, (y-16)..(y+16) because sprite is lifted by 16, must account for this. 
         float left = this.x;
         float right = this.x + 16;
         float top = this.y - 16;
@@ -220,12 +228,12 @@ public class Door extends EnhancedMapTile {
         return 0f;
     }
 
-    /** Swap the Frame stored inside a GameObject via reflection. */
+    /** Swap the Frame stored inside a GameObject using reflection. */
     private boolean setGameObjectFrame(GameObject obj, Frame newFrame) {
         if (obj == null || newFrame == null) return false;
         Class<?> c = obj.getClass();
         try {
-            // common names
+            // currentFrame, and frame
             if (trySetFrameField(obj, c, "currentFrame", newFrame)) return true;
             if (trySetFrameField(obj, c, "frame",        newFrame)) return true;
 
