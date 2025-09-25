@@ -5,6 +5,8 @@ import Engine.Screen;
 import Game.GameState;
 import Game.ScreenCoordinator;
 import Level.*;
+import Maps.FirstRoom;
+import Maps.SecondRoom;
 import Maps.TestMap;
 import Players.Cat;
 import Utils.Direction;
