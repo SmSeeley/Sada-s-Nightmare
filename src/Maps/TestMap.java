@@ -5,11 +5,10 @@ import EnhancedMapTiles.PushableRock;
 import Level.*;
 import NPCs.Bug;
 import NPCs.Dinosaur;
-import NPCs.Walrus;
+import NPCs.greenNinja;
 import Scripts.SimpleTextScript;
 import Scripts.TestMap.*;
 import Tilesets.CommonTileset;
-
 import java.util.ArrayList;
 
 // Represents a test map to be used in a level
@@ -37,8 +36,8 @@ public class TestMap extends Map {
     public ArrayList<NPC> loadNPCs() {
         ArrayList<NPC> npcs = new ArrayList<>();
 
-        Walrus walrus = new Walrus(1, getMapTile(4, 28).getLocation().subtractY(40));
-        walrus.setInteractScript(new WalrusScript());
+        greenNinja walrus = new greenNinja(1, getMapTile(10, 10).getLocation());
+        walrus.setInteractScript(new greenNinjaScript());
         npcs.add(walrus);
 
         Dinosaur dinosaur = new Dinosaur(2, getMapTile(13, 4).getLocation());
