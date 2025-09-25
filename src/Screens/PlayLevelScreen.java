@@ -6,6 +6,8 @@ import Game.GameState;
 import Game.ScreenCoordinator;
 import Level.*;
 import Maps.FirstRoom;
+import Maps.SecondRoom;
+import Maps.TestMap;
 import Players.Cat;
 import Utils.Direction;
 
@@ -31,7 +33,7 @@ public class PlayLevelScreen extends Screen implements GameListener {
         flagManager.addFlag("hasFoundBall", false);
 
         // define/setup map
-        map = new FirstRoom();
+        map = new TestMap();
         map.setFlagManager(flagManager);
 
         // setup player
