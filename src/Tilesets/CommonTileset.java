@@ -103,7 +103,7 @@ public class CommonTileset extends Tileset {
 
         MapTileBuilder treeTrunkTile = new MapTileBuilder(grassFrame)
                 .withTopLayer(treeTrunkFrame)
-                .withTileType(TileType.PASSABLE);
+                .withTileType(TileType.NOT_PASSABLE);
 
         mapTiles.add(treeTrunkTile);
 

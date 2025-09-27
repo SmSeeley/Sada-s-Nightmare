@@ -1,7 +1,10 @@
 package Maps;
 
 import EnhancedMapTiles.Door;
+import EnhancedMapTiles.LeftFacingDoor;
 import EnhancedMapTiles.PushableRock;
+import EnhancedMapTiles.RightFacingDoor;
+import EnhancedMapTiles.UpsideDownDoor;
 import Level.*;
 import NPCs.Bug;
 import NPCs.Dinosaur;
@@ -16,18 +19,19 @@ public class TestMap extends Map {
 
     public TestMap() {
         super("test_map.txt", new CommonTileset());
-        this.playerStartPosition = getMapTile(17, 20).getLocation();
+        this.playerStartPosition = getMapTile(4, 7).getLocation();
     }
 
     @Override
     public ArrayList<EnhancedMapTile> loadEnhancedMapTiles() {
         ArrayList<EnhancedMapTile> enhancedMapTiles = new ArrayList<>();
 
-        PushableRock pushableRock = new PushableRock(getMapTile(2, 7).getLocation());
-        enhancedMapTiles.add(pushableRock);
-
         // NEW: add a Door at tile (5,5) that shows a message on Space
         enhancedMapTiles.add(new Door(getMapTile(17, 19).getLocation()));
+        enhancedMapTiles.add(new RightFacingDoor(getMapTile(8, 7).getLocation()));
+        enhancedMapTiles.add(new Door(getMapTile(4, 3).getLocation()));
+        enhancedMapTiles.add(new LeftFacingDoor(getMapTile(0, 7).getLocation()));
+        enhancedMapTiles.add(new UpsideDownDoor(getMapTile(4, 11).getLocation()));
 
         return enhancedMapTiles;
     }
