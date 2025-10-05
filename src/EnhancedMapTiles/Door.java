@@ -260,4 +260,9 @@ public class Door extends EnhancedMapTile {
             return true;
         } catch (Throwable ignored) { return false; }
     }
+    // Allows another class to assign where this door should teleport the player
+    public void setDestination(Point p) {
+        this.afterOpenTarget = p;
+        this.hasTeleported = false; // reset so the teleport works again if reused
+    }
 }

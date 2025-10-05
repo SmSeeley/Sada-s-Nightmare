@@ -21,7 +21,7 @@ public class TileBuilder extends JPanel {
     private boolean showTriggers;
 
     public TileBuilder(SelectedTileIndexHolder controlPanelHolder, JLabel hoveredTileIndexLabel) {
-        setBackground(Colors.MAGENTA);
+        setBackground(Colors.BLACK);
         setLocation(0, 0);
         setPreferredSize(new Dimension(585, 562));
         this.controlPanelHolder = controlPanelHolder;
