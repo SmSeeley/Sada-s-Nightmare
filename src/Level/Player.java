@@ -15,6 +15,7 @@ public abstract class Player extends GameObject {
     protected int interactionRange = 1;
     protected Direction currentWalkingXDirection;
     protected Direction currentWalkingYDirection;
+    protected Direction currentShootingDirection;
     protected Direction lastWalkingXDirection;
     protected Direction lastWalkingYDirection;
 
@@ -30,11 +31,17 @@ public abstract class Player extends GameObject {
 
     // define keys
     protected KeyLocker keyLocker = new KeyLocker();
-    protected Key MOVE_LEFT_KEY = Key.LEFT;
-    protected Key MOVE_RIGHT_KEY = Key.RIGHT;
-    protected Key MOVE_UP_KEY = Key.UP;
-    protected Key MOVE_DOWN_KEY = Key.DOWN;
-    protected Key INTERACT_KEY = Key.SPACE;
+    //walking keys and interact
+    protected Key MOVE_LEFT_KEY = Key.A;
+    protected Key MOVE_RIGHT_KEY = Key.D;
+    protected Key MOVE_UP_KEY = Key.W;
+    protected Key MOVE_DOWN_KEY = Key.S;
+    protected Key INTERACT_KEY = Key.E;
+    //shooting keys
+    protected Key SHOOT_RIGHT_KEY = Key.RIGHT;
+    protected Key SHOOT_LEFT_KEY = Key.LEFT;
+    protected Key SHOOT_UP_KEY = Key.UP;
+    protected Key SHOOT_DOWN_KEY = Key.DOWN;
 
     protected boolean isLocked = false;
 
@@ -85,7 +92,44 @@ public abstract class Player extends GameObject {
             case WALKING:
                 playerWalking();
                 break;
+            case SHOOTING:
+                playerShooting();
+                break;
         }
+    }
+
+    //player SHOOTING state logic
+    protected void playerShooting() {
+        // if a walk key is pressed, player enters WALKING state
+        if (Keyboard.isKeyDown(SHOOT_LEFT_KEY) || Keyboard.isKeyDown(SHOOT_RIGHT_KEY) || Keyboard.isKeyDown(SHOOT_UP_KEY) || Keyboard.isKeyDown(SHOOT_DOWN_KEY)) {
+            playerState = PlayerState.SHOOTING;
+        }
+          // if shoot left key is pressed, shoot left
+          if (Keyboard.isKeyDown(SHOOT_LEFT_KEY)) {
+            facingDirection = Direction.LEFT;
+            currentShootingDirection = Direction.LEFT;
+        } else if (Keyboard.isKeyDown(SHOOT_RIGHT_KEY)) {
+
+        // if shoot right key is pressed, shoot right
+            facingDirection = Direction.RIGHT;
+            currentShootingDirection = Direction.RIGHT;
+
+            
+            //if shoot up key is pressed, shoot up
+
+        } else if (Keyboard.isKeyDown(SHOOT_UP_KEY)) {
+            facingDirection = Direction.UP;
+            currentShootingDirection = Direction.UP;
+            
+        } //if shoot down key is pressed, shoot down
+        else if (Keyboard.isKeyDown(SHOOT_DOWN_KEY)) {
+            facingDirection = Direction.DOWN;
+            currentShootingDirection = Direction.DOWN;
+            
+        } else {
+            currentShootingDirection = Direction.NONE;
+        }
+
     }
 
     // player STANDING state logic

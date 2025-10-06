@@ -1,8 +1,8 @@
 package Maps;
 
+import EnhancedMapTiles.Coin;
 import EnhancedMapTiles.Door;
 import EnhancedMapTiles.LeftFacingDoor;
-import EnhancedMapTiles.PushableRock;
 import EnhancedMapTiles.RightFacingDoor;
 import EnhancedMapTiles.UpsideDownDoor;
 import Level.*;
@@ -38,6 +38,11 @@ public class TestMap extends Map {
         LeftFacingDoor  door7 = new LeftFacingDoor(getMapTile(17, 7).getLocation());
         UpsideDownDoor  door8 = new UpsideDownDoor(getMapTile(21, 11).getLocation());
 
+
+        //coin in room 1
+        Coin            coin1 = new Coin(getMapTile(6,5).getLocation());
+        Coin            coin2 = new Coin(getMapTile(3, 5).getLocation());
+
         //Adjust teleportation so all doors in room 1 teleport to correlated doors in room 2
         door1.setDestination(door5.getLocation());
         door5.setDestination(door1.getLocation());
@@ -57,9 +62,13 @@ public class TestMap extends Map {
         enhancedMapTiles.add(door6);
         enhancedMapTiles.add(door7);
         enhancedMapTiles.add(door8);
+        enhancedMapTiles.add(coin1);
+        enhancedMapTiles.add(coin2);
 
         return enhancedMapTiles;
     }
+
+    
 
     @Override
     public ArrayList<NPC> loadNPCs() {
