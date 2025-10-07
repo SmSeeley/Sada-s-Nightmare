@@ -7,7 +7,7 @@ import Game.GameState;
 import Game.ScreenCoordinator;
 import Level.*;
 import Maps.TestMap;
-import Players.Cat;
+import Players.Man;
 import Utils.Direction;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -58,7 +58,7 @@ public class PlayLevelScreen extends Screen implements GameListener {
         map.setFlagManager(flagManager);
 
         // setup player
-        player = new Cat(map.getPlayerStartPosition().x, map.getPlayerStartPosition().y);
+        player = new Man(map.getPlayerStartPosition().x, map.getPlayerStartPosition().y);
         player.setMap(map);
         playLevelScreenState = PlayLevelScreenState.RUNNING;
         player.setFacingDirection(Direction.LEFT);

@@ -23,7 +23,7 @@ public class greenNinja extends NPC {
             put("STAND_LEFT", new Frame[] {
                     new FrameBuilder(spriteSheet.getSprite(0, 0))
                             .withScale(3)
-                            .withBounds(200, 5, 11, 7)
+                            .withBounds(7, 5, 11, 7)
                             .withImageEffect(ImageEffect.FLIP_HORIZONTAL)
                             .build()
             });

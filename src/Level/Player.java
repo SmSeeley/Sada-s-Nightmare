@@ -43,6 +43,8 @@ public abstract class Player extends GameObject {
     protected Key SHOOT_UP_KEY = Key.UP;
     protected Key SHOOT_DOWN_KEY = Key.DOWN;
 
+    protected boolean isShooting;
+
     protected boolean isLocked = false;
 
     // Health system variables
@@ -85,6 +87,22 @@ public abstract class Player extends GameObject {
 
     // based on player's current state, call appropriate player state handling method
     protected void handlePlayerState() {
+
+        // If any shoot key is pressed, enter SHOOTING state
+        if (Keyboard.isKeyDown(SHOOT_LEFT_KEY) || Keyboard.isKeyDown(SHOOT_RIGHT_KEY) ||
+            Keyboard.isKeyDown(SHOOT_UP_KEY) || Keyboard.isKeyDown(SHOOT_DOWN_KEY)) {
+            playerState = PlayerState.SHOOTING;
+        }
+        // If any movement key is pressed, enter WALKING state
+        else if (Keyboard.isKeyDown(MOVE_LEFT_KEY) || Keyboard.isKeyDown(MOVE_RIGHT_KEY) ||
+            Keyboard.isKeyDown(MOVE_UP_KEY) || Keyboard.isKeyDown(MOVE_DOWN_KEY)) {
+            playerState = PlayerState.WALKING;
+        }
+        // If no keys are pressed, enter STANDING state
+        else {
+            playerState = PlayerState.STANDING;
+        }
+
         switch (playerState) {
             case STANDING:
                 playerStanding();
@@ -213,6 +231,16 @@ public abstract class Player extends GameObject {
         else if (playerState == PlayerState.WALKING) {
             // sets animation to a WALK animation based on which way player is facing
             this.currentAnimationName = facingDirection == Direction.RIGHT ? "WALK_RIGHT" : "WALK_LEFT";
+        } else if (playerState == PlayerState.SHOOTING) {
+            if (facingDirection == Direction.RIGHT) {
+                this.currentAnimationName = "SHOOT_RIGHT";
+            } else if (facingDirection == Direction.LEFT) {
+                this.currentAnimationName = "SHOOT_LEFT";
+            } else if (facingDirection == Direction.UP) {
+                this.currentAnimationName = "SHOOT_UP";
+            } else if (facingDirection == Direction.DOWN) {
+                this.currentAnimationName = "SHOOT_DOWN";
+            }
         }
     }
 
