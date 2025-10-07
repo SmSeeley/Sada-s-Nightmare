@@ -2,11 +2,10 @@ package Screens;
 
 import Engine.GraphicsHandler;
 import Engine.Screen;
+import EnhancedMapTiles.HealthPotion;
 import Game.GameState;
 import Game.ScreenCoordinator;
 import Level.*;
-import Maps.FirstRoom;
-import Maps.SecondRoom;
 import Maps.TestMap;
 import Players.Cat;
 import Utils.Direction;
@@ -22,9 +21,14 @@ public class PlayLevelScreen extends Screen implements GameListener {
     protected Player player;
     protected PlayLevelScreenState playLevelScreenState;
     protected WinScreen winScreen;
+    protected GameOverScreen gameOverScreen;
     protected FlagManager flagManager;
 
-    // Heart images for health bar
+    // Damage cooldown //
+    private long lastDamageTime = 0;
+    private final long damageCooldown = 1000; 
+
+    // Heart images for health status
     private BufferedImage fullHeartImage;
     private BufferedImage halfHeartImage;
     private BufferedImage emptyHeartImage;
@@ -68,6 +72,8 @@ public class PlayLevelScreen extends Screen implements GameListener {
         map.preloadScripts();
 
         winScreen = new WinScreen(this);
+        // Initialize game over screen
+        gameOverScreen = new GameOverScreen(this); 
 
         // Load heart images //
         try {
@@ -81,10 +87,17 @@ public class PlayLevelScreen extends Screen implements GameListener {
     }
 
     public void update() {
+        // check for GAME OVER //
+        if(player.getHealth() <= 0) {
+            playLevelScreenState = PlayLevelScreenState.GAME_OVER;
+        }
+
         // based on screen state, perform specific actions
         switch (playLevelScreenState) {
             // if level is "running" update player and map to keep game logic for the platformer level going
             case RUNNING:
+                handleEnemyCollisions();
+                handleHealthPotionCollisions();
                 player.update();
                 map.update(player);
                 break;
@@ -92,6 +105,53 @@ public class PlayLevelScreen extends Screen implements GameListener {
             case LEVEL_COMPLETED:
                 winScreen.update();
                 break;
+            // if game is over, update game over screen
+            case GAME_OVER:
+                gameOverScreen.update();
+                break;
+        }
+    }
+
+    // checks for collisions between player and enemies (NPCs)
+    private void handleEnemyCollisions() {
+        Player player = map.getPlayer();
+        long currentTime = System.currentTimeMillis();
+        
+        if(playLevelScreenState == PlayLevelScreenState.RUNNING){
+            // check on cooldown
+            if(currentTime - lastDamageTime >= damageCooldown){
+                // all NPCs
+                for (NPC npc : map.getNPCs()) {
+                if (npc.exists()) {
+
+                    if (player.getBounds().intersects(npc.getBounds())) {
+                        System.out.println("Collision detected!");
+                        boolean playerDied = player.takeDamage(1);
+                        
+                        lastDamageTime = currentTime;
+                        
+                        if (playerDied) {
+                            playLevelScreenState = PlayLevelScreenState.GAME_OVER;
+                        }
+                        return;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void handleHealthPotionCollisions() {
+        for (MapEntity entity : map.getMapTiles()) {
+            if (entity instanceof HealthPotion && entity.exists()) {
+                if (player.getBounds().intersects(entity.getBounds())) {
+                    player.heal(HealthPotion.HEAL_AMOUNT);
+                    
+                    String flag = "potion_" + entity.hashCode();
+                    entity.setExistenceFlag(flag);
+                    map.getFlagManager().setFlag(flag);
+                }
+            }
         }
     }
 
@@ -137,6 +197,10 @@ public class PlayLevelScreen extends Screen implements GameListener {
             case LEVEL_COMPLETED:
                 winScreen.draw(graphicsHandler);
                 break;
+            case GAME_OVER:
+                map.draw(player, graphicsHandler);
+                gameOverScreen.draw(graphicsHandler);
+                break;
         }
     }
 
@@ -154,6 +218,6 @@ public class PlayLevelScreen extends Screen implements GameListener {
 
     // This enum represents the different states this screen can be in
     private enum PlayLevelScreenState {
-        RUNNING, LEVEL_COMPLETED
+        RUNNING, LEVEL_COMPLETED, GAME_OVER
     }
 }

@@ -1,8 +1,8 @@
 package Maps;
 
 import EnhancedMapTiles.Door;
+import EnhancedMapTiles.HealthPotion;
 import EnhancedMapTiles.LeftFacingDoor;
-import EnhancedMapTiles.PushableRock;
 import EnhancedMapTiles.RightFacingDoor;
 import EnhancedMapTiles.UpsideDownDoor;
 import Level.*;
@@ -38,6 +38,9 @@ public class TestMap extends Map {
         LeftFacingDoor  door7 = new LeftFacingDoor(getMapTile(17, 7).getLocation());
         UpsideDownDoor  door8 = new UpsideDownDoor(getMapTile(21, 11).getLocation());
 
+        // Health potion
+        HealthPotion healthPotion = new HealthPotion(getMapTile(2, 7).getLocation());
+
         //Adjust teleportation so all doors in room 1 teleport to correlated doors in room 2
         door1.setDestination(door5.getLocation());
         door5.setDestination(door1.getLocation());
@@ -57,6 +60,8 @@ public class TestMap extends Map {
         enhancedMapTiles.add(door6);
         enhancedMapTiles.add(door7);
         enhancedMapTiles.add(door8);
+        
+        enhancedMapTiles.add(healthPotion);
 
         return enhancedMapTiles;
     }
@@ -65,7 +70,7 @@ public class TestMap extends Map {
     public ArrayList<NPC> loadNPCs() {
         ArrayList<NPC> npcs = new ArrayList<>();
 
-        greenNinja walrus = new greenNinja(1, getMapTile(10, 10).getLocation());
+        greenNinja walrus = new greenNinja(1, getMapTile(5, 5).getLocation());
         walrus.setInteractScript(new greenNinjaScript());
         npcs.add(walrus);
 
@@ -99,6 +104,6 @@ public class TestMap extends Map {
         getMapTile(20, 4).setInteractScript(new SimpleTextScript("Dino's house"));
 
         getMapTile(2, 6).setInteractScript(new TreeScript());
-    }
+    }   
 }
 
