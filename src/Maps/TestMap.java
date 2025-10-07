@@ -65,7 +65,7 @@ public class TestMap extends Map {
     public ArrayList<NPC> loadNPCs() {
         ArrayList<NPC> npcs = new ArrayList<>();
 
-        greenNinja walrus = new greenNinja(1, getMapTile(10, 10).getLocation());
+        greenNinja walrus = new greenNinja(1, getMapTile(5, 8).getLocation());
         walrus.setInteractScript(new greenNinjaScript());
         npcs.add(walrus);
 

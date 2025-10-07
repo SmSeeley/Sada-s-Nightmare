@@ -8,7 +8,7 @@ import Level.*;
 import Maps.FirstRoom;
 import Maps.SecondRoom;
 import Maps.TestMap;
-import Players.Cat;
+import Players.Sada;
 import Utils.Direction;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -49,7 +49,7 @@ public class PlayLevelScreen extends Screen implements GameListener {
         map.setFlagManager(flagManager);
 
         // setup player
-        player = new Cat(map.getPlayerStartPosition().x, map.getPlayerStartPosition().y);
+        player = new Sada(map.getPlayerStartPosition().x, map.getPlayerStartPosition().y);
         player.setMap(map);
         playLevelScreenState = PlayLevelScreenState.RUNNING;
         player.setFacingDirection(Direction.LEFT);
