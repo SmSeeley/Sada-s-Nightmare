@@ -2,11 +2,10 @@ package Screens;
 
 import Engine.GraphicsHandler;
 import Engine.Screen;
+import EnhancedMapTiles.Coin;
 import Game.GameState;
 import Game.ScreenCoordinator;
 import Level.*;
-import Maps.FirstRoom;
-import Maps.SecondRoom;
 import Maps.TestMap;
 import Players.Sada;
 import Utils.Direction;
@@ -14,6 +13,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
+
+
 
 // This class is for when the RPG game is actually being played
 public class PlayLevelScreen extends Screen implements GameListener {
@@ -31,6 +32,14 @@ public class PlayLevelScreen extends Screen implements GameListener {
 
     private final int heartWidth = 25;
     private final int heartHeight = 25;
+
+    //coin slot
+    private BufferedImage coinIcon;
+
+    private int coinWidth = 75;
+    private int coinHeight = 75;
+    private int coinCount = 0;
+
 
     public PlayLevelScreen(ScreenCoordinator screenCoordinator) {
         this.screenCoordinator = screenCoordinator;
@@ -78,6 +87,14 @@ public class PlayLevelScreen extends Screen implements GameListener {
             e.printStackTrace();
             System.out.println("Error loading heart images");
         }
+
+        // Load coin image //
+        try {
+            coinIcon = ImageIO.read(new File("Resources/coin.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Error loading coin image");
+        }
     }
 
     public void update() {
@@ -87,6 +104,7 @@ public class PlayLevelScreen extends Screen implements GameListener {
             case RUNNING:
                 player.update();
                 map.update(player);
+                coinCount = Coin.coinsCollected;
                 break;
             // if level has been completed, bring up level cleared screen
             case LEVEL_COMPLETED:
@@ -132,6 +150,18 @@ public class PlayLevelScreen extends Screen implements GameListener {
                         graphicsHandler.drawImage(emptyHeartImage, heartX, startY, heartWidth, heartHeight);
                     }
                 }
+                //show coin icon
+                int coinX = 275;
+                int coinY = 5;
+                graphicsHandler.drawImage(coinIcon, coinX, coinY, coinWidth,coinHeight);
+
+                //show coin counter
+                int coinTextX = coinX + coinWidth + 5;
+                int coinTextY = coinY + (coinHeight / 2) + 5;
+                graphicsHandler.drawString(" " + coinCount, coinTextX, coinTextY, new java.awt.Font("Arial", java.awt.Font.BOLD, 24), java.awt.Color.WHITE);
+
+                
+
 
                 break;
             case LEVEL_COMPLETED:
