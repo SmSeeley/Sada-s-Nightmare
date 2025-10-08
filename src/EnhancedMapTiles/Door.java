@@ -15,33 +15,58 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 /*
- * This file creates an enhanced map object "Door" that allows users to open the door and enter, teleporting them to a set location.
+ * Door that opens via interact script.
+ * AFTER opening, pressing E (or SPACE) will teleport you ANY TIME, repeatedly.
+ * - No "one-time" limit.
+ * - Generous proximity check (or set ALWAYS_TELEPORT_ON_KEY=true to ignore proximity).
+ * - Cooldown prevents rapid-fire teleports while the key is held.
+ * - setDestinationTiles / setDestination + arrival offset to land in front of partner door.
  */
-
 public class Door extends EnhancedMapTile {
+
+    // ====== CONFIG ======
+    private static final boolean ALWAYS_TELEPORT_ON_KEY = false; // set true to ignore proximity completely
+    private static final int TELEPORT_COOLDOWN_FRAMES = 12;      // ~0.2s at 60fps
+    // Proximity band (if ALWAYS_TELEPORT_ON_KEY==false). This is pretty forgiving:
+    private static final float BAND_LEFT_PAD   = 40f;
+    private static final float BAND_RIGHT_PAD  = 56f;  // door width (16) + padding
+    private static final float BAND_TOP_PAD    = 56f;
+    private static final float BAND_BOTTOM_PAD = 56f;
+
+    // ====== State ======
     private boolean isOpen = false;
+    private int teleportCooldown = 0;
 
-    // The object the engine will draw
+    // visuals
     private GameObject doorObj;
-
-    // Frames
     private Frame closedFrame;
     private Frame openFrame;
 
-    // Teleport destination
+    // destination base (target door tile top-left in pixels) and final arrival (with offsets)
+    private Point baseDestination;
     private Point afterOpenTarget;
-    private boolean hasTeleported = false;
+
+    // tile size memory for setDestinationTiles
+    private int lastTileW = 48;
+    private int lastTileH = 48;
+
+    // arrival offsets: stand one tile below the door, plus a small tweak to the right/down
+    private int arrivalDx = 6;       // px to the right from door tile left
+    private int arrivalDyExtra = 6;  // extra px below one full tile
 
     public Door(Point location) {
-        // load image and assign image accurate width and height, update variables to change it.
         super(location.x, location.y,
               new SpriteSheet(ImageLoader.load("door_close.png"), 16, 32),
               TileType.NOT_PASSABLE);
-        setIsUncollidable(false); // The door will remained blocked until it is opened, change to true to make the door passable.
 
-        // Default: one tile inside (above) the doorway, use this so that the door image appears above the ground and doesnt "sink" into the floor
-        this.afterOpenTarget = new Point(location.x, location.y - 700);
+        // door blocks until opened
+        setIsUncollidable(false);
 
+        // default: base destination = this door's tile; arrival computed from it
+        this.baseDestination = new Point(location.x, location.y);
+        this.afterOpenTarget = computeArrivalFromBase(baseDestination);
+
+        // Interact script: OPEN ONLY
         setInteractScript(new Script() {
             @Override
             public ArrayList<ScriptAction> loadScriptActions() {
@@ -57,17 +82,17 @@ public class Door extends EnhancedMapTile {
                 actions.add(new ScriptAction() {
                     @Override
                     public Level.ScriptState execute() {
-                        //print in command line to track program
                         System.out.println("[Door] opening...");
                         isOpen = true;
-
-                        // Make walk-through once the door is opened. 
                         setIsUncollidable(true);
+                        teleportCooldown = 0; // ready immediately
 
-                        // Swap the frame on the SAME bottom-layer object the engine draws
-                        boolean swapped = setGameObjectFrame(doorObj, openFrame);
-                        System.out.println("[Door] swapped frame on doorObj = " + swapped);
-
+                        try {
+                            boolean swapped = setGameObjectFrame(doorObj, openFrame);
+                            System.out.println("[Door] swapped frame on doorObj = " + swapped);
+                        } catch (Throwable th) {
+                            System.out.println("[Door] WARN: frame swap failed: " + th);
+                        }
                         return Level.ScriptState.COMPLETED;
                     }
                 });
@@ -80,164 +105,194 @@ public class Door extends EnhancedMapTile {
 
     @Override
     protected GameObject loadBottomLayer(SpriteSheet sheet) {
-        // CLOSED
         closedFrame = new FrameBuilder(sheet.getSubImage(0, 0))
                 .withScale(3)
                 .withBounds(0, 16, 16, 16) // collide on lower half
                 .build();
 
-        // OPEN
         SpriteSheet openSheet = new SpriteSheet(ImageLoader.load("DoorOpen.png"), 16, 32);
         openFrame = new FrameBuilder(openSheet.getSubImage(0, 0))
                 .withScale(3)
                 .withBounds(0, 16, 16, 16)
                 .build();
 
-        // Lift sprite 16px so it sits on ground
+        // lift 16px so it sits on the floor visually
         doorObj = new GameObject(x, y - 16, closedFrame);
-        return doorObj; // engine caches & draws this
-
-
-        //assign for bottom frame of the door object
+        return doorObj;
     }
 
     @Override
     public void update(Player player) {
         super.update(player);
+        if (player == null || !isOpen) return;
 
-        // After opening, teleport once when player steps into the doorway, takes a second for user to teleport once entering blank doorway.
-        if (isOpen && !hasTeleported && player != null) {
-            if (insidePortal(player)) {
-                if (movePlayerTo(player, afterOpenTarget)) {
-                    hasTeleported = true;
-                }
+        if (teleportCooldown > 0) teleportCooldown--;
+
+        boolean confirm = isConfirmDown(); // E or SPACE (or true if keys unavailable)
+        boolean near = ALWAYS_TELEPORT_ON_KEY || nearDoor(player);
+
+        if (confirm && near && teleportCooldown == 0) {
+            Point dest = (afterOpenTarget != null) ? afterOpenTarget : computeArrivalFromBase(baseDestination);
+            System.out.println("[Door] Teleport attempt to " + dest.x + "," + dest.y);
+            if (movePlayerTo(player, dest)) {
+                System.out.println("[Door] Teleport SUCCESS");
+                teleportCooldown = TELEPORT_COOLDOWN_FRAMES;
+            } else {
+                System.out.println("[Door] Teleport FAILED (no matching setter/fields on Player)");
+                teleportCooldown = 6; // minimal debounce to avoid spam logs
             }
         }
     }
 
-    // helper methods for teleporting the player to set location
+    // ===== Public setters =====
 
-    /** Robust "inside doorway" test: try multiple overlap strategies. */
-    private boolean insidePortal(Player player) {
-        // (1) If Player has intersects(GameObject), try with the doorObj
-        try {
-            Method m = player.getClass().getMethod("intersects", GameObject.class);
-            boolean b = (boolean) m.invoke(player, doorObj);
-            if (b) return true;
-        } catch (Throwable ignored) {}
-
-        // (2) If Player has intersects(MapEntity), try with "this"
-        try {
-            Method m = player.getClass().getMethod("intersects", MapEntity.class);
-            boolean b = (boolean) m.invoke(player, this);
-            if (b) return true;
-        } catch (Throwable ignored) {}
-
-        // (3) Coordinate check: is player's center inside the door's 16x32 area?
-        float px = getNumeric(player, "getX", "x");
-        float py = getNumeric(player, "getY", "y");
-        // Door rectangle: x..x+16, (y-16)..(y+16) because sprite is lifted by 16, must account for this. 
-        float left = this.x;
-        float right = this.x + 16;
-        float top = this.y - 16;
-        float bottom = this.y + 16;
-
-        return (px >= left && px <= right && py >= top && py <= bottom);
+    /** Pixels: pass partner door’s TILE top-left (or anchor) in pixels. */
+    public void setDestination(Point doorTileTopLeftPixels) {
+        this.baseDestination = doorTileTopLeftPixels;
+        this.afterOpenTarget = computeArrivalFromBase(baseDestination);
+        System.out.println("[Door] setDestination base(pixels) = " + baseDestination.x + "," + baseDestination.y
+                + " -> arrival " + afterOpenTarget.x + "," + afterOpenTarget.y);
     }
 
-    /** Move the player to pixel point p. Tries many common signatures, then fields. */
+    /** Tiles: converts to pixels using remembered/explicit tile size. */
+    public void setDestinationTiles(int tileX, int tileY) {
+        setDestinationTiles(tileX, tileY, lastTileW, lastTileH);
+    }
+
+    public void setDestinationTiles(int tileX, int tileY, int tileW, int tileH) {
+        this.lastTileW = Math.max(1, tileW);
+        this.lastTileH = Math.max(1, tileH);
+        int px = tileX * lastTileW;
+        int py = tileY * lastTileH;
+        this.baseDestination = new Point(px, py);
+        this.afterOpenTarget = computeArrivalFromBase(baseDestination);
+        System.out.println("[Door] setDestinationTiles tiles(" + tileX + "," + tileY + "), tileSize(" + lastTileW + "x" + lastTileH + ")"
+                + " -> base " + px + "," + py + " -> arrival " + afterOpenTarget.x + "," + afterOpenTarget.y);
+    }
+
+    /** Fine-tune arrival relative to door tile top-left. */
+    public void setArrivalOffset(int dx, int dyExtra) {
+        this.arrivalDx = dx;
+        this.arrivalDyExtra = dyExtra;
+        this.afterOpenTarget = computeArrivalFromBase(baseDestination);
+        System.out.println("[Door] setArrivalOffset dx=" + dx + " dyExtra=" + dyExtra
+                + " -> arrival " + afterOpenTarget.x + "," + afterOpenTarget.y);
+    }
+
+    // ===== Internals =====
+
+    private Point computeArrivalFromBase(Point base) {
+        int ax = (int) base.x + arrivalDx;
+        int ay = (int) base.y + lastTileH + arrivalDyExtra; // one tile below + a few px
+        if (ax < 0) ax = 0;
+        if (ay < 0) ay = 0;
+        return new Point(ax, ay);
+    }
+
+    // E/SPACE detection via reflection; auto-true if not available
+    private boolean isConfirmDown() {
+        try {
+            Class<?> keyCls = Class.forName("Engine.Key");
+            Class<?> kbCls  = Class.forName("Engine.Keyboard");
+            Object KEY_E = keyCls.getField("E").get(null);
+            Object KEY_SPACE = keyCls.getField("SPACE").get(null);
+            Method isDown = kbCls.getMethod("isKeyDown", keyCls);
+            boolean e = (boolean) isDown.invoke(null, KEY_E);
+            boolean sp = (boolean) isDown.invoke(null, KEY_SPACE);
+            return e || sp;
+        } catch (Throwable ignored) {
+            return true; // fallback if engine keys not exposed
+        }
+    }
+
+    // Generous proximity check so you don’t need to perfectly overlap the door
+    private boolean nearDoor(Player player) {
+        // try intersects first
+        try {
+            Method m = player.getClass().getMethod("intersects", GameObject.class);
+            if ((boolean) m.invoke(player, doorObj)) return true;
+        } catch (Throwable ignored) {}
+        try {
+            Method m = player.getClass().getMethod("intersects", MapEntity.class);
+            if ((boolean) m.invoke(player, this)) return true;
+        } catch (Throwable ignored) {}
+
+        // otherwise, use a generous rectangle around the door sprite anchor (x, y-16)
+        float px = getNumeric(player, "getX", "x");
+        float py = getNumeric(player, "getY", "y");
+        float pw = getNumeric(player, "getWidth", "width");
+        float ph = getNumeric(player, "getHeight", "height");
+        float cx = px + (pw > 0 ? pw / 2f : 8f);
+        float cy = py + (ph > 0 ? ph / 2f : 8f);
+
+        float left   = this.x - BAND_LEFT_PAD;
+        float right  = this.x + BAND_RIGHT_PAD;
+        float top    = this.y - BAND_TOP_PAD;
+        float bottom = this.y + BAND_BOTTOM_PAD;
+
+        return (cx >= left && cx <= right && cy >= top && cy <= bottom);
+    }
+
+    /** Move the player to pixel point p. Try common signatures, then fields. */
     private boolean movePlayerTo(Player player, Point p) {
-        // Methods first
         if (tryInvoke(player, "setLocation", Point.class, p)) return true;
         if (tryInvoke2(player, "setLocation", p.x, p.y))     return true;
         if (tryInvoke2(player, "setPosition", p.x, p.y))     return true;
         if (tryInvoke2(player, "teleportTo",  p.x, p.y))     return true;
         if (tryInvoke1(player, "setX", p.x) & tryInvoke1(player, "setY", p.y)) return true;
 
-        // Fallback: fields named x/y
         boolean xSet = trySetField(player, "x", p.x);
         boolean ySet = trySetField(player, "y", p.y);
-        return xSet && ySet;
+        if (xSet && ySet) return true;
+
+        boolean mx = trySetField(player, "mapX", p.x);
+        boolean my = trySetField(player, "mapY", p.y);
+        return mx && my;
     }
 
     private boolean tryInvoke(Player obj, String name, Class<?> pType, Object arg) {
-        try {
-            Method m = obj.getClass().getMethod(name, pType);
-            m.invoke(obj, arg);
-            return true;
-        } catch (Throwable t) { return false; }
+        try { Method m = obj.getClass().getMethod(name, pType); m.invoke(obj, arg); return true; }
+        catch (Throwable t) { return false; }
     }
-
     private boolean tryInvoke1(Player obj, String name, float v) {
-        try {
-            Method m = obj.getClass().getMethod(name, float.class);
-            m.invoke(obj, v);
-            return true;
-        } catch (Throwable t1) {
-            try {
-                Method m = obj.getClass().getMethod(name, int.class);
-                m.invoke(obj, (int) v);
-                return true;
-            } catch (Throwable t2) { return false; }
+        try { Method m = obj.getClass().getMethod(name, float.class); m.invoke(obj, v); return true; }
+        catch (Throwable t1) {
+            try { Method m = obj.getClass().getMethod(name, int.class); m.invoke(obj, (int) v); return true; }
+            catch (Throwable t2) { return false; }
         }
     }
-
     private boolean tryInvoke2(Player obj, String name, float x, float y) {
-        // float,float
-        try {
-            Method m = obj.getClass().getMethod(name, float.class, float.class);
-            m.invoke(obj, x, y);
-            return true;
-        } catch (Throwable t1) {
-            // int,int
-            try {
-                Method m = obj.getClass().getMethod(name, int.class, int.class);
-                m.invoke(obj, (int) x, (int) y);
-                return true;
-            } catch (Throwable t2) { return false; }
+        try { Method m = obj.getClass().getMethod(name, float.class, float.class); m.invoke(obj, x, y); return true; }
+        catch (Throwable t1) {
+            try { Method m = obj.getClass().getMethod(name, int.class, int.class); m.invoke(obj, (int)x, (int)y); return true; }
+            catch (Throwable t2) { return false; }
         }
     }
-
     private boolean trySetField(Object obj, String fieldName, float val) {
         try {
             Field f = obj.getClass().getDeclaredField(fieldName);
             f.setAccessible(true);
-            if (f.getType() == float.class || f.getType() == Float.class) {
-                f.setFloat(obj, val);
-            } else if (f.getType() == int.class || f.getType() == Integer.class) {
-                f.setInt(obj, (int) val);
-            } else {
-                return false;
-            }
+            if (f.getType() == float.class || f.getType() == Float.class)      f.setFloat(obj, val);
+            else if (f.getType() == int.class || f.getType() == Integer.class) f.setInt(obj, (int) val);
+            else return false;
             return true;
         } catch (Throwable t) { return false; }
     }
-
     private float getNumeric(Object obj, String getter, String field) {
-        try {
-            Method m = obj.getClass().getMethod(getter);
-            Object r = m.invoke(obj);
-            if (r instanceof Number) return ((Number) r).floatValue();
-        } catch (Throwable ignored) {}
-        try {
-            Field f = obj.getClass().getDeclaredField(field);
-            f.setAccessible(true);
-            Object r = f.get(obj);
-            if (r instanceof Number) return ((Number) r).floatValue();
-        } catch (Throwable ignored) {}
+        try { Method m = obj.getClass().getMethod(getter); Object r = m.invoke(obj); if (r instanceof Number) return ((Number) r).floatValue(); }
+        catch (Throwable ignored) {}
+        try { Field f = obj.getClass().getDeclaredField(field); f.setAccessible(true); Object r = f.get(obj); if (r instanceof Number) return ((Number) r).floatValue(); }
+        catch (Throwable ignored) {}
         return 0f;
     }
 
-    /** Swap the Frame stored inside a GameObject using reflection. */
+    /** Swap the Frame stored inside a GameObject. */
     private boolean setGameObjectFrame(GameObject obj, Frame newFrame) {
         if (obj == null || newFrame == null) return false;
         Class<?> c = obj.getClass();
         try {
-            // currentFrame, and frame
             if (trySetFrameField(obj, c, "currentFrame", newFrame)) return true;
             if (trySetFrameField(obj, c, "frame",        newFrame)) return true;
-
-            // any Frame field up the hierarchy
             while (c != null) {
                 for (Field f : c.getDeclaredFields()) {
                     if (Frame.class.isAssignableFrom(f.getType())) {
@@ -251,18 +306,8 @@ public class Door extends EnhancedMapTile {
         } catch (Throwable ignored) {}
         return false;
     }
-
     private boolean trySetFrameField(GameObject obj, Class<?> cls, String fieldName, Frame value) {
-        try {
-            Field f = cls.getDeclaredField(fieldName);
-            f.setAccessible(true);
-            f.set(obj, value);
-            return true;
-        } catch (Throwable ignored) { return false; }
-    }
-    // Allows another class to assign where this door should teleport the player
-    public void setDestination(Point p) {
-        this.afterOpenTarget = p;
-        this.hasTeleported = false; // reset so the teleport works again if reused
+        try { Field f = cls.getDeclaredField(fieldName); f.setAccessible(true); f.set(obj, value); return true; }
+        catch (Throwable ignored) { return false; }
     }
 }

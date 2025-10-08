@@ -14,6 +14,7 @@ import Scripts.SimpleTextScript;
 import Scripts.TestMap.*;
 import Tilesets.CommonTileset;
 import java.util.ArrayList;
+import Utils.Point;
 
 // Represents a test map to be used in a level
 public class TestMap extends Map {
@@ -28,16 +29,10 @@ public class TestMap extends Map {
         ArrayList<EnhancedMapTile> enhancedMapTiles = new ArrayList<>();
 
         //Doors in room 1
-        RightFacingDoor door1 = new RightFacingDoor(getMapTile(8, 7).getLocation());
         Door            door2 = new Door(getMapTile(4, 3).getLocation());
-        LeftFacingDoor  door3 = new LeftFacingDoor(getMapTile(0, 7).getLocation());
-        UpsideDownDoor  door4 = new UpsideDownDoor(getMapTile(4, 11).getLocation());
 
         //Doors in room 2
-        RightFacingDoor door5 = new RightFacingDoor(getMapTile(25, 7).getLocation());
         Door            door6 = new Door(getMapTile(21, 3).getLocation());
-        LeftFacingDoor  door7 = new LeftFacingDoor(getMapTile(17, 7).getLocation());
-        UpsideDownDoor  door8 = new UpsideDownDoor(getMapTile(21, 11).getLocation());
 
 
         // Health potion
@@ -50,24 +45,12 @@ public class TestMap extends Map {
 
 
         //Adjust teleportation so all doors in room 1 teleport to correlated doors in room 2
-        door1.setDestination(door5.getLocation());
-        door5.setDestination(door1.getLocation());
         door2.setDestination(door6.getLocation());
         door6.setDestination(door2.getLocation());
-        door3.setDestination(door7.getLocation());
-        door7.setDestination(door3.getLocation());
-        door4.setDestination(door8.getLocation());
-        door8.setDestination(door4.getLocation());
 
         //add adjusted doors to enhanced map tiles
-        enhancedMapTiles.add(door1);
         enhancedMapTiles.add(door2);
-        enhancedMapTiles.add(door3);
-        enhancedMapTiles.add(door4);
-        enhancedMapTiles.add(door5);
         enhancedMapTiles.add(door6);
-        enhancedMapTiles.add(door7);
-        enhancedMapTiles.add(door8);
         
         enhancedMapTiles.add(healthPotion);
 
