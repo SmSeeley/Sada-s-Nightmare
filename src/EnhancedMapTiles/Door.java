@@ -18,39 +18,35 @@ import java.util.ArrayList;
  * Door that opens via interact script.
  * AFTER opening, pressing E (or SPACE) will teleport you ANY TIME, repeatedly.
  * - No "one-time" limit.
- * - Generous proximity check (or set ALWAYS_TELEPORT_ON_KEY=true to ignore proximity).
- * - Cooldown prevents rapid-fire teleports while the key is held.
- * - setDestinationTiles / setDestination + arrival offset to land in front of partner door.
  */
 public class Door extends EnhancedMapTile {
 
-    // ====== CONFIG ======
-    private static final boolean ALWAYS_TELEPORT_ON_KEY = false; // set true to ignore proximity completely
-    private static final int TELEPORT_COOLDOWN_FRAMES = 12;      // ~0.2s at 60fps
-    // Proximity band (if ALWAYS_TELEPORT_ON_KEY==false). This is pretty forgiving:
+    private static final boolean ALWAYS_TELEPORT_ON_KEY = false; 
+    private static final int TELEPORT_COOLDOWN_FRAMES = 12;    
+    
+
     private static final float BAND_LEFT_PAD   = 40f;
-    private static final float BAND_RIGHT_PAD  = 56f;  // door width (16) + padding
+    private static final float BAND_RIGHT_PAD  = 56f;  
     private static final float BAND_TOP_PAD    = 56f;
     private static final float BAND_BOTTOM_PAD = 56f;
 
-    // ====== State ======
+
     private boolean isOpen = false;
     private int teleportCooldown = 0;
 
-    // visuals
+ 
     private GameObject doorObj;
     private Frame closedFrame;
     private Frame openFrame;
 
-    // destination base (target door tile top-left in pixels) and final arrival (with offsets)
+
     private Point baseDestination;
     private Point afterOpenTarget;
 
-    // tile size memory for setDestinationTiles
     private int lastTileW = 48;
     private int lastTileH = 48;
 
-    // arrival offsets: stand one tile below the door, plus a small tweak to the right/down
+
     private int arrivalDx = 6;       // px to the right from door tile left
     private int arrivalDyExtra = 6;  // extra px below one full tile
 
@@ -60,13 +56,11 @@ public class Door extends EnhancedMapTile {
               TileType.NOT_PASSABLE);
 
         // door blocks until opened
-        setIsUncollidable(false);
+        setIsUncollidable(true);
 
-        // default: base destination = this door's tile; arrival computed from it
         this.baseDestination = new Point(location.x, location.y);
         this.afterOpenTarget = computeArrivalFromBase(baseDestination);
 
-        // Interact script: OPEN ONLY
         setInteractScript(new Script() {
             @Override
             public ArrayList<ScriptAction> loadScriptActions() {
@@ -144,9 +138,7 @@ public class Door extends EnhancedMapTile {
         }
     }
 
-    // ===== Public setters =====
 
-    /** Pixels: pass partner door’s TILE top-left (or anchor) in pixels. */
     public void setDestination(Point doorTileTopLeftPixels) {
         this.baseDestination = doorTileTopLeftPixels;
         this.afterOpenTarget = computeArrivalFromBase(baseDestination);
@@ -154,7 +146,6 @@ public class Door extends EnhancedMapTile {
                 + " -> arrival " + afterOpenTarget.x + "," + afterOpenTarget.y);
     }
 
-    /** Tiles: converts to pixels using remembered/explicit tile size. */
     public void setDestinationTiles(int tileX, int tileY) {
         setDestinationTiles(tileX, tileY, lastTileW, lastTileH);
     }
@@ -170,7 +161,6 @@ public class Door extends EnhancedMapTile {
                 + " -> base " + px + "," + py + " -> arrival " + afterOpenTarget.x + "," + afterOpenTarget.y);
     }
 
-    /** Fine-tune arrival relative to door tile top-left. */
     public void setArrivalOffset(int dx, int dyExtra) {
         this.arrivalDx = dx;
         this.arrivalDyExtra = dyExtra;
@@ -179,7 +169,6 @@ public class Door extends EnhancedMapTile {
                 + " -> arrival " + afterOpenTarget.x + "," + afterOpenTarget.y);
     }
 
-    // ===== Internals =====
 
     private Point computeArrivalFromBase(Point base) {
         int ax = (int) base.x + arrivalDx;
@@ -201,13 +190,13 @@ public class Door extends EnhancedMapTile {
             boolean sp = (boolean) isDown.invoke(null, KEY_SPACE);
             return e || sp;
         } catch (Throwable ignored) {
-            return true; // fallback if engine keys not exposed
+            return true; 
         }
     }
 
     // Generous proximity check so you don’t need to perfectly overlap the door
     private boolean nearDoor(Player player) {
-        // try intersects first
+        
         try {
             Method m = player.getClass().getMethod("intersects", GameObject.class);
             if ((boolean) m.invoke(player, doorObj)) return true;
@@ -217,7 +206,6 @@ public class Door extends EnhancedMapTile {
             if ((boolean) m.invoke(player, this)) return true;
         } catch (Throwable ignored) {}
 
-        // otherwise, use a generous rectangle around the door sprite anchor (x, y-16)
         float px = getNumeric(player, "getX", "x");
         float py = getNumeric(player, "getY", "y");
         float pw = getNumeric(player, "getWidth", "width");
@@ -233,7 +221,6 @@ public class Door extends EnhancedMapTile {
         return (cx >= left && cx <= right && cy >= top && cy <= bottom);
     }
 
-    /** Move the player to pixel point p. Try common signatures, then fields. */
     private boolean movePlayerTo(Player player, Point p) {
         if (tryInvoke(player, "setLocation", Point.class, p)) return true;
         if (tryInvoke2(player, "setLocation", p.x, p.y))     return true;
