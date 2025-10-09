@@ -334,11 +334,55 @@ public abstract class Player extends GameObject {
         return health;
     }
 
+
+
+
+
+
+
+
+
+
+    
+    public int getMaxHealth() {
+        return MAX_HEALTH;
+    }
+
+    public void heal(int amount) {
+        this.health += amount;
+        if(this.health > MAX_HEALTH) {
+            this.health = MAX_HEALTH;
+        }
+    }
+
+    public boolean takeDamage(int amount) {
+        this.health -= amount;
+        if(this.health <= 0) {
+            this.health = 0;
+            return true;
+        }
+        return false;
+    }
+
+    /*/ 
     // Uncomment this to have game draw player's bounds to make it easier to visualize
-    /*
-    public void draw(GraphicsHandler graphicsHandler) {
+        public void draw(GraphicsHandler graphicsHandler) {
         super.draw(graphicsHandler);
         drawBounds(graphicsHandler, new Color(255, 0, 0, 100));
     }
     */
+
+    @Override
+    public Rectangle getBounds() {
+        Rectangle original = super.getBounds();
+        int extra = 4; // Increase size by pixels on all sides
+        return new Rectangle(
+            original.getX1() - extra,
+            original.getY1() - extra,
+            original.getWidth() + extra * 2,
+            original.getHeight() + extra * 2
+        );
+    }
+    
+    
 }
