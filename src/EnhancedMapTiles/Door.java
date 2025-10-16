@@ -14,6 +14,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
+
 /*
  * Door that opens via interact script.
  * AFTER opening, pressing E (or SPACE) will teleport you ANY TIME, repeatedly.
