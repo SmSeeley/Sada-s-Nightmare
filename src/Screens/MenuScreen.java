@@ -12,6 +12,9 @@ import SpriteFont.SpriteFont;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import javax.sound.sampled.*;
+
 
 public class MenuScreen extends Screen {
     private final ScreenCoordinator screenCoordinator;
@@ -20,18 +23,22 @@ public class MenuScreen extends Screen {
     private SpriteFont creditsText;
 
     private final KeyLocker keyLocker = new KeyLocker();
-    private int hoveredIndex = 0;       
+    private int hoveredIndex = 0;
     private int keyRepeatTimer = 0;
 
     private BufferedImage titleBg;
 
-    private static final int GAME_W = 800;   //window width
-    private static final int GAME_H = 600;   //window height
-    private static final int IMAGE_Y_OFFSET = 40; 
+    private static final int GAME_W = 800;   // window width
+    private static final int GAME_H = 600;   // window height
+    private static final int IMAGE_Y_OFFSET = 40;
 
     // Menu text locations
     private static final int PLAY_Y    = 240; // "PLAY GAME" Y
     private static final int CREDITS_Y = 290; // "CREDITS"  Y
+
+    //audio for title
+    private static final String TITLE_MUSIC_PATH = "Resources/audio/title.wav";
+    private Clip titleClip;
 
     public MenuScreen(ScreenCoordinator screenCoordinator) {
         this.screenCoordinator = screenCoordinator;
@@ -39,10 +46,9 @@ public class MenuScreen extends Screen {
 
     @Override
     public void initialize() {
-        
         titleBg = ImageLoader.load("sada/Title_Screen.png");
 
-        // Center text 
+        // Center text
         String playStr = "PLAY GAME";
         String creditsStr = "CREDITS";
 
@@ -62,11 +68,12 @@ public class MenuScreen extends Screen {
 
         keyLocker.lockKey(Key.SPACE);
         keyLocker.lockKey(Key.ENTER);
+
+        startTitleMusic();
     }
 
     @Override
     public void update() {
-
         if (keyRepeatTimer > 0) keyRepeatTimer--;
 
         if (Keyboard.isKeyDown(Key.DOWN) && keyRepeatTimer == 0) {
@@ -84,8 +91,12 @@ public class MenuScreen extends Screen {
                 (Keyboard.isKeyDown(Key.ENTER) && !keyLocker.isKeyLocked(Key.ENTER));
 
         if (selectPressed) {
-            if (hoveredIndex == 0) screenCoordinator.setGameState(GameState.LEVEL);
-            else                    screenCoordinator.setGameState(GameState.CREDITS);
+            stopTitleMusic(); // stop music before leaving the menu
+            if (hoveredIndex == 0) {
+                screenCoordinator.setGameState(GameState.LEVEL);
+            } else {
+                screenCoordinator.setGameState(GameState.CREDITS);
+            }
         }
 
         if (!Keyboard.isKeyDown(Key.SPACE)) keyLocker.unlockKey(Key.SPACE);
@@ -94,7 +105,6 @@ public class MenuScreen extends Screen {
 
     @Override
     public void draw(GraphicsHandler g) {
-        
         if (titleBg != null) {
             double scale = Math.max(
                 (double) GAME_W / titleBg.getWidth(),
@@ -119,8 +129,65 @@ public class MenuScreen extends Screen {
             creditsText.setColor(new Color(240,200,80));
         }
 
-        // Draw menu options (manually centered)
+        // Draw menu options
         playGameText.draw(g);
         creditsText.draw(g);
+    }
+
+
+
+    private void startTitleMusic() {
+        stopTitleMusic();
+
+        try {
+            File f = new File(TITLE_MUSIC_PATH);
+            if (!f.exists()) {
+                System.out.println("[MenuScreen] Title music not found at " + TITLE_MUSIC_PATH);
+                return;
+            }
+
+            AudioInputStream ais = AudioSystem.getAudioInputStream(f);
+            titleClip = AudioSystem.getClip();
+            titleClip.open(ais);
+
+            // Loop forever
+            titleClip.loop(Clip.LOOP_CONTINUOUSLY);
+
+            setClipVolume(titleClip, -6.0f); // 70% perceived loudness
+
+            titleClip.start();
+            System.out.println("[MenuScreen] Title music started: " + f.getPath());
+        } catch (Exception e) {
+            System.out.println("[MenuScreen] Could not start WAV: " + e);
+            // If something fails, ensure resources are cleaned up
+            stopTitleMusic();
+        }
+    }
+
+    private void stopTitleMusic() {
+        if (titleClip != null) {
+            try {
+                titleClip.stop();
+                titleClip.close();
+            } catch (Exception ignored) {}
+            titleClip = null;
+        }
+    }
+
+
+    private void setClipVolume(Clip clip, float gainDb) {
+        if (clip == null) return;
+        try {
+            FloatControl ctrl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+            gainDb = Math.max(ctrl.getMinimum(), Math.min(ctrl.getMaximum(), gainDb));
+            ctrl.setValue(gainDb);
+        } catch (IllegalArgumentException ignored) {
+        }
+    }
+
+    @Override
+    public void unload() {
+        stopTitleMusic();
+        super.unload();
     }
 }
