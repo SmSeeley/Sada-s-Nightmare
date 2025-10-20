@@ -9,7 +9,7 @@ import Scripts.*;
 import Level.*;
 import ScriptActions.*;
 import Utils.Point;
-
+import EnhancedMapTiles.key;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;

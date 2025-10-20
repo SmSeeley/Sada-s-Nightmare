@@ -11,6 +11,7 @@ import Level.*;
 import NPCs.Bug;
 import NPCs.Dinosaur;
 import NPCs.greenNinja;
+import NPCs.Wizard;
 import Scripts.SimpleTextScript;
 import Scripts.TestMap.*;
 import Tilesets.CommonTileset;
@@ -76,6 +77,9 @@ public class TestMap extends Map {
         greenNinja walrus = new greenNinja(1, getMapTile(5, 5).getLocation());
         walrus.setInteractScript(new greenNinjaScript());
         npcs.add(walrus);
+
+        Wizard wizard = new Wizard(1, getMapTile(6,7).getLocation());
+        npcs.add(wizard);
 
         Dinosaur dinosaur = new Dinosaur(2, getMapTile(13, 4).getLocation());
         dinosaur.setExistenceFlag("hasTalkedToDinosaur");
