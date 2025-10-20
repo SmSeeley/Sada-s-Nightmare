@@ -6,6 +6,7 @@ import EnhancedMapTiles.HealthPotion;
 import EnhancedMapTiles.LeftFacingDoor;
 import EnhancedMapTiles.RightFacingDoor;
 import EnhancedMapTiles.UpsideDownDoor;
+import EnhancedMapTiles.key;
 import Level.*;
 import NPCs.Bug;
 import NPCs.Dinosaur;
@@ -43,6 +44,9 @@ public class TestMap extends Map {
         Coin            coin1 = new Coin(getMapTile(6,5).getLocation());
         Coin            coin2 = new Coin(getMapTile(3, 5).getLocation());
 
+        //key in room 1
+        key             key1 = new  key(getMapTile(7, 4).getLocation());
+
 
         //Adjust teleportation so all doors in room 1 teleport to correlated doors in room 2
         door2.setDestination(door6.getLocation());
@@ -56,6 +60,8 @@ public class TestMap extends Map {
 
         enhancedMapTiles.add(coin1);
         enhancedMapTiles.add(coin2);
+
+        enhancedMapTiles.add(key1);
 
 
         return enhancedMapTiles;
