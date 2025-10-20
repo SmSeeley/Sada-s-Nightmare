@@ -1,24 +1,43 @@
 package Screens;
 
+import Engine.AudioPlayer;
 import Engine.GraphicsHandler;
 import Engine.Screen;
 import EnhancedMapTiles.Coin;
 import EnhancedMapTiles.HealthPotion;
 import Game.GameState;
 import Game.ScreenCoordinator;
-import Level.*;
+import Level.FlagManager;
+import Level.GameListener;
+import Level.Map;
+import Level.MapEntity;
+import Level.NPC;
+import Level.Player;
+import Maps.FirstRoom;
+import Maps.SecondRoom;
 import Maps.TestMap;
 import Players.Sada;
 import Utils.Direction;
+import Utils.Point;
+
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 
 
-
-// This class is for when the RPG game is actually being played
 public class PlayLevelScreen extends Screen implements GameListener {
+
+
+    private static volatile String pendingMapName = null;
+    private static volatile Point pendingSpawnPixels = null;
+
+
+    public static void queueMapChange(String mapName, Point spawnPixels) {
+        pendingMapName = mapName;
+        pendingSpawnPixels = spawnPixels;
+    }
+
     protected ScreenCoordinator screenCoordinator;
     protected Map map;
     protected Player player;
@@ -27,93 +46,88 @@ public class PlayLevelScreen extends Screen implements GameListener {
     protected GameOverScreen gameOverScreen;
     protected FlagManager flagManager;
 
-    // Damage cooldown //
+    // Damage cooldown
     private long lastDamageTime = 0;
-    private final long damageCooldown = 1000; 
+    private final long damageCooldown = 1000;
 
-    // Heart images for health status
+    // Health UI
     private BufferedImage fullHeartImage;
     private BufferedImage halfHeartImage;
     private BufferedImage emptyHeartImage;
-
     private final int heartWidth = 25;
     private final int heartHeight = 25;
 
-    //coin slot
+    // Coins UI
     private BufferedImage coinIcon;
-
     private int coinWidth = 75;
     private int coinHeight = 75;
     private int coinCount = 0;
-
 
     public PlayLevelScreen(ScreenCoordinator screenCoordinator) {
         this.screenCoordinator = screenCoordinator;
     }
 
+    @Override
     public void initialize() {
-        // setup state
+        // flags
         flagManager = new FlagManager();
         flagManager.addFlag("hasLostBall", false);
         flagManager.addFlag("hasTalkedToWalrus", false);
         flagManager.addFlag("hasTalkedToDinosaur", false);
         flagManager.addFlag("hasFoundBall", false);
 
-        // define/setup map
-        map = new TestMap();
+        map = new FirstRoom();
         map.setFlagManager(flagManager);
 
-        // setup player
+        // player
         player = new Sada(map.getPlayerStartPosition().x, map.getPlayerStartPosition().y);
         player.setMap(map);
-        playLevelScreenState = PlayLevelScreenState.RUNNING;
         player.setFacingDirection(Direction.LEFT);
-
         map.setPlayer(player);
 
-        // let pieces of map know which button to listen for as the "interact" button
+        // input and listeners/scripts
         map.getTextbox().setInteractKey(player.getInteractKey());
-
-        // add this screen as a "game listener" so other areas of the game that don't normally have direct access to it (such as scripts) can "signal" to have it do something
-        // this is used in the "onWin" method -- a script signals to this class that the game has been won by calling its "onWin" method
         map.addListener(this);
-
-        // preloads all scripts ahead of time rather than loading them dynamically
-        // both are supported, however preloading is recommended
         map.preloadScripts();
 
         winScreen = new WinScreen(this);
-        // Initialize game over screen
-        gameOverScreen = new GameOverScreen(this); 
+        gameOverScreen = new GameOverScreen(this);
+        playLevelScreenState = PlayLevelScreenState.RUNNING;
 
-        // Load heart images //
+        // load UI images
         try {
-            fullHeartImage = ImageIO.read(new File("Resources/Full-Heart.png"));
-            halfHeartImage = ImageIO.read(new File("Resources/Half-Heart.png"));
+            fullHeartImage  = ImageIO.read(new File("Resources/Full-Heart.png"));
+            halfHeartImage  = ImageIO.read(new File("Resources/Half-Heart.png"));
             emptyHeartImage = ImageIO.read(new File("Resources/Empty-Heart.png"));
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("Error loading heart images");
         }
 
-        // Load coin image //
         try {
             coinIcon = ImageIO.read(new File("Resources/coin.png"));
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("Error loading coin image");
         }
+
+        // start main game music (loops across all maps)
+        // Uses Engine.AudioPlayer (javax.sound.sampled-based). Ensure file exists.
+        AudioPlayer.playLoop("Resources/audio/main_game.wav", -5.0f); // 70% volume
     }
 
+    @Override
     public void update() {
-        // check for GAME OVER //
-        if(player.getHealth() <= 0) {
+        // game over check
+        if (player.getHealth() <= 0) {
             playLevelScreenState = PlayLevelScreenState.GAME_OVER;
         }
 
-        // based on screen state, perform specific actions
+        // handle queued door map changes
+        consumePendingMapChangeIfAny();
+
+
         switch (playLevelScreenState) {
-            // if level is "running" update player and map to keep game logic for the platformer level going
             case RUNNING:
                 handleEnemyCollisions();
                 handleHealthPotionCollisions();
@@ -121,40 +135,85 @@ public class PlayLevelScreen extends Screen implements GameListener {
                 map.update(player);
                 coinCount = Coin.coinsCollected;
                 break;
-            // if level has been completed, bring up level cleared screen
+
             case LEVEL_COMPLETED:
                 winScreen.update();
                 break;
-            // if game is over, update game over screen
+
             case GAME_OVER:
                 gameOverScreen.update();
                 break;
         }
     }
 
-    // checks for collisions between player and enemies (NPCs)
-    private void handleEnemyCollisions() {
-        Player player = map.getPlayer();
-        long currentTime = System.currentTimeMillis();
-        
-        if(playLevelScreenState == PlayLevelScreenState.RUNNING){
-            // check on cooldown
-            if(currentTime - lastDamageTime >= damageCooldown){
-                // all NPCs
-                for (NPC npc : map.getNPCs()) {
-                if (npc.exists()) {
+    /** Swap maps if a door has queued a change. */
+    private void consumePendingMapChangeIfAny() {
+        if (pendingMapName == null) return;
 
-                    if (player.getBounds().intersects(npc.getBounds())) {
+        String next = pendingMapName;
+        Point spawn = pendingSpawnPixels;
+        pendingMapName = null;
+        pendingSpawnPixels = null;
+
+        // construct target map use this for all map teleportations
+        Map nextMap = null;
+        if ("FirstRoom".equalsIgnoreCase(next)) {
+            nextMap = new FirstRoom();
+        } else if ("SecondRoom".equalsIgnoreCase(next)) {
+            nextMap = new SecondRoom();
+        } else if ("TestMap".equalsIgnoreCase(next)) {
+            nextMap = new TestMap();
+        } else {
+            System.out.println("[PlayLevelScreen] Unknown map: " + next);
+            return;
+        }
+
+        nextMap.setFlagManager(flagManager);
+        nextMap.setPlayer(player);
+        nextMap.preloadScripts();
+
+
+        map = nextMap;
+        player.setMap(map);
+
+
+        if (spawn != null) {
+            try {
+                player.setLocation((float) spawn.x, (float) spawn.y);
+            } catch (Throwable ignored) {
+                try {
+                    player.setX((float) spawn.x);
+                    player.setY((float) spawn.y);
+                } catch (Throwable t2) {
+                    System.out.println("[PlayLevelScreen] Could not set player location: " + t2);
+                }
+            }
+        }
+
+        // rewire input/listeners
+        map.getTextbox().setInteractKey(player.getInteractKey());
+        map.addListener(this);
+
+        System.out.println("[PlayLevelScreen] Switched to " + next +
+                " spawn=" + (spawn != null ? (spawn.x + "," + spawn.y) : "null"));
+    }
+
+    // collisions with NPCs (enemies)
+    private void handleEnemyCollisions() {
+        Player p = map.getPlayer();
+        long now = System.currentTimeMillis();
+
+        if (playLevelScreenState == PlayLevelScreenState.RUNNING) {
+            if (now - lastDamageTime >= damageCooldown) {
+                for (NPC npc : map.getNPCs()) {
+                    if (npc.exists() && p.getBounds().intersects(npc.getBounds())) {
                         System.out.println("Collision detected!");
-                        boolean playerDied = player.takeDamage(1);
-                        
-                        lastDamageTime = currentTime;
-                        
-                        if (playerDied) {
+                        boolean died = p.takeDamage(1);
+                        lastDamageTime = now;
+                        if (died) {
                             playLevelScreenState = PlayLevelScreenState.GAME_OVER;
                         }
                         return;
-                        }
                     }
                 }
             }
@@ -166,7 +225,7 @@ public class PlayLevelScreen extends Screen implements GameListener {
             if (entity instanceof HealthPotion && entity.exists()) {
                 if (player.getBounds().intersects(entity.getBounds())) {
                     player.heal(HealthPotion.HEAL_AMOUNT);
-                    
+
                     String flag = "potion_" + entity.hashCode();
                     entity.setExistenceFlag(flag);
                     map.getFlagManager().setFlag(flag);
@@ -177,58 +236,47 @@ public class PlayLevelScreen extends Screen implements GameListener {
 
     @Override
     public void onWin() {
-        // when this method is called within the game, it signals the game has been "won"
         playLevelScreenState = PlayLevelScreenState.LEVEL_COMPLETED;
     }
 
+    @Override
     public void draw(GraphicsHandler graphicsHandler) {
-        // based on screen state, draw appropriate graphics
         switch (playLevelScreenState) {
             case RUNNING:
                 map.draw(player, graphicsHandler);
-                
-                // Health Bar Drawing
 
-                // Location of Hearts
+                // draw hearts
                 int startX = 20;
                 int startY = 20;
-
-                // Players current health from player class
                 int currentHealth = player.getHealth();
 
-                // Loop to draw 5 hearts
                 for (int i = 0; i < 5; i++) {
-                    // Calculates the X position for current heart
                     int heartX = startX + (i * (heartWidth + heartHeight));
-
                     int heartValue = (i * 2) + 2;
 
-                    if(currentHealth >= heartValue) {
-                        // Players health at full hearts 
+                    if (currentHealth >= heartValue) {
                         graphicsHandler.drawImage(fullHeartImage, heartX, startY, heartWidth, heartHeight);
                     } else if (currentHealth == heartValue - 1) {
-                        graphicsHandler.drawImage(halfHeartImage, heartX, startY, heartWidth, heartHeight);     
+                        graphicsHandler.drawImage(halfHeartImage, heartX, startY, heartWidth, heartHeight);
                     } else {
                         graphicsHandler.drawImage(emptyHeartImage, heartX, startY, heartWidth, heartHeight);
                     }
                 }
-                //show coin icon
+
+                // coin icon + counter
                 int coinX = 275;
                 int coinY = 5;
-                graphicsHandler.drawImage(coinIcon, coinX, coinY, coinWidth,coinHeight);
-
-                //show coin counter
+                graphicsHandler.drawImage(coinIcon, coinX, coinY, coinWidth, coinHeight);
                 int coinTextX = coinX + coinWidth + 5;
                 int coinTextY = coinY + (coinHeight / 2) + 5;
-                graphicsHandler.drawString(" " + coinCount, coinTextX, coinTextY, new java.awt.Font("Arial", java.awt.Font.BOLD, 24), java.awt.Color.WHITE);
-
-                
-
-
+                graphicsHandler.drawString(" " + coinCount, coinTextX, coinTextY,
+                        new java.awt.Font("Arial", java.awt.Font.BOLD, 24), java.awt.Color.WHITE);
                 break;
+
             case LEVEL_COMPLETED:
                 winScreen.draw(graphicsHandler);
                 break;
+
             case GAME_OVER:
                 map.draw(player, graphicsHandler);
                 gameOverScreen.draw(graphicsHandler);
@@ -245,10 +293,12 @@ public class PlayLevelScreen extends Screen implements GameListener {
     }
 
     public void goBackToMenu() {
+        // stop main game music when leaving gameplay for menu
+        AudioPlayer.stop();
         screenCoordinator.setGameState(GameState.MENU);
     }
 
-    // This enum represents the different states this screen can be in
+    // Screen state
     private enum PlayLevelScreenState {
         RUNNING, LEVEL_COMPLETED, GAME_OVER
     }
