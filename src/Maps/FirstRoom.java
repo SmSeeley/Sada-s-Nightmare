@@ -51,7 +51,6 @@ public class FirstRoom extends Map {
             enhancedMapTiles.add(coin);
         }
 
-
         Door toSecond = new Door(getMapTile(8, 2).getLocation())
         .toMap("SecondRoom", 10, 12)         // spawn tile (x=21, y=3) in SecondRoom
         .withTileSizePixels(48, 48);        // your rendered tile size
