@@ -1,6 +1,7 @@
 //Map that user will walk into
 package Maps;
 
+import java.awt.RenderingHints.Key;
 import java.util.ArrayList;
 import EnhancedMapTiles.*;
 import Level.*;
@@ -48,7 +49,6 @@ public class FirstRoom extends Map {
         Emptybarrel EmptyBarrel_2 = new Emptybarrel(getMapTile(4, 6).getLocation());
         enhancedMapTiles.add(EmptyBarrel_2);
 
-        
 
         Door toSecond = new Door(getMapTile(8, 2).getLocation())
         .toMap("SecondRoom", 10, 12)         // spawn tile (x=21, y=3) in SecondRoom
