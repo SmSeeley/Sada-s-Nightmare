@@ -12,8 +12,16 @@ import Players.Sada;
 import Utils.Point;
 import java.util.HashMap;
 
+
 // This class is for the walrus NPC
 public class greenNinja extends NPC {
+
+    private int health = 3;
+    boolean isActive = true;
+
+    //damage cooldown
+    private final long damageCooldown = 1000; // 1 second cooldown
+    private long lastDamageTime = 0;
 
     public greenNinja(int id, Point location) {
         super(id, location.x, location.y, new SpriteSheet(ImageLoader.load("newGreenNinja.png"), 24, 24), "STAND_LEFT");
@@ -49,10 +57,27 @@ public class greenNinja extends NPC {
         }
     }
 
+    public void takeDamage(int amount) {
+       long now = System.currentTimeMillis();
+       if (now - lastDamageTime < damageCooldown) {
+           return; // Still in cooldown period, ignore damage
+        }
+        lastDamageTime = now; // Update last damage time
+        health -= amount;
+        System.out.println("greenNinja took damage! Health: " + health);
+        if (health <= 0) {
+            // Handle NPC death (e.g., remove from map, play animation, etc.)
+            super.removeNPC();
+        }
+}
+
     @Override
     public void draw(GraphicsHandler graphicsHandler) {
-        super.draw(graphicsHandler);
+        if (getIsActive()) {
+            super.draw(graphicsHandler);
+        }
     }
+
     //Method to have NPC chase Sada
     public void chase(Sada sada) {
     float chaseSpeed = 1.5f; 

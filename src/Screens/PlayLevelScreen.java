@@ -8,11 +8,7 @@ import Game.GameState;
 import Game.ScreenCoordinator;
 import Level.*;
 import Maps.TestMap;
-<<<<<<< HEAD
-import Players.Man;
-=======
 import Players.Sada;
->>>>>>> b5c486ba5f1b7efa473dea16f35a657ee299ca09
 import Utils.Direction;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -68,11 +64,9 @@ public class PlayLevelScreen extends Screen implements GameListener {
         map.setFlagManager(flagManager);
 
         // setup player
-<<<<<<< HEAD
-        player = new Man(map.getPlayerStartPosition().x, map.getPlayerStartPosition().y);
-=======
+        //player = new Man(map.getPlayerStartPosition().x, map.getPlayerStartPosition().y);
+
         player = new Sada(map.getPlayerStartPosition().x, map.getPlayerStartPosition().y);
->>>>>>> b5c486ba5f1b7efa473dea16f35a657ee299ca09
         player.setMap(map);
         playLevelScreenState = PlayLevelScreenState.RUNNING;
         player.setFacingDirection(Direction.LEFT);
