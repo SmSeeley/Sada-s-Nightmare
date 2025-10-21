@@ -1,5 +1,6 @@
 package Screens;
 
+import Enemies.Projectile;
 import Engine.GraphicsHandler;
 import Engine.Screen;
 import EnhancedMapTiles.Coin;
@@ -117,6 +118,7 @@ public class PlayLevelScreen extends Screen implements GameListener {
             case RUNNING:
                 handleEnemyCollisions();
                 handleHealthPotionCollisions();
+                handleProjectileCollisions();
                 player.update();
                 map.update(player);
                 coinCount = Coin.coinsCollected;
@@ -155,6 +157,26 @@ public class PlayLevelScreen extends Screen implements GameListener {
                         }
                         return;
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    private void handleProjectileCollisions() {
+        Player player = map.getPlayer();
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastDamageTime >= damageCooldown) {
+            for (Projectile projectile : map.getCamera().getActiveProjectiles()) {
+                if (projectile.exists()) {
+                    if (player.getBounds().intersects(projectile.getBounds())) {
+                        boolean playerDied = player.takeDamage(1); 
+                        projectile.setMapEntityStatus(MapEntityStatus.REMOVED); 
+                        lastDamageTime = currentTime;
+                        if (playerDied) {
+                            playLevelScreenState = PlayLevelScreenState.GAME_OVER;
+                        }
+                        return; 
                     }
                 }
             }

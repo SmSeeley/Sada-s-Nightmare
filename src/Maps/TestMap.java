@@ -1,11 +1,10 @@
 package Maps;
 
+import Enemies.Ogre;
+import Enemies.Zombie;
 import EnhancedMapTiles.Coin;
 import EnhancedMapTiles.Door;
 import EnhancedMapTiles.HealthPotion;
-import EnhancedMapTiles.LeftFacingDoor;
-import EnhancedMapTiles.RightFacingDoor;
-import EnhancedMapTiles.UpsideDownDoor;
 import Level.*;
 import NPCs.Bug;
 import NPCs.Dinosaur;
@@ -14,7 +13,6 @@ import Scripts.SimpleTextScript;
 import Scripts.TestMap.*;
 import Tilesets.CommonTileset;
 import java.util.ArrayList;
-import Utils.Point;
 
 // Represents a test map to be used in a level
 public class TestMap extends Map {
@@ -81,6 +79,19 @@ public class TestMap extends Map {
         npcs.add(bug);
 
         return npcs;
+    }
+
+    @Override
+    public ArrayList<Enemy> loadEnemies() {
+        ArrayList<Enemy> enemies = new ArrayList<>();
+
+        Zombie zombie = new Zombie(4, getMapTile(18, 7).getLocation());
+        enemies.add(zombie);
+
+        Ogre ogre = new Ogre(5, getMapTile(6, 9).getLocation());
+        enemies.add(ogre);
+
+        return enemies;
     }
 
     @Override
