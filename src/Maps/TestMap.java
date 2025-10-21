@@ -1,6 +1,5 @@
 package Maps;
 
-import EnhancedMapTiles.Coin;
 import EnhancedMapTiles.Door;
 import EnhancedMapTiles.HealthPotion;
 import EnhancedMapTiles.Sword;
@@ -25,6 +24,7 @@ public class TestMap extends Map {
     public ArrayList<EnhancedMapTile> loadEnhancedMapTiles() {
         ArrayList<EnhancedMapTile> enhancedMapTiles = new ArrayList<>();
 
+
         //Doors in room 1
         Door            door2 = new Door(getMapTile(4, 3).getLocation());
 
@@ -34,14 +34,10 @@ public class TestMap extends Map {
 
         // Health potion
         HealthPotion healthPotion = new HealthPotion(getMapTile(2, 7).getLocation());
-
-
-        //coin in room 1
-        Coin            coin1 = new Coin(getMapTile(6,5).getLocation());
-        Coin            coin2 = new Coin(getMapTile(3, 5).getLocation());
+        
 
         //sword in room 2
-        Sword sword = new Sword(getMapTile(21,7).getLocation());
+        Sword sword = new Sword(getMapTile(21, 5).getLocation());
 
 
         //Adjust teleportation so all doors in room 1 teleport to correlated doors in room 2
@@ -54,11 +50,7 @@ public class TestMap extends Map {
         
         enhancedMapTiles.add(healthPotion);
 
-        enhancedMapTiles.add(coin1);
-        enhancedMapTiles.add(coin2);
-
         enhancedMapTiles.add(sword);
-
 
         return enhancedMapTiles;
     }

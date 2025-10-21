@@ -22,12 +22,25 @@ public class Sword extends EnhancedMapTile {
     private GameObject swordObject;
     private boolean collected = false;
 
+    private static final java.util.HashSet<String> collectedSwords = new java.util.HashSet<>();
     // global state accessible from player/attack logic
     private static boolean hasSword = false;
     private static int swordDamage = 2; 
 
     public Sword(Point location) {
         super(location.x, location.y, new SpriteSheet(ImageLoader.load("sword4.png"), 16, 16), TileType.PASSABLE);
+    }
+
+    private String key() {
+        return "Sword@" + x + "," + y;
+    }
+
+     public static boolean isCollectedAt(float x, float y) {
+        return collectedSwords.contains("Sword@" + x + "," + y);
+    }
+
+    public static boolean isCollectedAt(Utils.Point p) {
+        return isCollectedAt(p.x, p.y);
     }
 
     @Override
@@ -44,23 +57,23 @@ public class Sword extends EnhancedMapTile {
 
     @Override
     public void update(Player player) {
-        if (!collected && player.getBounds().intersects(swordObject.getBounds())) {
+        if (collected) return;
+        if (swordObject == null) return;
+
+        if (player.getBounds().intersects(swordObject.getBounds())) {
             collected = true;
-            // hide the sword visually
+            collectedSwords.add(key());
             swordObject.setLocation(-100, -100);
             hasSword = true;
-            System.out.println("Sword collected!");
-
-            // notify the player instance so it can change sprite/animations
+            // notify player immediately
             try {
                 player.setHasSword(true);
             } catch (Exception e) {
-                // fallback: attempt reflective call to common method name
                 try {
                     java.lang.reflect.Method m = player.getClass().getMethod("equipSword");
                     m.invoke(player);
                 } catch (Exception ex) {
-                    System.out.println("Sword pickup: failed to notify player to equip sword.");
+                    // ignore
                 }
             }
         }
