@@ -1,5 +1,6 @@
 package Level;
 
+import Enemies.Projectile;
 import Engine.Config;
 import Engine.GraphicsHandler;
 import Engine.ScreenManager;
@@ -55,7 +56,9 @@ public abstract class Map {
     // lists to hold map entities that are a part of the map
     protected ArrayList<EnhancedMapTile> enhancedMapTiles;
     protected ArrayList<NPC> npcs;
+    protected ArrayList<Enemy> enemies;
     protected ArrayList<Trigger> triggers;
+    protected ArrayList<MapEntity> mapEntities;
 
     // current script that is being executed (if any)
     protected Script activeScript;
@@ -89,6 +92,7 @@ public abstract class Map {
         this.xMidPoint = ScreenManager.getScreenWidth() / 2;
         this.yMidPoint = (ScreenManager.getScreenHeight() / 2);
         this.playerStartPosition = new Point(0, 0);
+        this.mapEntities = new ArrayList<>();
     }
 
     // sets up map by reading in the map file to create the tile map
@@ -107,6 +111,11 @@ public abstract class Map {
         this.npcs = loadNPCs();
         for (NPC npc: this.npcs) {
             npc.setMap(this);
+        }
+
+        this.enemies = loadEnemies();
+        for(Enemy enemy: this.enemies){
+            enemy.setMap(this);
         }
 
         this.triggers = loadTriggers();
@@ -290,6 +299,10 @@ public abstract class Map {
         return new ArrayList<>();
     }
 
+    protected ArrayList<Enemy> loadEnemies(){
+        return new ArrayList<>();
+    }
+
     protected ArrayList<Trigger> loadTriggers() {
         return new ArrayList<>();
     }
@@ -305,6 +318,10 @@ public abstract class Map {
     public ArrayList<NPC> getNPCs() {
         return npcs;
     }
+    public ArrayList<Enemy> getEnemies(){
+        return enemies;
+    }
+    
     public ArrayList<Trigger> getTriggers() { return triggers; }
 
     public ArrayList<MapTile> getAnimatedMapTiles() {
@@ -390,6 +407,14 @@ public abstract class Map {
         return camera.getActiveNPCs();
     }
 
+    public ArrayList<Enemy> getActiveEnemies(){
+        return camera.getActiveEnemies();
+    }
+
+    public ArrayList<Projectile> getActiveProjectiles(){
+        return  camera.getActiveProjectiles();
+    }
+
     public ArrayList<Trigger> getActiveTriggers() {
         return camera.getActiveTriggers();
     }
@@ -410,6 +435,10 @@ public abstract class Map {
     public void addTrigger(Trigger trigger) {
         trigger.setMap(this);
         this.triggers.add(trigger);
+    }
+
+    public void addMapEntity(MapEntity mapEntity) {
+        this.mapEntities.add(mapEntity);
     }
 
     public void setAdjustCamera(boolean adjustCamera) {
@@ -516,6 +545,20 @@ public abstract class Map {
             adjustMovementX(player);
         }
         camera.update(player);
+
+        for(int i = mapEntities.size() - 1; i >= 0; i--) {
+            MapEntity mapEntity = mapEntities.get(i);
+            mapEntity.update();
+
+            if(mapEntity.getMapEntityStatus() == MapEntityStatus.REMOVED) {
+                mapEntities.remove(i);
+            }
+        }
+
+        for(Enemy enemy : getActiveEnemies()) {
+            enemy.update(player);
+        }
+
         if (textbox.isActive()) {
             textbox.update();
         }
@@ -581,6 +624,9 @@ public abstract class Map {
 
     public void draw(GraphicsHandler graphicsHandler) {
         camera.draw(graphicsHandler);
+        for(MapEntity mapEntity: mapEntities) {
+            mapEntity.draw(graphicsHandler);
+        }
     }
 
     public void draw(Player player, GraphicsHandler graphicsHandler) {

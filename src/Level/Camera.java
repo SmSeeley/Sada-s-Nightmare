@@ -1,10 +1,10 @@
 package Level;
 
+import Enemies.Projectile;
 import Engine.GraphicsHandler;
 import Engine.ScreenManager;
 import GameObject.GameObject;
 import GameObject.Rectangle;
-
 import java.awt.*;
 import java.util.ArrayList;
 
@@ -25,7 +25,9 @@ public class Camera extends Rectangle {
     // current map entities that are to be included in this frame's update/draw cycle
     private ArrayList<EnhancedMapTile> activeEnhancedMapTiles = new ArrayList<>();
     private ArrayList<NPC> activeNPCs = new ArrayList<>();
+    private ArrayList<Enemy> activeEnemies = new ArrayList<>();
     private ArrayList<Trigger> activeTriggers = new ArrayList<>();
+    private ArrayList<Projectile> activeProjectiles = new ArrayList<>();
 
     // determines how many tiles off screen an entity can be before it will be deemed inactive and not included in the update/draw cycles until it comes back in range
     private final int UPDATE_OFF_SCREEN_RANGE = 4;
@@ -66,6 +68,8 @@ public class Camera extends Rectangle {
         activeEnhancedMapTiles = loadActiveEnhancedMapTiles();
         activeNPCs = loadActiveNPCs();
         activeTriggers = loadActiveTriggers();
+        activeEnemies = loadActiveEnemies();
+        activeProjectiles = loadActiveProjectiles();
 
         for (EnhancedMapTile enhancedMapTile : activeEnhancedMapTiles) {
             enhancedMapTile.update(player);
@@ -74,6 +78,15 @@ public class Camera extends Rectangle {
         for (NPC npc : activeNPCs) {
             npc.update(player);
         }
+
+        for (Enemy enemy :activeEnemies) {
+            enemy.update(player);
+        }
+
+        for(Projectile projectile : activeProjectiles) {
+            projectile.update();
+        }
+  
     }
 
     // updates any currently running script
@@ -125,6 +138,51 @@ public class Camera extends Rectangle {
         return activeNPCs;
     }
 
+    private ArrayList <Enemy> loadActiveEnemies() {
+        ArrayList<Enemy> activeEnemies = new ArrayList<>();
+        for (int i = map.getEnemies().size() - 1; i >= 0; i--) {
+            Enemy enemy = map.getEnemies().get(i);
+
+            if (isMapEntityActive(enemy)) {
+                activeEnemies.add(enemy);
+                if (enemy.mapEntityStatus == MapEntityStatus.INACTIVE) {
+                    enemy.setMapEntityStatus(MapEntityStatus.ACTIVE);
+                }
+            } else if (enemy.getMapEntityStatus() == MapEntityStatus.ACTIVE) {
+                enemy.setMapEntityStatus(MapEntityStatus.INACTIVE);
+            } else if (enemy.getMapEntityStatus() == MapEntityStatus.REMOVED) {
+                map.getEnemies().remove(i);
+            }
+        }
+        return activeEnemies;
+    }
+
+    private ArrayList<Projectile> loadActiveProjectiles() {
+    activeProjectiles.clear();
+    ArrayList<MapEntity> projectilesToRemove = new ArrayList<>(); 
+    for (int i = map.mapEntities.size() - 1; i >= 0; i--) {
+        if (map.mapEntities.get(i) instanceof Projectile) {
+            Projectile projectile = (Projectile) map.mapEntities.get(i);
+
+            if (isMapEntityActive(projectile)) {
+                activeProjectiles.add(projectile);
+                if (projectile.mapEntityStatus == MapEntityStatus.INACTIVE) {
+                    projectile.setMapEntityStatus(MapEntityStatus.ACTIVE);
+                }
+            } else if (projectile.getMapEntityStatus() == MapEntityStatus.ACTIVE) {
+                projectile.setMapEntityStatus(MapEntityStatus.INACTIVE);
+            } else if (projectile.getMapEntityStatus() == MapEntityStatus.REMOVED) {
+                projectilesToRemove.add(projectile); 
+            }
+        }
+    }
+
+    // Remove projectiles from mapEntities after the iteration is complete
+    for (MapEntity projectile : projectilesToRemove) {
+        map.mapEntities.remove(projectile);
+    }
+    return activeProjectiles;
+}
     // determine which trigger map tiles are active (exist and are within range of the camera)
     private ArrayList<Trigger> loadActiveTriggers() {
         ArrayList<Trigger> activeTriggers = new ArrayList<>();
@@ -211,6 +269,7 @@ public class Camera extends Rectangle {
     // draws active map entities to the screen
     public void drawMapEntities(Player player, GraphicsHandler graphicsHandler) {
         ArrayList<NPC> drawNpcsAfterPlayer = new ArrayList<>();
+        ArrayList<Enemy> drawEnemiesAfterPlayer = new ArrayList<>();
 
         // goes through each active npc and determines if it should be drawn at this time based on their location relative to the player
         // if drawn here, npc will later be "overlapped" by player
@@ -226,6 +285,23 @@ public class Camera extends Rectangle {
             }
         }
 
+        for (Enemy enemy : activeEnemies) {
+            if(containsDraw(enemy)){
+                if(enemy.getBounds().getY() < player.getBounds().getY1() + (player.getBounds().getHeight() / 2f)) {
+                    enemy.draw(graphicsHandler);
+                }
+                else {
+                    drawEnemiesAfterPlayer.add(enemy);
+                }
+            }
+        }
+
+        for (Projectile projectile : activeProjectiles) {
+            if(containsDraw(projectile)) {
+                projectile.draw(graphicsHandler);
+            }
+        }
+
         // player is drawn to screen
         player.draw(graphicsHandler);
 
@@ -233,6 +309,11 @@ public class Camera extends Rectangle {
         for (NPC npc : drawNpcsAfterPlayer) {
             npc.draw(graphicsHandler);
         }
+
+        for (Enemy enemy : drawEnemiesAfterPlayer) {
+            enemy.draw(graphicsHandler);
+        }
+
 
         // Uncomment this to see triggers drawn on screen
         // helps for placing them in the correct spot/debugging
@@ -267,6 +348,14 @@ public class Camera extends Rectangle {
 
     public ArrayList<NPC> getActiveNPCs() {
         return activeNPCs;
+    }
+
+    public ArrayList<Enemy> getActiveEnemies(){
+        return activeEnemies;
+    }
+
+    public ArrayList<Projectile> getActiveProjectiles() {
+        return activeProjectiles;
     }
 
     public ArrayList<Trigger> getActiveTriggers() {

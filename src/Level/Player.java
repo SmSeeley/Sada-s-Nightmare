@@ -425,7 +425,7 @@ public abstract class Player extends GameObject {
         return false;
     }
 
-    /*/ 
+    /* 
     // Uncomment this to have game draw player's bounds to make it easier to visualize
         public void draw(GraphicsHandler graphicsHandler) {
         super.draw(graphicsHandler);

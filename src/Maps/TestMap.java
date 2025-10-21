@@ -1,5 +1,7 @@
 package Maps;
 
+import Enemies.Ogre;
+import Enemies.Zombie;
 import EnhancedMapTiles.Door;
 import EnhancedMapTiles.HealthPotion;
 import EnhancedMapTiles.Sword;
@@ -75,6 +77,19 @@ public class TestMap extends Map {
         npcs.add(bug);
 
         return npcs;
+    }
+
+    @Override
+    public ArrayList<Enemy> loadEnemies() {
+        ArrayList<Enemy> enemies = new ArrayList<>();
+
+        Zombie zombie = new Zombie(4, getMapTile(18, 7).getLocation());
+        enemies.add(zombie);
+
+        Ogre ogre = new Ogre(5, getMapTile(6, 9).getLocation());
+        enemies.add(ogre);
+
+        return enemies;
     }
 
     @Override
