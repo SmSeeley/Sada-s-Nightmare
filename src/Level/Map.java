@@ -6,7 +6,6 @@ import Engine.ScreenManager;
 import GameObject.Rectangle;
 import Utils.Direction;
 import Utils.Point;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -510,6 +509,8 @@ public abstract class Map {
     }
 
     public void update(Player player) {
+        npcs.removeIf(npc -> !npc.getIsActive());
+
         if (adjustCamera) {
             adjustMovementY(player);
             adjustMovementX(player);

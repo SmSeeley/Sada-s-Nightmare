@@ -5,16 +5,9 @@ import Engine.ImageLoader;
 import GameObject.Frame;
 import GameObject.GameObject;
 import GameObject.SpriteSheet;
-import Level.EnhancedMapTile;
-import Level.MapEntity;
-import Level.Player;
-import Level.TileType;
-import Scripts.*;
 import Level.*;
-import ScriptActions.ScriptAction;
 import ScriptActions.*;
 import Utils.Point;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -44,7 +37,17 @@ public class Door extends EnhancedMapTile {
 
     
     private String targetMapName = null;    
-    private int spawnTileX = 0, spawnTileY = 0;   
+    private int spawnTileX = 0, spawnTileY = 0; 
+    
+    private Point baseDestination;
+    private Point afterOpenTarget;
+
+    private int lastTileW = 48;
+    private int lastTileH = 48;
+
+
+    private int arrivalDx = 6;       // px to the right from door tile left
+    private int arrivalDyExtra = 6;  // extra px below one full tile
 
     private int tileW = 48, tileH = 48;
 
@@ -106,6 +109,21 @@ public class Door extends EnhancedMapTile {
         return this;
     }
 
+    public void setDestination(Point doorTileTopLeftPixels) {
+        this.baseDestination = doorTileTopLeftPixels;
+        this.afterOpenTarget = computeArrivalFromBase(baseDestination);
+        System.out.println("[Door] setDestination base(pixels) = " + baseDestination.x + "," + baseDestination.y
+                + " -> arrival " + afterOpenTarget.x + "," + afterOpenTarget.y);
+    }
+
+    private Point computeArrivalFromBase(Point base) {
+        int ax = (int) base.x + arrivalDx;
+        int ay = (int) base.y + lastTileH + arrivalDyExtra; // one tile below + a few px
+        if (ax < 0) ax = 0;
+        if (ay < 0) ay = 0;
+        return new Point(ax, ay);
+    }
+
     @Override
     protected GameObject loadBottomLayer(SpriteSheet sheet) {
         closedFrame = new FrameBuilder(sheet.getSubImage(0, 0))
@@ -123,6 +141,7 @@ public class Door extends EnhancedMapTile {
         doorObj = new GameObject(x, y - 16, closedFrame);
         return doorObj;
     }
+
 
     @Override
     public void update(Player player) {

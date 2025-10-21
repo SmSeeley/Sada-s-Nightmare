@@ -19,7 +19,6 @@ import Maps.TestMap;
 import Players.Sada;
 import Utils.Direction;
 import Utils.Point;
-
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -303,3 +302,4 @@ public class PlayLevelScreen extends Screen implements GameListener {
         RUNNING, LEVEL_COMPLETED, GAME_OVER
     }
 }
+    
