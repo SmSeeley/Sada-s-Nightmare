@@ -1,12 +1,14 @@
 //Map that user will walk into
 package Maps;
 
+import Enemies.Ogre;
 import EnhancedMapTiles.*;
 import Level.*;
+import NPCs.greenNinja;
+import Scripts.TestMap.greenNinjaScript;
 import Tilesets.DungeonWallsTileSet;
 import Utils.Point;
 import java.util.ArrayList;
-// ...
 
 public class FirstRoom extends Map {
 
@@ -51,6 +53,9 @@ public class FirstRoom extends Map {
             enhancedMapTiles.add(coin);
         }
 
+        HealthPotion healthPotion = new HealthPotion(getMapTile(8, 5).getLocation());
+        enhancedMapTiles.add(healthPotion);
+    
 
         Door toSecond = new Door(getMapTile(8, 2).getLocation())
         .toMap("SecondRoom", 10, 12)         // spawn tile (x=21, y=3) in SecondRoom
@@ -62,4 +67,24 @@ public class FirstRoom extends Map {
 
     }
 
+    @Override
+    public ArrayList<NPC> loadNPCs() {
+        ArrayList<NPC> npcs = new ArrayList<>();
+
+        greenNinja walrus = new greenNinja(1, getMapTile(5, 5).getLocation());
+        walrus.setInteractScript(new greenNinjaScript());
+        npcs.add(walrus);
+
+        return npcs;
+    }
+
+    @Override
+    public ArrayList<Enemy> loadEnemies() {
+        ArrayList<Enemy> enemies = new ArrayList<>();
+
+        Ogre ogre = new Ogre(5, getMapTile(4, 4).getLocation());
+        enemies.add(ogre);
+
+        return enemies;
+    }
 }

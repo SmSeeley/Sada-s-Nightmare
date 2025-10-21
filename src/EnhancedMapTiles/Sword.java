@@ -28,7 +28,7 @@ public class Sword extends EnhancedMapTile {
     private static int swordDamage = 2; 
 
     public Sword(Point location) {
-        super(location.x, location.y, new SpriteSheet(ImageLoader.load("sword4.png"), 16, 16), TileType.PASSABLE);
+        super(location.x, location.y, new SpriteSheet(ImageLoader.load("slimehammer.png"), 16, 16), TileType.PASSABLE);
     }
 
     private String key() {
