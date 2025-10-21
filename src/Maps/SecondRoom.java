@@ -2,20 +2,17 @@
 
 package Maps;
 
-import java.util.ArrayList;
-
 import EnhancedMapTiles.Blood;
 import EnhancedMapTiles.Door;
 import EnhancedMapTiles.Emptybarrel;
 import EnhancedMapTiles.Skull;
+import EnhancedMapTiles.Sword;
 import EnhancedMapTiles.WaterBarrel;
 import Level.EnhancedMapTile;
 import Level.Map;
-import Tilesets.CommonTileset;
-import Tilesets.DungeonTileset;
-import Tilesets.DungeonTileset2;
 import Tilesets.DungeonWallsTileSet;
 import Utils.Point;
+import java.util.ArrayList;
 
 public class SecondRoom extends Map {
    public SecondRoom() {
@@ -65,6 +62,12 @@ public class SecondRoom extends Map {
 
         Emptybarrel EmptyBarrel_2 = new Emptybarrel(getMapTile(4, 6).getLocation());
         enhancedMapTiles.add(EmptyBarrel_2);
+
+        Point swordLoc = getMapTile(6, 5).getLocation(); 
+        if (!Sword.isCollectedAt(swordLoc)) {
+            Sword sword = new Sword(swordLoc);
+            enhancedMapTiles.add(sword);
+        }
 
         return enhancedMapTiles;
 

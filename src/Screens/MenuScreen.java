@@ -9,7 +9,6 @@ import Engine.Screen;
 import Game.GameState;
 import Game.ScreenCoordinator;
 import SpriteFont.SpriteFont;
-
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -185,9 +184,8 @@ public class MenuScreen extends Screen {
         }
     }
 
-    @Override
+    
     public void unload() {
         stopTitleMusic();
-        super.unload();
     }
 }

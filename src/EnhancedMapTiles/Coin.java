@@ -16,13 +16,29 @@ public class Coin extends EnhancedMapTile {
     private Frame coinFrame;
     private GameObject coinObject;
 
+
+
+    private static final java.util.HashSet<String> collectedCoins = new java.util.HashSet<>();
     public Coin(Point location) {
         // Create a passable enhanced map tile using coin.png
-        super(location.x, location.y, new SpriteSheet(ImageLoader.load("coin2.png"), 16, 16), TileType.PASSABLE);
+        super(location.x, location.y, new SpriteSheet(ImageLoader.load("newcoin.png"), 16, 16), TileType.PASSABLE);
+    }
+
+    private String key() {
+        return "Coin@" + x + "," + y;
+    }
+    // Public helper so maps can query without instantiating a Coin
+    public static boolean isCollectedAt(float x, float y) {
+        return collectedCoins.contains("Coin@" + x + "," + y);
+    }
+
+    public static boolean isCollectedAt(Utils.Point p) {
+        return isCollectedAt(p.x, p.y);
     }
 
     @Override
     protected GameObject loadBottomLayer(SpriteSheet sheet) {
+        
         // Build the coin frame from the sprite sheet
         coinFrame = new FrameBuilder(sheet.getSubImage(0, 0))
                 .withScale(3)
@@ -35,17 +51,20 @@ public class Coin extends EnhancedMapTile {
         // Return the coin object to be rendered below the door
         return coinObject;
     }
+    
 
     private boolean collected = false;
     public static int coinsCollected = 0;
 
-
-
     @Override
     public void update(Player player) {
-        if (!collected && player.getBounds().intersects(coinObject.getBounds())) {
+        if (collected) return;
+        if (coinObject == null) return; // nothing to interact with if not rendered
+
+        if (player.getBounds().intersects(coinObject.getBounds())) {
             collected = true;
-            // Hide the coin by moving it off-screen
+            collectedCoins.add(key());
+            // Hide the coin by moving it off-screen (and increment global counter)
             coinObject.setLocation(-100, -100);
             coinsCollected++;
         }

@@ -4,11 +4,11 @@ import Engine.GraphicsHandler;
 import GameObject.Frame;
 import GameObject.SpriteSheet;
 import Utils.Direction;
-
 import java.util.HashMap;
 
 // This class is a base class for all npcs in the game -- all npcs should extend from it
 public class NPC extends MapEntity {
+    private boolean isActive = true;
     protected int id = 0;
     protected boolean isLocked = false;
 
@@ -109,6 +109,21 @@ public class NPC extends MapEntity {
 
     @Override
     public void draw(GraphicsHandler graphicsHandler) {
-        super.draw(graphicsHandler);
+        if(getIsActive()) {
+            super.draw(graphicsHandler);
+        }
+    }
+
+    public void setIsActive(boolean isActive) {
+        this.isActive = isActive;
+    }
+
+    public boolean getIsActive() {
+        return isActive;
+    }
+
+    public void removeNPC() {
+        setIsActive(false);
+        
     }
 }

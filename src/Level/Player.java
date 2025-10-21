@@ -3,9 +3,11 @@ package Level;
 import Engine.Key;
 import Engine.KeyLocker;
 import Engine.Keyboard;
+import EnhancedMapTiles.Sword;
 import GameObject.GameObject;
 import GameObject.Rectangle;
 import GameObject.SpriteSheet;
+import NPCs.greenNinja;
 import Utils.Direction;
 
 public abstract class Player extends GameObject {
@@ -31,6 +33,7 @@ public abstract class Player extends GameObject {
 
     // define keys
     protected KeyLocker keyLocker = new KeyLocker();
+    protected KeyLocker shootKeyLocker = new KeyLocker();
     //walking keys and interact
     protected Key MOVE_LEFT_KEY = Key.A;
     protected Key MOVE_RIGHT_KEY = Key.D;
@@ -42,6 +45,8 @@ public abstract class Player extends GameObject {
     protected Key SHOOT_LEFT_KEY = Key.LEFT;
     protected Key SHOOT_UP_KEY = Key.UP;
     protected Key SHOOT_DOWN_KEY = Key.DOWN;
+
+    protected boolean isShooting = false;
 
     protected boolean isLocked = false;
 
@@ -59,32 +64,109 @@ public abstract class Player extends GameObject {
     }
 
     public void update() {
-        if (!isLocked) {
-            moveAmountX = 0;
-            moveAmountY = 0;
+    if (!isLocked) {
+        moveAmountX = 0;
+        moveAmountY = 0;
 
-            // if player is currently playing through level (has not won or lost)
-            // update player's state and current actions, which includes things like determining how much it should move each frame and if its walking or jumping
-            do {
-                previousPlayerState = playerState;
-                handlePlayerState();
-            } while (previousPlayerState != playerState);
+        // Update shooting flag
+        isShooting = Keyboard.isKeyDown(SHOOT_LEFT_KEY) || Keyboard.isKeyDown(SHOOT_RIGHT_KEY) ||
+                     Keyboard.isKeyDown(SHOOT_UP_KEY) || Keyboard.isKeyDown(SHOOT_DOWN_KEY);
 
-            // move player with respect to map collisions based on how much player needs to move this frame
-            lastAmountMovedY = super.moveYHandleCollision(moveAmountY);
-            lastAmountMovedX = super.moveXHandleCollision(moveAmountX);
+        if (!Keyboard.isKeyDown(SHOOT_LEFT_KEY))  shootKeyLocker.unlockKey(SHOOT_LEFT_KEY);
+        if (!Keyboard.isKeyDown(SHOOT_RIGHT_KEY)) shootKeyLocker.unlockKey(SHOOT_RIGHT_KEY);
+        if (!Keyboard.isKeyDown(SHOOT_UP_KEY))    shootKeyLocker.unlockKey(SHOOT_UP_KEY);
+        if (!Keyboard.isKeyDown(SHOOT_DOWN_KEY))  shootKeyLocker.unlockKey(SHOOT_DOWN_KEY);
+
+        switch (playerState) {
+            case STANDING:
+                playerStanding();
+                break;
+            case WALKING:
+                playerWalking();
+                break;
+            case SHOOTING:
+                playerShooting();
+                break;
+            
+        }
+        // Handle shooting direction
+        if (isShooting) {
+            if (Keyboard.isKeyDown(SHOOT_LEFT_KEY)) {
+                facingDirection = Direction.LEFT;
+                currentShootingDirection = Direction.LEFT;
+            } else if (Keyboard.isKeyDown(SHOOT_RIGHT_KEY)) {
+                facingDirection = Direction.RIGHT;
+                currentShootingDirection = Direction.RIGHT;
+            } else if (Keyboard.isKeyDown(SHOOT_UP_KEY)) {
+                facingDirection = Direction.UP;
+                currentShootingDirection = Direction.UP;
+            } else if (Keyboard.isKeyDown(SHOOT_DOWN_KEY)) {
+                facingDirection = Direction.DOWN;
+                currentShootingDirection = Direction.DOWN;
+            }
+        } else {
+            currentShootingDirection = Direction.NONE;
         }
 
-        handlePlayerAnimation();
-
-        updateLockedKeys();
-
-        // update player's animation
-        super.update();
+        // move player with respect to map collisions based on how much player needs to move this frame
+        lastAmountMovedY = super.moveYHandleCollision(moveAmountY);
+        lastAmountMovedX = super.moveXHandleCollision(moveAmountX);
     }
+    
+    handlePlayerAnimation();
+
+    updateLockedKeys();
+
+    // update player's animation
+    super.update();
+    //code for enemies (not just greenNinja) to take damage from melee attacks
+    int damage = Sword.hasSword() ? Sword.getSwordDamage() : 1;
+    for (NPC npc : map.getNPCs()) {
+        if (!(npc instanceof greenNinja)) continue;
+        greenNinja ninja = (greenNinja) npc;
+        if (!this.getBounds().intersects(ninja.getBounds())) continue;
+         // LEFT
+            if (Keyboard.isKeyDown(SHOOT_LEFT_KEY) && !shootKeyLocker.isKeyLocked(SHOOT_LEFT_KEY)) {
+                ninja.takeDamage(damage);
+                shootKeyLocker.lockKey(SHOOT_LEFT_KEY);
+            }
+            // RIGHT
+            if (Keyboard.isKeyDown(SHOOT_RIGHT_KEY) && !shootKeyLocker.isKeyLocked(SHOOT_RIGHT_KEY)) {
+                ninja.takeDamage(damage);
+                shootKeyLocker.lockKey(SHOOT_RIGHT_KEY);
+            }
+            // UP
+            if (Keyboard.isKeyDown(SHOOT_UP_KEY) && !shootKeyLocker.isKeyLocked(SHOOT_UP_KEY)) {
+                ninja.takeDamage(damage);
+                shootKeyLocker.lockKey(SHOOT_UP_KEY);
+            }
+            // DOWN
+            if (Keyboard.isKeyDown(SHOOT_DOWN_KEY) && !shootKeyLocker.isKeyLocked(SHOOT_DOWN_KEY)) {
+                ninja.takeDamage(damage);
+                shootKeyLocker.lockKey(SHOOT_DOWN_KEY);
+            }
+    }
+}
+
 
     // based on player's current state, call appropriate player state handling method
     protected void handlePlayerState() {
+
+        // If any shoot key is pressed, enter SHOOTING state
+        if (Keyboard.isKeyDown(SHOOT_LEFT_KEY) || Keyboard.isKeyDown(SHOOT_RIGHT_KEY) ||
+            Keyboard.isKeyDown(SHOOT_UP_KEY) || Keyboard.isKeyDown(SHOOT_DOWN_KEY)) {
+            playerState = PlayerState.SHOOTING;
+        }
+        // If any movement key is pressed, enter WALKING state
+        else if (Keyboard.isKeyDown(MOVE_LEFT_KEY) || Keyboard.isKeyDown(MOVE_RIGHT_KEY) ||
+            Keyboard.isKeyDown(MOVE_UP_KEY) || Keyboard.isKeyDown(MOVE_DOWN_KEY)) {
+            playerState = PlayerState.WALKING;
+        }
+        // If no keys are pressed, enter STANDING state
+        else {
+            playerState = PlayerState.STANDING;
+        }
+
         switch (playerState) {
             case STANDING:
                 playerStanding();
@@ -206,15 +288,22 @@ public abstract class Player extends GameObject {
 
     // anything extra the player should do based on interactions can be handled here
     protected void handlePlayerAnimation() {
-        if (playerState == PlayerState.STANDING) {
-            // sets animation to a STAND animation based on which way player is facing
-            this.currentAnimationName = facingDirection == Direction.RIGHT ? "STAND_RIGHT" : "STAND_LEFT";
+    if (isShooting) {
+        if (facingDirection == Direction.RIGHT) {
+            this.currentAnimationName = "SHOOT_RIGHT";
+        } else if (facingDirection == Direction.LEFT) {
+            this.currentAnimationName = "SHOOT_LEFT";
+        } else if (facingDirection == Direction.UP) {
+            this.currentAnimationName = "SHOOT_UP";
+        } else if (facingDirection == Direction.DOWN) {
+            this.currentAnimationName = "SHOOT_DOWN";
         }
-        else if (playerState == PlayerState.WALKING) {
-            // sets animation to a WALK animation based on which way player is facing
-            this.currentAnimationName = facingDirection == Direction.RIGHT ? "WALK_RIGHT" : "WALK_LEFT";
-        }
+    } else if (playerState == PlayerState.WALKING) {
+        this.currentAnimationName = facingDirection == Direction.RIGHT ? "WALK_RIGHT" : "WALK_LEFT";
+    } else {
+        this.currentAnimationName = facingDirection == Direction.RIGHT ? "STAND_RIGHT" : "STAND_LEFT";
     }
+}
 
     @Override
     public void onEndCollisionCheckX(boolean hasCollided, Direction direction, GameObject entityCollidedWith) { }
@@ -336,7 +425,7 @@ public abstract class Player extends GameObject {
         return false;
     }
 
-    /*/ 
+    /* 
     // Uncomment this to have game draw player's bounds to make it easier to visualize
         public void draw(GraphicsHandler graphicsHandler) {
         super.draw(graphicsHandler);
@@ -355,6 +444,9 @@ public abstract class Player extends GameObject {
             original.getHeight() + extra * 2
         );
     }
-    
+
+    public abstract void setHasSword(boolean b);
+
+   
     
 }
