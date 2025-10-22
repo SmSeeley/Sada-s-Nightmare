@@ -53,9 +53,12 @@ public class FirstRoom extends Map {
             enhancedMapTiles.add(coin);
         }
 
-        HealthPotion healthPotion = new HealthPotion(getMapTile(8, 5).getLocation());
-        enhancedMapTiles.add(healthPotion);
-    
+        
+        Point potionLoc = getMapTile(8, 5).getLocation();
+        if (!HealthPotion.isCollectedAt(potionLoc)) {
+            HealthPotion potion = new HealthPotion(potionLoc);
+            enhancedMapTiles.add(potion);
+        }
 
         Door toSecond = new Door(getMapTile(8, 2).getLocation())
         .toMap("SecondRoom", 10, 12)         // spawn tile (x=21, y=3) in SecondRoom
