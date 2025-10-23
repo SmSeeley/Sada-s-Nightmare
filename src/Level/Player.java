@@ -54,6 +54,11 @@ public abstract class Player extends GameObject {
     protected int health;
     protected final int MAX_HEALTH = 10;
 
+    //key variables
+    protected int keys;
+    protected final int MAX_KEYS = 3;
+    protected final int DEFAULT_KEYS = 0;
+
     public Player(SpriteSheet spriteSheet, float x, float y, String startingAnimationName) {
         super(spriteSheet, x, y, startingAnimationName);
         facingDirection = Direction.RIGHT;
@@ -61,6 +66,7 @@ public abstract class Player extends GameObject {
         previousPlayerState = playerState;
         this.affectedByTriggers = true;
         this.health = MAX_HEALTH;
+        this.keys = DEFAULT_KEYS;
     }
 
     public void update() {
@@ -393,6 +399,10 @@ public abstract class Player extends GameObject {
     // Health Method 
     public int getHealth() {
         return health;
+    }
+
+    public int getKeys() {
+        return keys;
     }
 
 

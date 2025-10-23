@@ -8,7 +8,7 @@ import GameObject.SpriteSheet;
 import Level.*;
 import ScriptActions.*;
 import Utils.Point;
-import EnhancedMapTiles.key;
+import EnhancedMapTiles.DoorKey;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -61,39 +61,52 @@ public class Door extends EnhancedMapTile {
         setIsUncollidable(true);
 
         // interact script to open the door
-        setInteractScript(new Script() {
+setInteractScript(new Script() {
+    @Override
+    public ArrayList<ScriptAction> loadScriptActions() {
+        ArrayList<ScriptAction> actions = new ArrayList<>();
+
+        // If the door is already open, do nothing
+        if (isOpen) return actions;
+
+        // Always lock player briefly so the message and logic feel consistent
+        actions.add(new LockPlayerScriptAction());
+
+        // Re-check key ownership at the moment of interaction
+        actions.add(new ScriptAction() {
             @Override
-            public ArrayList<ScriptAction> loadScriptActions() {
-                ArrayList<ScriptAction> actions = new ArrayList<>();
-                if (isOpen) return actions;
+            public Level.ScriptState execute() {
+                System.out.println("[Door] Rechecking keys before opening... count=" 
+                        + EnhancedMapTiles.DoorKey.keysCollected);
 
-                actions.add(new LockPlayerScriptAction());
+                if (EnhancedMapTiles.DoorKey.keysCollected < 1) {
+                    System.out.println("[Door] Still locked — no key found.");
+                    new TextboxScriptAction("It's locked. You need a key.").execute();
+                    return Level.ScriptState.COMPLETED;
+                }
 
-                TextboxScriptAction t = new TextboxScriptAction();
-                actions.add(t);
+                // Player has a key → open the door
+                System.out.println("[Door] Opening door!");
+                isOpen = true;
+                setIsUncollidable(true);
+                EnhancedMapTiles.DoorKey.keysCollected--;
 
-                actions.add(new ScriptAction() {
-                    @Override
-                    public Level.ScriptState execute() {
-                        System.out.println("[Door] opening...");
-                        isOpen = true;
-                        setIsUncollidable(true);      // once opened, no longer blocks
-                        teleportCooldown = 0;
+                try {
+                    boolean swapped = setGameObjectFrame(doorObj, openFrame);
+                    System.out.println("[Door] Swapped frame on doorObj = " + swapped);
+                } catch (Throwable th) {
+                    System.out.println("[Door] WARN: frame swap failed: " + th);
+                }
 
-                        try {
-                            boolean swapped = setGameObjectFrame(doorObj, openFrame);
-                            System.out.println("[Door] swapped frame on doorObj = " + swapped);
-                        } catch (Throwable th) {
-                            System.out.println("[Door] WARN: frame swap failed: " + th);
-                        }
-                        return Level.ScriptState.COMPLETED;
-                    }
-                });
-
-                actions.add(new UnlockPlayerScriptAction());
-                return actions;
+                return Level.ScriptState.COMPLETED;
             }
         });
+
+        // Unlock player control at the end
+        actions.add(new UnlockPlayerScriptAction());
+        return actions;
+        }
+    });
     }
 
     /** Configure which map & where this door should send the player (tile coordinates) */

@@ -64,6 +64,13 @@ public class PlayLevelScreen extends Screen implements GameListener {
     private int coinHeight = 75;
     private int coinCount = 0;
 
+    //Keys UI
+     private BufferedImage keyIcon;
+    private int keyWidth = 75;
+    private int keyHeight = 75;
+    private int keyCount = 0;
+
+
     public PlayLevelScreen(ScreenCoordinator screenCoordinator) {
         this.screenCoordinator = screenCoordinator;
     }
@@ -110,6 +117,13 @@ public class PlayLevelScreen extends Screen implements GameListener {
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("Error loading coin image");
+        }
+
+        try {
+            keyIcon  = ImageIO.read(new File("Resources/NewKey.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Error loading key images");
         }
 
         // start main game music (loops across all maps)
@@ -294,6 +308,8 @@ public class PlayLevelScreen extends Screen implements GameListener {
                 graphicsHandler.drawString(" " + coinCount, coinTextX, coinTextY,
                         new java.awt.Font("Arial", java.awt.Font.BOLD, 24), java.awt.Color.WHITE);
                 break;
+
+                
 
             case LEVEL_COMPLETED:
                 winScreen.draw(graphicsHandler);

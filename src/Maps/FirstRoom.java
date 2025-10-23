@@ -45,11 +45,15 @@ public class FirstRoom extends Map {
         Emptybarrel EmptyBarrel_2 = new Emptybarrel(getMapTile(4, 6).getLocation());
         enhancedMapTiles.add(EmptyBarrel_2);
 
+        DoorKey key1 = new DoorKey(getMapTile(4,4).getLocation());
+        enhancedMapTiles.add(key1);
+
         Point coinLoc = getMapTile(5, 5).getLocation();
         if (!Coin.isCollectedAt(coinLoc)) {
             Coin coin = new Coin(coinLoc);
             enhancedMapTiles.add(coin);
         }
+        
 
         Door toSecond = new Door(getMapTile(8, 2).getLocation())
         .toMap("SecondRoom", 10, 12)         // spawn tile (x=21, y=3) in SecondRoom
