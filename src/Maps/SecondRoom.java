@@ -81,6 +81,13 @@ public class SecondRoom extends Map {
 
         Zombie zombie = new Zombie(4, getMapTile(5, 7).getLocation());
         enemies.add(zombie);
+
+        Zombie zombie2 = new Zombie(4, getMapTile(4, 4).getLocation());
+        enemies.add(zombie2);
+
+        Zombie zombie3 = new Zombie(4, getMapTile(4, 10).getLocation());
+        enemies.add(zombie3);
+
         return enemies;
     }
 }
