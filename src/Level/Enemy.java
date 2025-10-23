@@ -24,7 +24,7 @@ public class Enemy extends MapEntity {
     private long lastDamageTime = 0;
 
     // health variables
-    protected int maxHealth = 10;
+    protected int maxHealth = 5;
     protected int health = maxHealth;
 
     // projectile shooting variables

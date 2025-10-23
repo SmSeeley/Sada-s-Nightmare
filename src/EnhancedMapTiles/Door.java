@@ -81,7 +81,9 @@ setInteractScript(new Script() {
 
                 if (EnhancedMapTiles.DoorKey.keysCollected < 1) {
                     System.out.println("[Door] Still locked — no key found.");
-                    new TextboxScriptAction("It's locked. You need a key.").execute();
+                    ScriptAction act = new TextboxScriptAction("It's locked. You need a key.");
+                    act.setMap(map);
+                    act.execute();
                     return Level.ScriptState.COMPLETED;
                 }
 
