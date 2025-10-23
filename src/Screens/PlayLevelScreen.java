@@ -150,6 +150,7 @@ public class PlayLevelScreen extends Screen implements GameListener {
                 player.update();
                 map.update(player);
                 coinCount = Coin.coinsCollected;
+                keyCount = player.getKeys();
                 break;
 
             case LEVEL_COMPLETED:
@@ -307,6 +308,14 @@ public class PlayLevelScreen extends Screen implements GameListener {
                 int coinTextY = coinY + (coinHeight / 2) + 5;
                 graphicsHandler.drawString(" " + coinCount, coinTextX, coinTextY,
                         new java.awt.Font("Arial", java.awt.Font.BOLD, 24), java.awt.Color.WHITE);
+
+                // key icon + counter
+                int keyX = 380;  
+                int keyY = 5;
+                graphicsHandler.drawImage(keyIcon, keyX, keyY, keyWidth, keyHeight);
+                int keyTextX = keyX + keyWidth + 5;
+                int keyTextY = keyY + (keyHeight / 2) + 5;
+                graphicsHandler.drawString(" " + keyCount, keyTextX, keyTextY, new java.awt.Font("Arial", java.awt.Font.BOLD, 24), java.awt.Color.WHITE);
                 break;
 
                 

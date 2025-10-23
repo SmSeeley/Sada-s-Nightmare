@@ -11,8 +11,10 @@ import Utils.Point;
 import java.util.HashMap;
 //Class for wizard NPC
 public class Wizard extends NPC{
+    
     public Wizard(int id, Point location) {
         super(id, location.x, location.y, new SpriteSheet(ImageLoader.load("Wizard.png"), 24, 24), "STAND_LEFT");
+        this.setIsUncollidable(true);
     }
     @Override
     public HashMap<String, Frame[]> loadAnimations(SpriteSheet spriteSheet) {

@@ -9,6 +9,7 @@ import GameObject.SpriteSheet;
 import Level.Enemy;
 import Level.Player;
 import Utils.Point;
+import EnhancedMapTiles.DoorKey;
 import java.util.HashMap;
 
 public class Ogre extends Enemy {
@@ -16,6 +17,8 @@ public class Ogre extends Enemy {
     private int health = 2;
 
     private final int DETECTION_RADIUS = 100;
+
+    public boolean keyDropped = false;
 
     public Ogre(int id, Point location) {
         super(id, location.x, location.y, new SpriteSheet(ImageLoader.load("ogre.png"), 24, 24), "STAND_RIGHT");
@@ -66,7 +69,36 @@ public class Ogre extends Enemy {
                 currentAnimationName = "STAND_RIGHT";
             }
         }
+        //if (!keyDropped && health <= 0) {
+            //dropKey();
+        //}
         super.update(player);
+    }
+    private void dropKey() {
+        keyDropped = true;
+        Point dropLoc = new Point(getBounds().getX(), getBounds().getY());
+        DoorKey key = new DoorKey(dropLoc);
+
+        // Register the key into the current map’s enhanced tiles list
+        if (map != null) {
+            map.addEnhancedMapTile(key);
+            System.out.println("[Ogre] Dropped key at " + dropLoc.x + ", " + dropLoc.y);
+        } else {
+            System.out.println("[Ogre] Map was null, couldn’t add key!");
+        }
+    }
+    public boolean isDead() {
+    return health <= 0;
+    }
+
+    public boolean hasDroppedKey() {
+        return keyDropped;
+    }
+
+    public DoorKey createKey() {
+        Point dropLoc = new Point(getBounds().getX(), getBounds().getY());
+        keyDropped = true;  // mark as dropped
+        return new DoorKey(dropLoc);
     }
     @Override
         public void draw(GraphicsHandler graphicsHandler) {

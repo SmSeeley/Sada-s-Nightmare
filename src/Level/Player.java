@@ -55,7 +55,7 @@ public abstract class Player extends GameObject {
     protected final int MAX_HEALTH = 10;
 
     //key variables
-    protected int keys;
+    private int keys = 0;
     protected final int MAX_KEYS = 3;
     protected final int DEFAULT_KEYS = 0;
 
@@ -431,19 +431,15 @@ public abstract class Player extends GameObject {
         return health;
     }
 
+    
+
     public int getKeys() {
         return keys;
     }
 
-
-
-
-
-
-
-
-
-
+    public void addKey(int amount) {
+        keys += amount;
+    }
     
     public int getMaxHealth() {
         return MAX_HEALTH;

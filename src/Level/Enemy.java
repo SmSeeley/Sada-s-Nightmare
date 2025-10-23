@@ -9,6 +9,7 @@ import Utils.Direction;
 import Utils.Point;
 import java.awt.Color;
 import java.util.HashMap;
+import EnhancedMapTiles.DoorKey;
 
 
 // This class for enemies
@@ -16,6 +17,7 @@ public class Enemy extends MapEntity {
     private boolean isActive = true;
     protected int id = 0;
     protected boolean isLocked = false;
+    private boolean keyDropped = false;
 
     // damage cooldown
     private final long damageCooldown = 1000; // 1 second cooldown
@@ -252,23 +254,29 @@ public class Enemy extends MapEntity {
     
 
     public void removeEnemy() {
-        setIsActive(false);
+    setIsActive(false);
+    lock();
+    shootTimer = 0;
 
-        lock();
-        shootTimer = 0;
-        try {
-            this.setLocation(-10000, -10000);
-        } catch (Exception ignored) {}
-        // try to remove from map entity lists if the Map supports it
-        try {
-            if (this.map != null) {
-                // removeMapEntity(MapEntity) is used for projectiles earlier; if present, use it
-                java.lang.reflect.Method m = this.map.getClass().getMethod("removeMapEntity", Level.MapEntity.class);
-                if (m != null) {
-                    m.invoke(this.map, this);
-                }
-            }
-        } catch (Exception ignored) { }
+    //incrament keys when enemy dies
+    if (!keyDropped) {
+        keyDropped = true; // ensure this only happens once per enemy
+        EnhancedMapTiles.DoorKey.keysCollected++;
+        System.out.println("[Enemy] Enemy defeated — incremented key count to " + EnhancedMapTiles.DoorKey.keysCollected);
     }
+
+    try {
+        this.setLocation(-10000, -10000);
+    } catch (Exception ignored) {}
+
+    try {
+        if (this.map != null) {
+            java.lang.reflect.Method m = this.map.getClass().getMethod("removeMapEntity", Level.MapEntity.class);
+            if (m != null) {
+                m.invoke(this.map, this);
+            }
+        }
+    } catch (Exception ignored) {}
+}
 }
 

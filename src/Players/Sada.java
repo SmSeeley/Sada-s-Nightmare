@@ -29,6 +29,7 @@ public class Sada extends Player {
     public void draw(GraphicsHandler graphicsHandler) {
         super.draw(graphicsHandler);
     }
+    
 
     @Override
     public void setHasSword(boolean v) {

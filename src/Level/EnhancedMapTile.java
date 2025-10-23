@@ -1,6 +1,7 @@
 package Level;
 
 
+import EnhancedMapTiles.DoorKey;
 import GameObject.GameObject;
 import GameObject.SpriteSheet;
 
@@ -17,5 +18,10 @@ public class EnhancedMapTile extends MapTile {
 
     public void update(Player player) {
         super.update();
+    }
+
+    public static void add(DoorKey doorKey) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'add'");
     }
 }
