@@ -125,6 +125,9 @@ public abstract class Player extends GameObject {
 
     // update player's animation
     super.update();
+
+    java.util.List<Level.NPC> npcs = map.getNPCs();
+    java.util.List<Level.Enemy> enemies = map.getEnemies();
     //code for enemies (not just greenNinja) to take damage from melee attacks
     int damage = Sword.hasSword() ? Sword.getSwordDamage() : 1;
     for (NPC npc : map.getNPCs()) {
@@ -152,6 +155,33 @@ public abstract class Player extends GameObject {
                 shootKeyLocker.lockKey(SHOOT_DOWN_KEY);
             }
     }
+
+    // iterate enemies list and apply melee damage
+        for (Enemy enemy : map.getEnemies()) {
+            if (enemy == null) continue;
+            if (!this.getBounds().intersects(enemy.getBounds())) continue;
+
+            // LEFT
+            if (Keyboard.isKeyDown(SHOOT_LEFT_KEY) && !shootKeyLocker.isKeyLocked(SHOOT_LEFT_KEY)) {
+                enemy.takeDamage(damage);
+                shootKeyLocker.lockKey(SHOOT_LEFT_KEY);
+            }
+            // RIGHT
+            if (Keyboard.isKeyDown(SHOOT_RIGHT_KEY) && !shootKeyLocker.isKeyLocked(SHOOT_RIGHT_KEY)) {
+                enemy.takeDamage(damage);
+                shootKeyLocker.lockKey(SHOOT_RIGHT_KEY);
+            }
+            // UP
+            if (Keyboard.isKeyDown(SHOOT_UP_KEY) && !shootKeyLocker.isKeyLocked(SHOOT_UP_KEY)) {
+                enemy.takeDamage(damage);
+                shootKeyLocker.lockKey(SHOOT_UP_KEY);
+            }
+            // DOWN
+            if (Keyboard.isKeyDown(SHOOT_DOWN_KEY) && !shootKeyLocker.isKeyLocked(SHOOT_DOWN_KEY)) {
+                enemy.takeDamage(damage);
+                shootKeyLocker.lockKey(SHOOT_DOWN_KEY);
+            }
+        }
 }
 
 

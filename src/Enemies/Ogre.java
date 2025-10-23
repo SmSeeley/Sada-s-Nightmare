@@ -13,6 +13,8 @@ import java.util.HashMap;
 
 public class Ogre extends Enemy {
 
+    private int health = 2;
+
     private final int DETECTION_RADIUS = 100;
 
     public Ogre(int id, Point location) {

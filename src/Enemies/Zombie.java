@@ -14,6 +14,8 @@ import java.awt.Color;
 import java.util.HashMap;
 
 public class Zombie extends Enemy {
+
+    private int health = 5;
     
     // defining shooting range
     private final int SHOOT_RANGE_HORIZONTAL = 300;
@@ -64,6 +66,8 @@ public class Zombie extends Enemy {
         //drawBounds(graphicsHandler, new Color(255, 0, 0, 100));
         super.draw(graphicsHandler);
     }
+
+     
 
     // define the zombies specific action
     @Override

@@ -64,7 +64,7 @@ public class greenNinja extends NPC {
         }
         lastDamageTime = now; // Update last damage time
         health -= amount;
-        System.out.println("greenNinja took damage! Health: " + health);
+        System.out.println("Greenninja took damage! Health: " + health);
         if (health <= 0) {
             // Handle NPC death (e.g., remove from map, play animation, etc.)
             super.removeNPC();

@@ -2,12 +2,14 @@
 
 package Maps;
 
+import Enemies.Zombie;
 import EnhancedMapTiles.Blood;
 import EnhancedMapTiles.Door;
 import EnhancedMapTiles.Emptybarrel;
 import EnhancedMapTiles.Skull;
 import EnhancedMapTiles.Sword;
 import EnhancedMapTiles.WaterBarrel;
+import Level.Enemy;
 import Level.EnhancedMapTile;
 import Level.Map;
 import Tilesets.DungeonWallsTileSet;
@@ -71,5 +73,14 @@ public class SecondRoom extends Map {
 
         return enhancedMapTiles;
 
+    }
+
+    @Override
+    public ArrayList<Enemy> loadEnemies() {
+        ArrayList<Enemy> enemies = new ArrayList<>();
+
+        Zombie zombie = new Zombie(4, getMapTile(5, 7).getLocation());
+        enemies.add(zombie);
+        return enemies;
     }
 }

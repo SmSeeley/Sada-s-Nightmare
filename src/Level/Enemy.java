@@ -13,8 +13,13 @@ import java.util.HashMap;
 
 // This class for enemies
 public class Enemy extends MapEntity {
+    private boolean isActive = true;
     protected int id = 0;
     protected boolean isLocked = false;
+
+    // damage cooldown
+    private final long damageCooldown = 1000; // 1 second cooldown
+    private long lastDamageTime = 0;
 
     // health variables
     protected int maxHealth = 10;
@@ -110,6 +115,20 @@ public class Enemy extends MapEntity {
             this.performAction(player);
         }
         super.update();
+        // If the enemy has been deactivated, skip all logic (no movement, no shooting)
+        if (!getIsActive()) {
+            return;
+        }
+
+        if (shootTimer > 0) {
+            shootTimer--;
+        }
+
+        if (!isLocked) {
+            this.performAction(player);
+        }
+
+        super.update();
     }
 
     public void lock() {
@@ -125,6 +144,8 @@ public class Enemy extends MapEntity {
 
     // method to handle shooting a projectile
     protected void shootProjectile(Direction direction) {
+
+         if (!getIsActive() || isLocked) return;
         
         SpriteSheet projectileSpriteSheet = new SpriteSheet(ImageLoader.load("projectile.png"), 16, 16);
 
@@ -161,7 +182,9 @@ public class Enemy extends MapEntity {
     @Override
     public void draw(GraphicsHandler graphicsHandler) {
         //drawBounds(graphicsHandler, new Color(255, 0, 0, 100));
-        super.draw(graphicsHandler);
+        if (getIsActive()) {
+            super.draw(graphicsHandler);
+        }
 
         // health status drawing logic
         if (health > 0) {
@@ -197,6 +220,55 @@ public class Enemy extends MapEntity {
                 Color.GREEN
             );
         }
+    }
+
+    public void takeDamage(int amount) {
+       long now = System.currentTimeMillis();
+       if (now - lastDamageTime < damageCooldown) {
+           return; // Still in cooldown period, ignore damage
+        }
+        lastDamageTime = now; // Update last damage time
+        health -= amount;
+        System.out.println("Enemy took damage! Health: " + health);
+        if (health <= 0) {
+            removeEnemy();
+        }
+}
+
+
+    public void setIsActive(boolean isActive) {
+        this.isActive = isActive;
+        if (!isActive) {
+            // additional safety: lock so no more actions, and clear shoot timer
+            lock();
+            shootTimer = 0;
+        }
+    }
+
+    public boolean getIsActive() {
+        return isActive;
+    }
+
+    
+
+    public void removeEnemy() {
+        setIsActive(false);
+
+        lock();
+        shootTimer = 0;
+        try {
+            this.setLocation(-10000, -10000);
+        } catch (Exception ignored) {}
+        // try to remove from map entity lists if the Map supports it
+        try {
+            if (this.map != null) {
+                // removeMapEntity(MapEntity) is used for projectiles earlier; if present, use it
+                java.lang.reflect.Method m = this.map.getClass().getMethod("removeMapEntity", Level.MapEntity.class);
+                if (m != null) {
+                    m.invoke(this.map, this);
+                }
+            }
+        } catch (Exception ignored) { }
     }
 }
 
