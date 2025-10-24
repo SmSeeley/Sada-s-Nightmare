@@ -1,6 +1,7 @@
 package EnhancedMapTiles;
 
 import Builders.FrameBuilder;
+import Engine.AudioPlayer;
 import Engine.ImageLoader;
 import GameObject.Frame;
 import GameObject.GameObject;
@@ -15,9 +16,7 @@ import Utils.Point;
 /**
  * Enhanced map tile for a weapon pickup (Slime Hammer).
  * - Passable prop that renders the hammer sprite.
- * - On collision: collects, equips, shows a textbox.
- * - Textbox uses ScriptAction lifecycle: setup() -> execute() until completed -> cleanup().
- * - Also auto-closes after ~2 seconds (120 frames) as a fallback.
+ * - On collision: collects, equips, shows a textbox, and plays a sound.
  */
 public class Sword extends EnhancedMapTile {
     private Frame swordFrame;
@@ -31,7 +30,7 @@ public class Sword extends EnhancedMapTile {
     // Textbox handling
     private TextboxScriptAction activeTextbox = null;
     private boolean textboxSetupDone = false;
-    private int textboxTimer = 0; // frames (~60 fps)
+    private int textboxTimer = 0;
 
     public Sword(Point location) {
         super(location.x, location.y,
@@ -58,7 +57,6 @@ public class Sword extends EnhancedMapTile {
                 .withBounds(0, 0, 16, 16)
                 .build();
 
-        // Draw slightly raised so it sits nicely on floor
         swordObject = new GameObject(x, y - 16, swordFrame);
         return swordObject;
     }
@@ -68,7 +66,6 @@ public class Sword extends EnhancedMapTile {
         // If a textbox is active, drive its lifecycle every frame
         if (activeTextbox != null) {
             if (!textboxSetupDone) {
-                // setup() actually pushes text to the map and activates the textbox
                 try {
                     activeTextbox.setMap(map);
                     activeTextbox.setup();
@@ -76,22 +73,18 @@ public class Sword extends EnhancedMapTile {
                     textboxTimer = 0;
                 } catch (Exception e) {
                     System.out.println("[Sword] Textbox setup failed: " + e.getMessage());
-                    // Abort textbox on failure
                     activeTextbox = null;
                 }
             } else {
-                // keep advancing the script; it returns COMPLETED when queue empties
                 ScriptState state = ScriptState.RUNNING;
                 try {
                     state = activeTextbox.execute();
                 } catch (Exception ignored) {}
 
                 textboxTimer++;
-
-                // Auto-close after ~120 frames OR when script completes
-                if (state == ScriptState.COMPLETED || textboxTimer >= 150) {
+                if (state == ScriptState.COMPLETED || textboxTimer >= 120) {
                     try {
-                        activeTextbox.cleanup(); // this calls map.getTextbox().setIsActive(false)
+                        activeTextbox.cleanup();
                     } catch (Exception ignored) {}
                     activeTextbox = null;
                     textboxSetupDone = false;
@@ -108,10 +101,9 @@ public class Sword extends EnhancedMapTile {
             collectedSwords.add(key());
             hasSword = true;
 
-            // Hide the sprite
             swordObject.setLocation(-100, -100);
 
-            // Equip on player if a method exists
+            // Equip on player
             try {
                 player.setHasSword(true);
             } catch (Exception e) {
@@ -121,15 +113,21 @@ public class Sword extends EnhancedMapTile {
                 } catch (Exception ignored) {}
             }
 
-            // Create the textbox action (it will be setup next frame)
+            // ✅ Play special pickup sound
+            try {
+                AudioPlayer.playSound("Resources/audio/Key_Item.wav", -3.0f); // volume around 70%
+            } catch (Exception e) {
+                System.out.println("[Sword] Failed to play special_item sound: " + e.getMessage());
+            }
+
+            // Create textbox
             TextboxScriptAction text = new TextboxScriptAction();
-            text.addText("You picked up the Slime Hammer! (+2 Damage) ");
+            text.addText("You picked up the Slime Hammer!");
             activeTextbox = text;
-            textboxSetupDone = false; // ensure setup() runs
+            textboxSetupDone = false;
         }
     }
 
-    // Accessors for player/attack logic
     public static boolean hasSword() {
         return hasSword;
     }

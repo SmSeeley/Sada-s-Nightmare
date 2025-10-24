@@ -1,6 +1,7 @@
 package EnhancedMapTiles;
 
 import Builders.FrameBuilder;
+import Engine.AudioPlayer;
 import Engine.ImageLoader;
 import GameObject.Frame;
 import GameObject.GameObject;
@@ -21,7 +22,7 @@ public class Coin extends EnhancedMapTile {
     private static final java.util.HashSet<String> collectedCoins = new java.util.HashSet<>();
     public Coin(Point location) {
         // Create a passable enhanced map tile using coin.png
-        super(location.x, location.y, new SpriteSheet(ImageLoader.load("newcoin.png"), 16, 16), TileType.PASSABLE);
+        super(location.x, location.y, new SpriteSheet(ImageLoader.load("neww_coin.png"), 16, 16), TileType.PASSABLE);
     }
 
     private String key() {
@@ -67,7 +68,15 @@ public class Coin extends EnhancedMapTile {
             // Hide the coin by moving it off-screen (and increment global counter)
             coinObject.setLocation(-100, -100);
             coinsCollected++;
+
+             // ✅ Play special pickup sound
+            try {
+                AudioPlayer.playSound("Resources/audio/Coin_Pickup.wav", -10.0f); // volume around 70%
+            } catch (Exception e) {
+                System.out.println("Failed to play sound: " + e.getMessage());
         }
+        }
+        
     }
 }
 

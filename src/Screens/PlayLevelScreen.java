@@ -19,6 +19,7 @@ import Level.Player;
 import Maps.FirstRoom;
 import Maps.SecondRoom;
 import Maps.TestMap;
+import Maps.ThirdRoomDungeon;
 import Players.Sada;
 import Utils.Direction;
 import Utils.Point;
@@ -179,8 +180,8 @@ public class PlayLevelScreen extends Screen implements GameListener {
             nextMap = new FirstRoom();
         } else if ("SecondRoom".equalsIgnoreCase(next)) {
             nextMap = new SecondRoom();
-        } else if ("TestMap".equalsIgnoreCase(next)) {
-            nextMap = new TestMap();
+        } else if ("ThirdRoomDungeon".equalsIgnoreCase(next)) {
+            nextMap = new ThirdRoomDungeon();
         } else {
             System.out.println("[PlayLevelScreen] Unknown map: " + next);
             return;

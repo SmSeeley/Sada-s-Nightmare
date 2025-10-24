@@ -49,4 +49,39 @@ public class AudioPlayer {
             ctrl.setValue(gainDb);
         } catch (IllegalArgumentException ignored) {}
     }
+
+    // Play a short, one-time sound (like item pickup, attack, etc.)
+    public static void playSound(String path, float volumeDb) {
+        try {
+            File file = new File(path);
+            if (!file.exists()) {
+                System.out.println("[AudioPlayer] File not found: " + path);
+                return;
+            }
+
+            AudioInputStream stream = AudioSystem.getAudioInputStream(file);
+            Clip sfx = AudioSystem.getClip();
+            sfx.open(stream);
+
+            // set volume
+            try {
+                FloatControl ctrl = (FloatControl) sfx.getControl(FloatControl.Type.MASTER_GAIN);
+                volumeDb = Math.max(ctrl.getMinimum(), Math.min(ctrl.getMaximum(), volumeDb));
+                ctrl.setValue(volumeDb);
+            } catch (IllegalArgumentException ignored) {}
+
+            sfx.start();
+
+            // automatically close clip when done playing
+            sfx.addLineListener(event -> {
+                if (event.getType() == LineEvent.Type.STOP) {
+                    sfx.close();
+                }
+            });
+
+            System.out.println("[AudioPlayer] Played sound: " + path);
+        } catch (Exception e) {
+            System.out.println("[AudioPlayer] Failed to play sound " + path + ": " + e);
+        }
+}
 }
