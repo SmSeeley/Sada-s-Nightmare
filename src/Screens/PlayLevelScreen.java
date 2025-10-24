@@ -66,7 +66,7 @@ public class PlayLevelScreen extends Screen implements GameListener {
     private int coinCount = 0;
 
     //Keys UI
-     private BufferedImage keyIcon;
+    private BufferedImage keyIcon;
     private int keyWidth = 75;
     private int keyHeight = 75;
     private int keyCount = 0;
@@ -121,7 +121,7 @@ public class PlayLevelScreen extends Screen implements GameListener {
         }
 
         try {
-            keyIcon  = ImageIO.read(new File("Resources/NewKey.png"));
+            keyIcon  = ImageIO.read(new File("Resources/UI_Key.png"));
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("Error loading key images");
@@ -316,8 +316,12 @@ public class PlayLevelScreen extends Screen implements GameListener {
                         new java.awt.Font("Arial", java.awt.Font.BOLD, 24), java.awt.Color.WHITE);
 
                 // key icon + counter
+<<<<<<< HEAD
                 
                 int keyX = 680;  
+=======
+                int keyX = 380;  
+>>>>>>> acdf06effcabb4829beec53c25b43d89d1176fa3
                 int keyY = 5;
                 graphicsHandler.drawImage(keyIcon, keyX, keyY, keyWidth, keyHeight);
                 int keyTextX = keyX + keyWidth + 5;
