@@ -3,7 +3,7 @@
 package Maps;
 
 import Enemies.Zombie;
-import EnhancedMapTiles.Blood;
+import EnhancedMapTiles.*;
 import EnhancedMapTiles.Door;
 import EnhancedMapTiles.Emptybarrel;
 import EnhancedMapTiles.Skull;
@@ -12,6 +12,8 @@ import EnhancedMapTiles.WaterBarrel;
 import Level.Enemy;
 import Level.EnhancedMapTile;
 import Level.Map;
+import Level.NPC;
+import NPCs.Wizard;
 import Tilesets.DungeonWallsTileSet;
 import Utils.Point;
 import java.util.ArrayList;
@@ -28,7 +30,7 @@ public class SecondRoom extends Map {
         ArrayList<EnhancedMapTile> enhancedMapTiles = new ArrayList<>();
 
         //Doors in room 1
-        Door doorB = new Door(getMapTile(10, 12).getLocation())
+        NormalDoor doorB = new NormalDoor(getMapTile(10, 12).getLocation())
         .toMap("FirstRoom", 8, 2)
         .withTileSizePixels(48, 48);
         enhancedMapTiles.add(doorB);
@@ -71,8 +73,18 @@ public class SecondRoom extends Map {
             enhancedMapTiles.add(sword);
         }
 
+
         return enhancedMapTiles;
 
+    }
+
+    @Override
+    public ArrayList<NPC> loadNPCs() {
+        ArrayList<NPC> npcs = new ArrayList<>();
+        Wizard wizard = new Wizard(1, getMapTile(15, 2).getLocation());
+        wizard.setInteractScript(new Scripts.TestMap.WizardRiddleScript());
+        npcs.add(wizard);
+        return npcs;
     }
 
     @Override
