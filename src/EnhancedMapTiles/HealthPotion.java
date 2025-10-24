@@ -70,7 +70,6 @@ public class HealthPotion extends EnhancedMapTile {
                 player.heal(HEAL_AMOUNT);
                 
                 // Set the status to REMOVED to make it disappear
-                
                 this.mapEntityStatus = MapEntityStatus.REMOVED; 
                 System.out.println("Player healed 1 heart. Potion consumed.");
             }
