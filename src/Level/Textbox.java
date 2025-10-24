@@ -11,40 +11,29 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 
-// Represents the game's textbox
-// Will display the text it is given to its textQueue
-// Each String in the textQueue will be displayed in the textbox, and hitting the interact key will cycle between additional Strings in the queue
-// Use the newline character in a String in the textQueue to break the text up into a second line if needed
-// Also supports adding options for a player to select from
 public class Textbox {
     // whether textbox is shown or not
     protected boolean isActive;
 
-    // textbox constants
+    // ===== TEXTBOX POSITION & SIZE (moved 50px up) =====
     protected final int x = 22;
-    protected final int bottomY = 460;
-    protected final int topY = 22;
-    protected final int fontX = 35;
-    protected final int fontBottomY = 472;
-    protected final int fontTopY = 34;
-    protected final int width = 750;
-    protected final int height = 100;
+    protected final int y = 490;                // Moved up (was 540)
+    protected final int fontX = 40;
+    protected final int fontY = 490;            // Adjusted text start height
+    protected final int width = 850;
+    protected final int height = 240;
 
-    // options textbox constants
-    protected final int optionX = 680;
-    protected final int optionBottomY = 350;
-    protected final int optionTopY = 130;
-    protected final int optionWidth = 92;
-    protected final int optionHeight = 100;
-    protected final int fontOptionX = 706;
-    protected final int fontOptionBottomYStart = 365;
-    protected final int fontOptionTopYStart = 145;
-    protected final int fontOptionSpacing = 35;
-    protected final int optionPointerX = 690;
-    protected final int optionPointerYBottomStart = 378;
-    protected final int optionPointerYTopStart = 158;
+    protected final int optionX = 22;               
+    protected final int optionY = y - 130;          
+    protected final int optionWidth = 850;             
+    protected final int optionHeight = 100;        
+    protected final int fontOptionX = 60;           
+    protected final int fontOptionYStart = optionY + 20;
+    protected final int fontOptionSpacing = 40;     
+    protected final int optionPointerX = 30;        
+    protected final int optionPointerYStart = fontOptionYStart + 12; 
 
-    // core vars that make textbox work
+    // core vars
     private Queue<TextboxItem> textQueue;
     private TextboxItem currentTextItem;
     protected int selectedOptionIndex = 0;
@@ -61,149 +50,103 @@ public class Textbox {
     }
 
     public void addText(String text) {
-        if (textQueue.isEmpty()) {
-            keyLocker.lockKey(interactKey);
-        }
+        if (textQueue.isEmpty()) keyLocker.lockKey(interactKey);
         textQueue.add(new TextboxItem(text));
     }
 
     public void addText(String[] text) {
-        if (textQueue.isEmpty()) {
-            keyLocker.lockKey(interactKey);
-        }
-        for (String textItem : text) {
-            textQueue.add(new TextboxItem(textItem));
-        }
+        if (textQueue.isEmpty()) keyLocker.lockKey(interactKey);
+        for (String textItem : text) textQueue.add(new TextboxItem(textItem));
     }
 
     public void addText(TextboxItem text) {
-        if (textQueue.isEmpty()) {
-            keyLocker.lockKey(interactKey);
-        }
+        if (textQueue.isEmpty()) keyLocker.lockKey(interactKey);
         textQueue.add(text);
     }
 
     public void addText(TextboxItem[] text) {
-        if (textQueue.isEmpty()) {
-            keyLocker.lockKey(interactKey);
-        }
-        for (TextboxItem textItem : text) {
-            textQueue.add(textItem);
-        }
+        if (textQueue.isEmpty()) keyLocker.lockKey(interactKey);
+        for (TextboxItem textItem : text) textQueue.add(textItem);
     }
 
-    // returns whether the textQueue is out of items to display or not
-    // useful for scripts to know when to complete
     public boolean isTextQueueEmpty() {
         return textQueue.isEmpty();
     }
 
     public void update() {
-        // if textQueue has more text to display and the interact key button was pressed previously, display new text
         if (!textQueue.isEmpty() && keyLocker.isKeyLocked(interactKey)) {
             currentTextItem = textQueue.peek();
             options = null;
 
-            // if camera is at bottom of screen, text is drawn at top of screen instead of the bottom like usual
-            // to prevent it from covering the player
-            int fontY = !map.getCamera().isAtBottomOfMap() ? fontBottomY : fontTopY;
-  
-            // create text spritefont that will be drawn in textbox
-            text = new SpriteFont(currentTextItem.getText(), fontX, fontY, "Arial", 30, Color.black);
+            // always draw at bottom now (no more top/bottom switch)
+            text = new SpriteFont(currentTextItem.getText(), fontX, fontY, "Arial", 32, Color.black);
 
-            // if there are options associated with this text item, prepare option spritefont text to be drawn in options textbox
             if (currentTextItem.getOptions() != null) {
-                // if camera is at bottom of screen, text is drawn at top of screen instead of the bottom like usual
-                // to prevent it from covering the player
-                int fontOptionY = !map.getCamera().isAtBottomOfMap() ? fontOptionBottomYStart : fontOptionTopYStart;
-
                 options = new ArrayList<>();
-                // for each option, crate option text spritefont that will be drawn in options textbox
                 for (int i = 0; i < currentTextItem.getOptions().size(); i++) {
-                    options.add(new SpriteFont(currentTextItem.options.get(i), fontOptionX, fontOptionY + (i *  fontOptionSpacing), "Arial", 30, Color.black));
+                    options.add(new SpriteFont(
+                            currentTextItem.options.get(i),
+                            fontOptionX,
+                            fontOptionYStart + (i * fontOptionSpacing),
+                            "Arial",
+                            30,
+                            Color.black
+                    ));
                 }
                 selectedOptionIndex = 0;
             }
-
         }
-        // if interact key is pressed, remove the current text from the queue to prepare for the next text item to be displayed
+
         if (Keyboard.isKeyDown(interactKey) && !keyLocker.isKeyLocked(interactKey)) {
             keyLocker.lockKey(interactKey);
             textQueue.poll();
 
-            // if an option was selected, set output manager flag to the index of the selected option
-            // a script can then look at output manager later to see which option was selected and do with that information what it wants
             if (options != null) {
-                map.getActiveScript().getScriptActionOutputManager().addFlag("TEXTBOX_OPTION_SELECTION", selectedOptionIndex);
+                map.getActiveScript().getScriptActionOutputManager()
+                        .addFlag("TEXTBOX_OPTION_SELECTION", selectedOptionIndex);
             }
-        }
-        else if (Keyboard.isKeyUp(interactKey)) {
+        } else if (Keyboard.isKeyUp(interactKey)) {
             keyLocker.unlockKey(interactKey);
         }
 
         if (options != null) {
             if (Keyboard.isKeyDown(Key.DOWN) && !keyLocker.isKeyLocked(Key.DOWN)) {
                 keyLocker.lockKey(Key.DOWN);
-                if (selectedOptionIndex < options.size() - 1) {
-                    selectedOptionIndex++;
-                }
+                if (selectedOptionIndex < options.size() - 1) selectedOptionIndex++;
             }
             if (Keyboard.isKeyDown(Key.UP) && !keyLocker.isKeyLocked(Key.UP)) {
                 keyLocker.lockKey(Key.UP);
-                if (selectedOptionIndex > 0) {
-                    selectedOptionIndex--;
-                }
+                if (selectedOptionIndex > 0) selectedOptionIndex--;
             }
-            if (Keyboard.isKeyUp(Key.DOWN)) {
-                keyLocker.unlockKey(Key.DOWN);
-            }
-            if (Keyboard.isKeyUp(Key.UP)) {
-                keyLocker.unlockKey(Key.UP);
-            }
+            if (Keyboard.isKeyUp(Key.DOWN)) keyLocker.unlockKey(Key.DOWN);
+            if (Keyboard.isKeyUp(Key.UP)) keyLocker.unlockKey(Key.UP);
         }
     }
 
     public void draw(GraphicsHandler graphicsHandler) {
-        // draw textbox
-        // if camera is at bottom of screen, textbox is drawn at top of screen instead of the bottom like usual
-        // to prevent it from covering the player
-        int y = !map.getCamera().isAtBottomOfMap() ? bottomY : topY;
+        // draw textbox (slightly higher)
         graphicsHandler.drawFilledRectangleWithBorder(x, y, width, height, Color.white, Color.black, 2);
 
         if (text != null) {
-            // draw text in textbox
             text.drawWithParsedNewLines(graphicsHandler, 10);
-            
+
             if (options != null) {
-                // draw options textbox
-                // if camera is at bottom of screen, textbox is drawn at top of screen instead of the bottom like usual
-                // to prevent it from covering the player
-                int optionY = !map.getCamera().isAtBottomOfMap() ? optionBottomY : optionTopY;
+                // draw options box below
                 graphicsHandler.drawFilledRectangleWithBorder(optionX, optionY, optionWidth, optionHeight, Color.white, Color.black, 2);
 
-                // draw each option text
                 for (SpriteFont option : options) {
                     option.draw(graphicsHandler);
                 }
 
-                // the start y location of the option pointer depends on whether the options textbox is on top or bottom of screen
-                int optionPointerYStart = !map.getCamera().isAtBottomOfMap() ? optionPointerYBottomStart : optionPointerYTopStart;
-                // draw option selection indicator (small black rectangle)
-                graphicsHandler.drawFilledRectangle(optionPointerX, optionPointerYStart + (selectedOptionIndex * fontOptionSpacing), 10, 10, Color.black);
+                // draw pointer next to selected option
+                graphicsHandler.drawFilledRectangle(optionPointerX, optionPointerYStart + (selectedOptionIndex * fontOptionSpacing), 12, 12, Color.black);
             }
         }
     }
 
-    public boolean isActive() {
-        return isActive;
-    }
+    public boolean isActive() { return isActive; }
 
-    public void setIsActive(boolean isActive) {
-        this.isActive = isActive;
-    }
+    public void setIsActive(boolean isActive) { this.isActive = isActive; }
 
-    public void setInteractKey(Key interactKey) {
-        this.interactKey = interactKey;
-    }
-
+    public void setInteractKey(Key interactKey) { this.interactKey = interactKey; }
 }

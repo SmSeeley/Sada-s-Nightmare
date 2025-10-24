@@ -317,7 +317,7 @@ public class PlayLevelScreen extends Screen implements GameListener {
 
                 // key icon + counter
                 
-                int keyX = 580;  
+                int keyX = 680;  
                 int keyY = 5;
                 graphicsHandler.drawImage(keyIcon, keyX, keyY, keyWidth, keyHeight);
                 int keyTextX = keyX + keyWidth + 5;
