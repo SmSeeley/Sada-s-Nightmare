@@ -89,7 +89,7 @@ public class Sword extends EnhancedMapTile {
                 textboxTimer++;
 
                 // Auto-close after ~120 frames OR when script completes
-                if (state == ScriptState.COMPLETED || textboxTimer >= 190) {
+                if (state == ScriptState.COMPLETED || textboxTimer >= 150) {
                     try {
                         activeTextbox.cleanup(); // this calls map.getTextbox().setIsActive(false)
                     } catch (Exception ignored) {}

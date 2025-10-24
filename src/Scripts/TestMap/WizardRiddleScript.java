@@ -25,7 +25,7 @@ public class WizardRiddleScript extends Script {
             scriptActions.add(new TextboxScriptAction() {{
                 addText("I speak without a mouth and hear without ears.");
                 addText("I have nobody, but I come alive with the wind.");
-                addText("What am I?", new String[] { "Echo", "Shadow", "Wind" });
+                addText("What am I?", new String[] { "Echo", "Shadow" });
             }});
 
             // Conditional logic to check player's answer
