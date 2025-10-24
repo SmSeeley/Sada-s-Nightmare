@@ -43,24 +43,12 @@ public class FirstRoom extends Map {
             enhancedMapTiles.add(new HealthPotion(potionLoc));
         }
 
-        Door toSecond = new Door(getMapTile(8, 2).getLocation())
+        NormalDoor toSecond = new NormalDoor(getMapTile(8, 2).getLocation())
             .toMap("SecondRoom", 10, 12)
             .withTileSizePixels(48, 48);
         enhancedMapTiles.add(toSecond);
 
         return enhancedMapTiles;
-    }
-
-    @Override
-    public ArrayList<NPC> loadNPCs() {
-        ArrayList<NPC> npcs = new ArrayList<>();
-        greenNinja walrus = new greenNinja(1, getMapTile(5, 5).getLocation());
-        walrus.setInteractScript(new greenNinjaScript());
-        npcs.add(walrus);
-        Wizard wizard = new Wizard(1, getMapTile(6, 6).getLocation());
-        wizard.setInteractScript(new Scripts.TestMap.WizardRiddleScript());
-        npcs.add(wizard);
-        return npcs;
     }
 
     @Override
