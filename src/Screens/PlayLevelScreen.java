@@ -5,6 +5,7 @@ import Engine.AudioPlayer;
 import Engine.GraphicsHandler;
 import Engine.Screen;
 import EnhancedMapTiles.Coin;
+import EnhancedMapTiles.DoorKey;
 import EnhancedMapTiles.HealthPotion;
 import Game.GameState;
 import Game.ScreenCoordinator;
@@ -150,7 +151,7 @@ public class PlayLevelScreen extends Screen implements GameListener {
                 player.update();
                 map.update(player);
                 coinCount = Coin.coinsCollected;
-                keyCount = player.getKeys();
+                keyCount = DoorKey.keysCollected;
                 break;
 
             case LEVEL_COMPLETED:
@@ -217,25 +218,30 @@ public class PlayLevelScreen extends Screen implements GameListener {
 
     // collisions with NPCs (enemies)
     private void handleEnemyCollisions() {
-        Player p = map.getPlayer();
-        long now = System.currentTimeMillis();
+    Player p = map.getPlayer();
+    long now = System.currentTimeMillis();
 
-        if (playLevelScreenState == PlayLevelScreenState.RUNNING) {
-            if (now - lastDamageTime >= damageCooldown) {
-                for (NPC npc : map.getNPCs()) {
-                    if (npc.exists() && p.getBounds().intersects(npc.getBounds())) {
-                        System.out.println("Collision detected!");
-                        boolean died = p.takeDamage(1);
-                        lastDamageTime = now;
-                        if (died) {
-                            playLevelScreenState = PlayLevelScreenState.GAME_OVER;
-                        }
-                        return;
+    if (playLevelScreenState == PlayLevelScreenState.RUNNING) {
+        if (now - lastDamageTime >= damageCooldown) {
+            for (NPC npc : map.getNPCs()) {
+                // Skip damage if this NPC is a Wizard
+                if (npc instanceof NPCs.Wizard) {
+                    continue;
+                }
+
+                if (npc.exists() && p.getBounds().intersects(npc.getBounds())) {
+                    System.out.println("Collision detected!");
+                    boolean died = p.takeDamage(1);
+                    lastDamageTime = now;
+                    if (died) {
+                        playLevelScreenState = PlayLevelScreenState.GAME_OVER;
                     }
+                    return;
                 }
             }
         }
     }
+}
 
     private void handleProjectileCollisions() {
         Player player = map.getPlayer();
