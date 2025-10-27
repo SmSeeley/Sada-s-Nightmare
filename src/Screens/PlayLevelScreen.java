@@ -1,6 +1,6 @@
 package Screens;
 
-import Enemies.Projectile;
+import Enemies.*;
 import Engine.AudioPlayer;
 import Engine.GraphicsHandler;
 import Engine.Screen;
@@ -23,24 +23,26 @@ import Maps.ThirdRoomDungeon;
 import Players.Sada;
 import Utils.Direction;
 import Utils.Point;
+
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.awt.Font;
+import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
-import javax.imageio.ImageIO;
-
 
 public class PlayLevelScreen extends Screen implements GameListener {
 
-
+    // --- Map transition handshake ---
     private static volatile String pendingMapName = null;
     private static volatile Point pendingSpawnPixels = null;
-
 
     public static void queueMapChange(String mapName, Point spawnPixels) {
         pendingMapName = mapName;
         pendingSpawnPixels = spawnPixels;
     }
 
+    // --- Core game state ---
     protected ScreenCoordinator screenCoordinator;
     protected Map map;
     protected Player player;
@@ -49,29 +51,28 @@ public class PlayLevelScreen extends Screen implements GameListener {
     protected GameOverScreen gameOverScreen;
     protected FlagManager flagManager;
 
-    // Damage cooldown
+    // --- Damage cooldown ---
     private long lastDamageTime = 0;
     private final long damageCooldown = 1000;
 
-    // Health UI
+    // --- UI: Hearts ---
     private BufferedImage fullHeartImage;
     private BufferedImage halfHeartImage;
     private BufferedImage emptyHeartImage;
     private final int heartWidth = 25;
     private final int heartHeight = 25;
 
-    // Coins UI
+    // --- UI: Coins ---
     private BufferedImage coinIcon;
     private int coinWidth = 75;
     private int coinHeight = 75;
     private int coinCount = 0;
 
-    //Keys UI
+    // --- UI: Keys ---
     private BufferedImage keyIcon;
     private int keyWidth = 75;
     private int keyHeight = 75;
     private int keyCount = 0;
-
 
     public PlayLevelScreen(ScreenCoordinator screenCoordinator) {
         this.screenCoordinator = screenCoordinator;
@@ -79,6 +80,9 @@ public class PlayLevelScreen extends Screen implements GameListener {
 
     @Override
     public void initialize() {
+        // Kill *any* prior loops/SFX (e.g., title music) before starting gameplay music
+        AudioPlayer.stopAll();
+
         // flags
         flagManager = new FlagManager();
         flagManager.addFlag("hasLostBall", false);
@@ -128,9 +132,8 @@ public class PlayLevelScreen extends Screen implements GameListener {
             System.out.println("Error loading key images");
         }
 
-        // start main game music (loops across all maps)
-        // Uses Engine.AudioPlayer (javax.sound.sampled-based). Ensure file exists.
-        AudioPlayer.playLoop("Resources/audio/main_game.wav", -5.0f); // 70% volume
+        // background music — safe now (we stopped everything above)
+        AudioPlayer.playLoop("Resources/audio/main_game.wav", -5.0f);
     }
 
     @Override
@@ -142,7 +145,6 @@ public class PlayLevelScreen extends Screen implements GameListener {
 
         // handle queued door map changes
         consumePendingMapChangeIfAny();
-
 
         switch (playLevelScreenState) {
             case RUNNING:
@@ -174,7 +176,6 @@ public class PlayLevelScreen extends Screen implements GameListener {
         pendingMapName = null;
         pendingSpawnPixels = null;
 
-        // construct target map use this for all map teleportations
         Map nextMap = null;
         if ("FirstRoom".equalsIgnoreCase(next)) {
             nextMap = new FirstRoom();
@@ -182,6 +183,8 @@ public class PlayLevelScreen extends Screen implements GameListener {
             nextMap = new SecondRoom();
         } else if ("ThirdRoomDungeon".equalsIgnoreCase(next)) {
             nextMap = new ThirdRoomDungeon();
+        } else if ("TestMap".equalsIgnoreCase(next)) {
+            nextMap = new TestMap();
         } else {
             System.out.println("[PlayLevelScreen] Unknown map: " + next);
             return;
@@ -191,10 +194,8 @@ public class PlayLevelScreen extends Screen implements GameListener {
         nextMap.setPlayer(player);
         nextMap.preloadScripts();
 
-
         map = nextMap;
         player.setMap(map);
-
 
         if (spawn != null) {
             try {
@@ -219,46 +220,51 @@ public class PlayLevelScreen extends Screen implements GameListener {
 
     // collisions with NPCs (enemies)
     private void handleEnemyCollisions() {
-    Player p = map.getPlayer();
-    long now = System.currentTimeMillis();
+        Player p = map.getPlayer();
+        long now = System.currentTimeMillis();
 
-    if (playLevelScreenState == PlayLevelScreenState.RUNNING) {
-        if (now - lastDamageTime >= damageCooldown) {
-            for (NPC npc : map.getNPCs()) {
-                // Skip damage if this NPC is a Wizard
-                if (npc instanceof NPCs.Wizard) {
-                    continue;
-                }
+        if (playLevelScreenState == PlayLevelScreenState.RUNNING) {
+            if (now - lastDamageTime >= damageCooldown) {
+                for (NPC npc : map.getNPCs()) {
+                    // Skip damage if this NPC is a Wizard (projectiles handle that)
+                    if (npc instanceof NPCs.Wizard) continue;
 
-                if (npc.exists() && p.getBounds().intersects(npc.getBounds())) {
-                    System.out.println("Collision detected!");
-                    boolean died = p.takeDamage(1);
-                    lastDamageTime = now;
-                    if (died) {
-                        playLevelScreenState = PlayLevelScreenState.GAME_OVER;
+                    if (npc.exists() && p.getBounds().intersects(npc.getBounds())) {
+                        System.out.println("Collision detected!");
+                        boolean died = p.takeDamage(1);
+
+                        // DAMAGE SFX
+                        AudioPlayer.playSound("Resources/audio/Damage_Effect.wav", -4.0f);
+
+                        lastDamageTime = now;
+                        if (died) {
+                            playLevelScreenState = PlayLevelScreenState.GAME_OVER;
+                        }
+                        return;
                     }
-                    return;
                 }
             }
         }
     }
-}
 
     private void handleProjectileCollisions() {
-        Player player = map.getPlayer();
-        long currentTime = System.currentTimeMillis();
-        if (currentTime - lastDamageTime >= damageCooldown) {
+        Player p = map.getPlayer();
+        long now = System.currentTimeMillis();
+
+        if (now - lastDamageTime >= damageCooldown) {
             for (Projectile projectile : map.getCamera().getActiveProjectiles()) {
-                if (projectile.exists()) {
-                    if (player.getBounds().intersects(projectile.getBounds())) {
-                        boolean playerDied = player.takeDamage(1); 
-                        projectile.setMapEntityStatus(MapEntityStatus.REMOVED); 
-                        lastDamageTime = currentTime;
-                        if (playerDied) {
-                            playLevelScreenState = PlayLevelScreenState.GAME_OVER;
-                        }
-                        return; 
+                if (projectile.exists() && p.getBounds().intersects(projectile.getBounds())) {
+                    boolean playerDied = p.takeDamage(1);
+
+                    // DAMAGE SFX
+                    AudioPlayer.playSound("Resources/audio/Damage_Effect.wav", -4.0f);
+
+                    projectile.setMapEntityStatus(MapEntityStatus.REMOVED);
+                    lastDamageTime = now;
+                    if (playerDied) {
+                        playLevelScreenState = PlayLevelScreenState.GAME_OVER;
                     }
+                    return;
                 }
             }
         }
@@ -273,6 +279,9 @@ public class PlayLevelScreen extends Screen implements GameListener {
                     String flag = "potion_" + entity.hashCode();
                     entity.setExistenceFlag(flag);
                     map.getFlagManager().setFlag(flag);
+
+                    // HEALING SFX (optional)
+                    AudioPlayer.playSound("Resources/audio/Healing.wav", -6.0f);
                 }
             }
         }
@@ -314,18 +323,17 @@ public class PlayLevelScreen extends Screen implements GameListener {
                 int coinTextX = coinX + coinWidth + 5;
                 int coinTextY = coinY + (coinHeight / 2) + 5;
                 graphicsHandler.drawString(" " + coinCount, coinTextX, coinTextY,
-                        new java.awt.Font("Arial", java.awt.Font.BOLD, 24), java.awt.Color.WHITE);
+                        new Font("Arial", Font.BOLD, 24), Color.WHITE);
 
                 // key icon + counter
-                int keyX = 380;  
+                int keyX = 380;
                 int keyY = 5;
                 graphicsHandler.drawImage(keyIcon, keyX, keyY, keyWidth, keyHeight);
                 int keyTextX = keyX + keyWidth + 5;
                 int keyTextY = keyY + (keyHeight / 2) + 5;
-                graphicsHandler.drawString(" " + keyCount, keyTextX, keyTextY, new java.awt.Font("Arial", java.awt.Font.BOLD, 24), java.awt.Color.WHITE);
+                graphicsHandler.drawString(" " + keyCount, keyTextX, keyTextY,
+                        new Font("Arial", Font.BOLD, 24), Color.WHITE);
                 break;
-
-                
 
             case LEVEL_COMPLETED:
                 winScreen.draw(graphicsHandler);
@@ -347,14 +355,12 @@ public class PlayLevelScreen extends Screen implements GameListener {
     }
 
     public void goBackToMenu() {
-        // stop main game music when leaving gameplay for menu
-        AudioPlayer.stop();
+        // Nuke all audio so title loop starts cleanly
+        AudioPlayer.stopAll();
         screenCoordinator.setGameState(GameState.MENU);
     }
 
-    // Screen state
     private enum PlayLevelScreenState {
         RUNNING, LEVEL_COMPLETED, GAME_OVER
     }
 }
-    

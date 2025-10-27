@@ -1,6 +1,7 @@
 package EnhancedMapTiles; 
 
 import Builders.FrameBuilder;
+import Engine.AudioPlayer;
 import Engine.ImageLoader;
 import GameObject.Frame;
 import GameObject.GameObject;
@@ -13,7 +14,7 @@ import Utils.Point;
 
 public class HealthPotion extends EnhancedMapTile { 
     private GameObject potionObject;
-    public static final int HEAL_AMOUNT = 2; // Heals 1 heart
+    public static final int HEAL_AMOUNT = 4; // Heals 1 heart
 
         private static final java.util.HashSet<String> collectedPotions = new java.util.HashSet<>();
 
@@ -73,6 +74,7 @@ public class HealthPotion extends EnhancedMapTile {
                 
                 this.mapEntityStatus = MapEntityStatus.REMOVED; 
                 System.out.println("Player healed 1 heart. Potion consumed.");
+                AudioPlayer.playSound("Resources/audio/Healing.wav", -3.0f);
             }
         }
         super.update(player); // Update method
