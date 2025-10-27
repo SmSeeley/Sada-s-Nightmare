@@ -16,6 +16,7 @@ import Level.MapEntity;
 import Level.MapEntityStatus;
 import Level.NPC;
 import Level.Player;
+import Maps.Desert_1;
 import Maps.FirstRoom;
 import Maps.SecondRoom;
 import Maps.TestMap;
@@ -183,8 +184,8 @@ public class PlayLevelScreen extends Screen implements GameListener {
             nextMap = new SecondRoom();
         } else if ("ThirdRoomDungeon".equalsIgnoreCase(next)) {
             nextMap = new ThirdRoomDungeon();
-        } else if ("TestMap".equalsIgnoreCase(next)) {
-            nextMap = new TestMap();
+        } else if ("Desert_1".equalsIgnoreCase(next)) {
+            nextMap = new Desert_1();
         } else {
             System.out.println("[PlayLevelScreen] Unknown map: " + next);
             return;

@@ -48,6 +48,12 @@ public class ThirdRoomDungeon extends Map {
             .withTileSizePixels(48, 48);
         enhancedMapTiles.add(toSecond);
 
+        //Doors in room 1
+        NormalDoor doorB = new NormalDoor(getMapTile(10, 2).getLocation())
+        .toMap("Desert_1", 10, 10)
+        .withTileSizePixels(48, 48);
+        enhancedMapTiles.add(doorB);
+
         return enhancedMapTiles;
     }
 
