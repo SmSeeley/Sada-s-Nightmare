@@ -316,12 +316,8 @@ public class PlayLevelScreen extends Screen implements GameListener {
                         new java.awt.Font("Arial", java.awt.Font.BOLD, 24), java.awt.Color.WHITE);
 
                 // key icon + counter
-<<<<<<< HEAD
                 
                 int keyX = 680;  
-=======
-                int keyX = 380;  
->>>>>>> acdf06effcabb4829beec53c25b43d89d1176fa3
                 int keyY = 5;
                 graphicsHandler.drawImage(keyIcon, keyX, keyY, keyWidth, keyHeight);
                 int keyTextX = keyX + keyWidth + 5;
