@@ -1,7 +1,7 @@
-// ...existing code...
 package EnhancedMapTiles;
 
 import Builders.FrameBuilder;
+import Engine.AudioPlayer;
 import Engine.ImageLoader;
 import GameObject.Frame;
 import GameObject.GameObject;
@@ -9,13 +9,14 @@ import GameObject.SpriteSheet;
 import Level.EnhancedMapTile;
 import Level.Player;
 import Level.TileType;
+import Level.ScriptState;
+import ScriptActions.TextboxScriptAction;
 import Utils.Point;
 
 /**
- * Enhanced map tile for a sword pickup.
- * - Passable tile that renders a sword sprite on the bottom layer.
- * - When player intersects the sword it is collected (hidden) and the static flags are set.
- * - Player attack code should read Sword.hasSword() and Sword.getSwordDamage() to apply different damage.
+ * Enhanced map tile for a weapon pickup (Slime Hammer).
+ * - Passable prop that renders the hammer sprite.
+ * - On collision: collects, equips, shows a textbox, and plays a sound.
  */
 public class Sword extends EnhancedMapTile {
     private Frame swordFrame;
@@ -23,23 +24,29 @@ public class Sword extends EnhancedMapTile {
     private boolean collected = false;
 
     private static final java.util.HashSet<String> collectedSwords = new java.util.HashSet<>();
-    // global state accessible from player/attack logic
     private static boolean hasSword = false;
-    private static int swordDamage = 2; 
+    private static int swordDamage = 2;
+
+    // Textbox handling
+    private TextboxScriptAction activeTextbox = null;
+    private boolean textboxSetupDone = false;
+    private int textboxTimer = 0;
 
     public Sword(Point location) {
-        super(location.x, location.y, new SpriteSheet(ImageLoader.load("slimehammer.png"), 16, 16), TileType.PASSABLE);
+        super(location.x, location.y,
+                new SpriteSheet(ImageLoader.load("slimehammer.png"), 16, 16),
+                TileType.PASSABLE);
     }
 
     private String key() {
         return "Sword@" + x + "," + y;
     }
 
-     public static boolean isCollectedAt(float x, float y) {
+    public static boolean isCollectedAt(float x, float y) {
         return collectedSwords.contains("Sword@" + x + "," + y);
     }
 
-    public static boolean isCollectedAt(Utils.Point p) {
+    public static boolean isCollectedAt(Point p) {
         return isCollectedAt(p.x, p.y);
     }
 
@@ -50,36 +57,77 @@ public class Sword extends EnhancedMapTile {
                 .withBounds(0, 0, 16, 16)
                 .build();
 
-        // render the sword slightly above the tile so it is visible (like doors/coins)
         swordObject = new GameObject(x, y - 16, swordFrame);
         return swordObject;
     }
 
     @Override
     public void update(Player player) {
-        if (collected) return;
-        if (swordObject == null) return;
+        // If a textbox is active, drive its lifecycle every frame
+        if (activeTextbox != null) {
+            if (!textboxSetupDone) {
+                try {
+                    activeTextbox.setMap(map);
+                    activeTextbox.setup();
+                    textboxSetupDone = true;
+                    textboxTimer = 0;
+                } catch (Exception e) {
+                    System.out.println("[Sword] Textbox setup failed: " + e.getMessage());
+                    activeTextbox = null;
+                }
+            } else {
+                ScriptState state = ScriptState.RUNNING;
+                try {
+                    state = activeTextbox.execute();
+                } catch (Exception ignored) {}
 
+                textboxTimer++;
+                if (state == ScriptState.COMPLETED || textboxTimer >= 120) {
+                    try {
+                        activeTextbox.cleanup();
+                    } catch (Exception ignored) {}
+                    activeTextbox = null;
+                    textboxSetupDone = false;
+                    textboxTimer = 0;
+                }
+            }
+        }
+
+        if (collected || swordObject == null) return;
+
+        // Detect pickup
         if (player.getBounds().intersects(swordObject.getBounds())) {
             collected = true;
             collectedSwords.add(key());
-            swordObject.setLocation(-100, -100);
             hasSword = true;
-            // notify player immediately
+
+            swordObject.setLocation(-100, -100);
+
+            // Equip on player
             try {
                 player.setHasSword(true);
             } catch (Exception e) {
                 try {
                     java.lang.reflect.Method m = player.getClass().getMethod("equipSword");
                     m.invoke(player);
-                } catch (Exception ex) {
-                    // ignore
-                }
+                } catch (Exception ignored) {}
             }
+
+            // ✅ Play special pickup sound
+            try {
+                AudioPlayer.playSound("Resources/audio/Key_Item.wav", -3.0f); // volume around 70%
+            } catch (Exception e) {
+                System.out.println("[Sword] Failed to play special_item sound: " + e.getMessage());
+            }
+
+            // Create textbox
+            TextboxScriptAction text = new TextboxScriptAction();
+            text.addText("You picked up the Slime Hammer!");
+            activeTextbox = text;
+            textboxSetupDone = false;
         }
     }
 
-    // Accessors for player/attack code
     public static boolean hasSword() {
         return hasSword;
     }

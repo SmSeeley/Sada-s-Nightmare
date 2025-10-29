@@ -259,11 +259,11 @@ public class Enemy extends MapEntity {
     shootTimer = 0;
 
     //incrament keys when enemy dies
-    if (!keyDropped) {
+    /*if (!keyDropped) {
         keyDropped = true; // ensure this only happens once per enemy
         EnhancedMapTiles.DoorKey.keysCollected++;
         System.out.println("[Enemy] Enemy defeated — incremented key count to " + EnhancedMapTiles.DoorKey.keysCollected);
-    }
+    }*/
 
     try {
         this.setLocation(-10000, -10000);

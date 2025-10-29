@@ -1,10 +1,7 @@
 package MapEditor;
 
 import Level.Map;
-import Maps.FirstRoom;
-import Maps.SecondRoom;
-import Maps.TestMap;
-import Maps.TitleScreenMap;
+import Maps.*;
 
 import java.util.ArrayList;
 
@@ -15,6 +12,8 @@ public class EditorMaps {
             add("TitleScreen");
             add("SecondRoom");
             add("FirstRoom");
+            add("ThirdRoomDungeon");
+            add("Desert_1");
         }};
     }
 
@@ -28,6 +27,10 @@ public class EditorMaps {
                 return new SecondRoom();
             case "FirstRoom":
                 return new FirstRoom();
+            case "ThirdRoomDungeon":
+                return new ThirdRoomDungeon();
+            case "Desert_1":
+                return new Desert_1();
             default:
                 throw new RuntimeException("Unrecognized map name");
         }

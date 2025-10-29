@@ -1,5 +1,6 @@
 package Screens;
 
+import Engine.AudioPlayer;
 import Engine.GraphicsHandler;
 import Engine.ImageLoader;
 import Engine.Key;
@@ -67,6 +68,9 @@ public class MenuScreen extends Screen {
 
         keyLocker.lockKey(Key.SPACE);
         keyLocker.lockKey(Key.ENTER);
+
+        AudioPlayer.stopAll();
+        AudioPlayer.playLoop("Resources/audio/title_theme.wav", -6.0f);
 
         startTitleMusic();
     }

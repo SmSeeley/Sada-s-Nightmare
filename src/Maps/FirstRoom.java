@@ -2,6 +2,7 @@
 package Maps;
 
 import Enemies.Ogre;
+import Enemies.Vladmir;
 import EnhancedMapTiles.*;
 import Level.*;
 import NPCs.Wizard;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 public class FirstRoom extends Map {
 
     private Ogre ogre;
+    private Vladmir vladmir;
 
     public FirstRoom() {
         super("FirstRoom.txt", new DungeonWallsTileSet());
@@ -44,7 +46,7 @@ public class FirstRoom extends Map {
         }
 
         NormalDoor toSecond = new NormalDoor(getMapTile(8, 2).getLocation())
-            .toMap("SecondRoom", 10, 12)
+            .toMap("SecondRoom", 10, 10)
             .withTileSizePixels(48, 48);
         enhancedMapTiles.add(toSecond);
 
@@ -56,6 +58,8 @@ public class FirstRoom extends Map {
         ArrayList<Enemy> enemies = new ArrayList<>();
         ogre = new Ogre(5, getMapTile(4, 4).getLocation());
         enemies.add(ogre);
+        vladmir = new Vladmir(1, getMapTile(9,7).getLocation());
+        enemies.add(vladmir);
         return enemies;
     }
 

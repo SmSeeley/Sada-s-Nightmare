@@ -4,11 +4,6 @@ package Maps;
 
 import Enemies.Zombie;
 import EnhancedMapTiles.*;
-import EnhancedMapTiles.Door;
-import EnhancedMapTiles.Emptybarrel;
-import EnhancedMapTiles.Skull;
-import EnhancedMapTiles.Sword;
-import EnhancedMapTiles.WaterBarrel;
 import Level.Enemy;
 import Level.EnhancedMapTile;
 import Level.Map;
@@ -36,7 +31,7 @@ public class SecondRoom extends Map {
         enhancedMapTiles.add(doorB);
 
         Door doorC = new Door(getMapTile(10, 1).getLocation())
-        .toMap("FirstRoom", 8, 2)
+        .toMap("ThirdRoomDungeon", 10, 10)
         .withTileSizePixels(48, 48);
         enhancedMapTiles.add(doorC);
         
@@ -71,6 +66,11 @@ public class SecondRoom extends Map {
         if (!Sword.isCollectedAt(swordLoc)) {
             Sword sword = new Sword(swordLoc);
             enhancedMapTiles.add(sword);
+        }
+
+        Point potionLoc = getMapTile(10, 10).getLocation();
+        if (!HealthPotion.isCollectedAt(potionLoc)) {
+            enhancedMapTiles.add(new HealthPotion(potionLoc));
         }
 
 

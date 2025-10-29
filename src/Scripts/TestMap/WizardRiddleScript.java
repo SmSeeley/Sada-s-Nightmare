@@ -7,10 +7,14 @@ import Level.Script;
 import Level.ScriptState;
 import ScriptActions.*;
 import EnhancedMapTiles.Coin;
+import Level.Player;
 
 public class WizardRiddleScript extends Script {
 
     private boolean answered = false;
+    //reference to sada
+    protected Player player;
+
 
     @Override
     public ArrayList<ScriptAction> loadScriptActions() {
@@ -25,7 +29,7 @@ public class WizardRiddleScript extends Script {
             scriptActions.add(new TextboxScriptAction() {{
                 addText("I speak without a mouth and hear without ears.");
                 addText("I have nobody, but I come alive with the wind.");
-                addText("What am I?", new String[] { "Echo", "Shadow", "Wind" });
+                addText("What am I?", new String[] { "Echo", "Shadow" });
             }});
 
             // Conditional logic to check player's answer
@@ -53,7 +57,7 @@ public class WizardRiddleScript extends Script {
                     });
                 }});
 
-                // Wrong answers: Shadow or Wind (choice index 1 or 2)
+                //wrong answer take damage
                 addConditionalScriptActionGroup(new ConditionalScriptActionGroup() {{
                     addRequirement(new CustomRequirement() {
                         @Override
@@ -63,7 +67,17 @@ public class WizardRiddleScript extends Script {
                         }
                     });
 
-                    addScriptAction(new TextboxScriptAction("That's not right. Try again."));
+                    addScriptAction(new TextboxScriptAction("How dare you?"));
+                    addScriptAction(new ScriptAction() {
+                        @Override
+                        public ScriptState execute() {
+                            answered = false;
+                            // Take away a heart of health
+                            player.takeDamage(2);
+                            System.out.println("[WizardRiddleScript] The wizard got mad and poisoned you!  You have lost 1 heart!");
+                            return ScriptState.COMPLETED;
+                        }
+                    });
                 }});
             }});
         } else {
