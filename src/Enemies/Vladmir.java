@@ -8,6 +8,7 @@ import GameObject.ImageEffect;
 import GameObject.SpriteSheet;
 import Level.Enemy;
 import Level.Player;
+import Players.Sada;
 import Utils.Point;
 import EnhancedMapTiles.DoorKey;
 import java.util.HashMap;
@@ -137,9 +138,9 @@ public class Vladmir extends Enemy {
                 currentAnimationName = "STAND_RIGHT";
             }
         }
-        //if (!keyDropped && health <= 0) {
-            //dropKey();
-        //}
+        if (player instanceof Sada) {
+            chase((Sada) player);
+        }
         super.update(player);
     }
     
@@ -151,6 +152,44 @@ public class Vladmir extends Enemy {
         public void draw(GraphicsHandler graphicsHandler) {
             super.draw(graphicsHandler);
         }
-   
+    
+
+    //Have Vladmir chase Sada
+    public void chase(Sada sada) {
+    float chaseSpeed = 1.5f; 
+
+    float vladX = getX();
+    float vladY = getY();
+    float sadaX = sada.getX();
+    float sadaY = sada.getY();
+
+    // Calculate distance in each direction
+    float dx = sadaX - vladX;
+    float dy = sadaY - vladY;
+
+    // Stop chasing if they’re touching
+    if (Math.abs(dx) < 5 && Math.abs(dy) < 5) {
+        currentAnimationName = dx < 0 ? "SHOOT_DOWN" : "SHOOT_UP";
+        return;
+    }
+
+    if (Math.abs(dx) > Math.abs(dy)) {
+        // move horizontally
+        if (dx > 0) {
+            moveXHandleCollision(chaseSpeed);
+            currentAnimationName = "STAND_RIGHT";
+        } else {
+            moveXHandleCollision(-chaseSpeed);
+            currentAnimationName = "STAND_LEFT";
+        }
+        } else {
+        // move vertically 
+        if (dy > 0) {
+            moveYHandleCollision(chaseSpeed);
+            } else {
+            moveYHandleCollision(-chaseSpeed);
+            }
+        }
+    }
 }
 
