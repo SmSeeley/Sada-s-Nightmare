@@ -5,7 +5,7 @@ import Enemies.Ogre;
 import Enemies.Vladmir;
 import EnhancedMapTiles.*;
 import Level.*;
-import NPCs.Wizard;
+import NPCs.*;
 import NPCs.greenNinja;
 import Scripts.TestMap.greenNinjaScript;
 import Tilesets.DungeonWallsTileSet;
