@@ -252,6 +252,18 @@ public class PlayLevelScreen extends Screen implements GameListener {
             nextMap = new Winter_4();
         } else if ("Winter_5".equalsIgnoreCase(next)) {
             nextMap = new Winter_5();
+        } else if ("Fire_1".equalsIgnoreCase(next))  {
+            nextMap = new Fire_1();
+            AudioPlayer.stopAll();
+            AudioPlayer.playLoop("Resources/audio/FireMusic.wav", -3.0f);
+        } else if ("Fire_2".equalsIgnoreCase(next)) {
+            nextMap = new Fire_2();
+        } else if ("Fire_3".equalsIgnoreCase(next)) {
+            nextMap = new Fire_3();
+        } else if ("Fire_4".equalsIgnoreCase(next)) {
+            nextMap = new Fire_4();
+        } else if ("Fire_5".equalsIgnoreCase(next)) {
+            nextMap = new Fire_5();
         }
         else {
             System.out.println("[PlayLevelScreen] Unknown map: " + next);

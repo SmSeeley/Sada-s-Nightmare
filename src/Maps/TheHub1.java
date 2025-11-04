@@ -47,7 +47,7 @@ public class TheHub1 extends Map {
         enhancedMapTiles.add(doorC);
 
         NormalDoor doorD = new NormalDoor(getMapTile(14, 2).getLocation())
-        .toMap("ThirdRoomDungeon", 10, 10)
+        .toMap("Fire_1", 10, 10)
         .withTileSizePixels(48, 48);
         enhancedMapTiles.add(doorD);
 
