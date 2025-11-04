@@ -3,6 +3,7 @@ package Maps;
 
 import EnhancedMapTiles.*;
 import Level.*;
+import NPCs.Shopkeeper;
 import Tilesets.DungeonWallsTileSet;
 import Utils.Point;
 import java.util.ArrayList;
@@ -15,6 +16,16 @@ public class TheHub1 extends Map {
         this.playerStartPosition = getMapTile(10, 10).getLocation();
     }
 
+     @Override
+    public ArrayList<NPC> loadNPCs() {
+        ArrayList<NPC> npcs = new ArrayList<>();
+
+        Shopkeeper shopkeeper = new Shopkeeper(2, getMapTile(14, 12).getLocation());
+        shopkeeper.setInteractScript(new Scripts.TestMap.ShopkeeperScript(shopkeeper));
+        npcs.add(shopkeeper);
+        return npcs;
+    }
+
     @Override
     public ArrayList<EnhancedMapTile> loadEnhancedMapTiles() {
         ArrayList<EnhancedMapTile> enhancedMapTiles = new ArrayList<>();
@@ -24,7 +35,6 @@ public class TheHub1 extends Map {
         enhancedMapTiles.add(new Emptybarrel(getMapTile(4, 6).getLocation()));
 
         enhancedMapTiles.add(new WaterBarrel(getMapTile(15, 8).getLocation()));
-        enhancedMapTiles.add(new Emptybarrel(getMapTile(5, 3).getLocation()));
         enhancedMapTiles.add(new WaterBarrel(getMapTile(4, 14).getLocation()));
 
         Point coinLoc = getMapTile(5, 5).getLocation();

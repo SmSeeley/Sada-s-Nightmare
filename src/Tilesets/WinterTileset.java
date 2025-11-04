@@ -14,7 +14,7 @@ import java.util.ArrayList;
 public class WinterTileset extends Tileset {
 
     public WinterTileset() {
-        super(ImageLoader.load("Final_Winter.png"), 16, 16, 3);
+        super(ImageLoader.load("Final_Winter2.png"), 16, 16, 3);
     }
 
     @Override

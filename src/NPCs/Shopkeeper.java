@@ -28,8 +28,8 @@ public class Shopkeeper extends NPC {
     private KeyLocker menuKeyLocker = new KeyLocker();
     
     // Shop items and prices
-    private final String[] shopItems = {"Health Potion - 10 coins", "Magic Sword - 25 coins", "Exit Shop"};
-    private final int[] itemPrices = {10, 25, 0}; // 0 for exit
+    private final String[] shopItems = {"Health Potion - 3 coins", "Archer's Bow - 7 coins", "Exit Shop"};
+    private final int[] itemPrices = {3, 7, 0}; // 0 for exit
     
     public Shopkeeper(int id, Point location) {
         super(id, location.x, location.y, new SpriteSheet(ImageLoader.load("Shopkeeper.png"), 24, 24), "STAND_DOWN");

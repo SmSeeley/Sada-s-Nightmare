@@ -10,7 +10,6 @@ public class AudioPlayer {
     private static Clip musicClip;
 
     // ---- SFX cache & pools (for overlap) ----
-    // Each path maps to a small pool of Clips so the same sound can overlap (e.g., footsteps)
     private static final Map<String, List<Clip>> sfxPools = new ConcurrentHashMap<>();
     private static final int DEFAULT_POOL_SIZE = 4; // small and fast; bump if you need more overlap
 
@@ -58,22 +57,34 @@ public class AudioPlayer {
 
     // ===== SFX =====
 
+    /**
+     * Preload a one-shot sound effect into the pool so the first play has zero disk I/O.
+     * If a pool already exists, this is a no-op.
+     */
+    public static void preloadSound(String path) {
+        preloadSound(path, DEFAULT_POOL_SIZE);
+    }
+
+    /** Preload with a specific pool size (e.g., 1 or 2 is fine for gameover). */
+    public static void preloadSound(String path, int poolSize) {
+        sfxPools.computeIfAbsent(path, p -> createPool(p, Math.max(1, poolSize)));
+    }
+
     /** Play a one-shot sound effect, with small pool for overlaps and zero lag after first play. */
     public static void playSound(String path, float volumeDb) {
         try {
             Clip clip = obtainClipFromPool(path);
             if (clip == null) return;
 
-            // If clip is currently running (rare due to pool), restart another one
+            // If clip is currently running (rare due to pool), grab another
             if (clip.isRunning()) {
-                // Try another available clip in pool
                 clip = obtainClipFromPool(path, /*forceNewIfBusy*/ true);
                 if (clip == null) return;
             }
 
             setVolume(clip, volumeDb);
-            clip.stop(); // ensure reset
-            clip.setFramePosition(0); // rewind to start (fast)
+            clip.stop();               // ensure reset
+            clip.setFramePosition(0);  // rewind
             clip.start();
         } catch (Exception e) {
             System.out.println("[AudioPlayer] Failed to play SFX " + path + ": " + e);
@@ -89,13 +100,11 @@ public class AudioPlayer {
         List<Clip> pool = sfxPools.computeIfAbsent(path, p -> createPool(p, DEFAULT_POOL_SIZE));
         if (pool == null || pool.isEmpty()) return null;
 
-        // Find a free clip
         for (Clip c : pool) {
             if (!c.isRunning()) return c;
         }
 
         if (forceNewIfBusy) {
-            // Add one more to pool if all are busy (prevents missed sounds on spikes)
             try {
                 Clip extra = loadClip(path);
                 if (extra != null) {
@@ -105,8 +114,7 @@ public class AudioPlayer {
             } catch (Exception ignored) {}
         }
 
-        // fallback: reuse first (will cut off if still running, but better than silence)
-        return pool.get(0);
+        return pool.get(0); // fallback: reuse first
     }
 
     private static List<Clip> createPool(String path, int count) {
@@ -135,7 +143,6 @@ public class AudioPlayer {
             AudioInputStream stream = AudioSystem.getAudioInputStream(file);
             Clip clip = AudioSystem.getClip();
             clip.open(stream);
-            // Auto-close on STOP for music? No; we manage lifecycle manually.
             return clip;
         } catch (Exception e) {
             System.out.println("[AudioPlayer] loadClip failed for " + path + ": " + e);

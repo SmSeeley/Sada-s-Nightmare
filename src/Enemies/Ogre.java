@@ -7,6 +7,7 @@ import GameObject.Frame;
 import GameObject.ImageEffect;
 import GameObject.SpriteSheet;
 import Level.Enemy;
+import Level.Map;
 import Level.Player;
 import Utils.Point;
 import EnhancedMapTiles.DoorKey;
@@ -14,14 +15,17 @@ import java.util.HashMap;
 
 public class Ogre extends Enemy {
 
-    private int health = 2;
-
     private final int DETECTION_RADIUS = 100;
 
-    public boolean keyDropped = false;
+    public static boolean hasDied = false;
 
-    public Ogre(int id, Point location) {
+    private Map currentMap;
+
+    //public boolean keyDropped = false;
+
+    public Ogre(int id, Point location, Map map) {
         super(id, location.x, location.y, new SpriteSheet(ImageLoader.load("ogre.png"), 24, 24), "STAND_RIGHT");
+        this.currentMap = map;
     }  
     
     // overrides loadAnimations method to define animation for ogre
@@ -72,9 +76,15 @@ public class Ogre extends Enemy {
         //if (!keyDropped && health <= 0) {
             //dropKey();
         //}
+        if (isDead() && !hasDied) {
+            markAsDead();
+            System.out.println("[Ogre] has died, dropping key!");
+        }
         super.update(player);
+
+        
     }
-    private void dropKey() {
+    /*private void dropKey() {
         keyDropped = true;
         Point dropLoc = new Point(getBounds().getX(), getBounds().getY());
         DoorKey key = new DoorKey(dropLoc);
@@ -86,23 +96,48 @@ public class Ogre extends Enemy {
         } else {
             System.out.println("[Ogre] Map was null, couldn’t add key!");
         }
-    }
+    }*/
     public boolean isDead() {
-    return health <= 0;
+    return hasDied || !getIsActive() || health <= 0;
     }
 
-    public boolean hasDroppedKey() {
-        return keyDropped;
+    public void markAsDead() {
+        hasDied = true;
     }
 
-    public DoorKey createKey() {
-        Point dropLoc = new Point(getBounds().getX(), getBounds().getY());
-        keyDropped = true;  // mark as dropped
-        return new DoorKey(dropLoc);
-    }
+    //public boolean hasDroppedKey() {
+        //return keyDropped;
+    //}
+
+    //public DoorKey createKey() {
+        //Point dropLoc = new Point(getBounds().getX(), getBounds().getY());
+        //keyDropped = true;  // mark as dropped
+        //return new DoorKey(dropLoc);
+    //}
     @Override
         public void draw(GraphicsHandler graphicsHandler) {
             super.draw(graphicsHandler);
         }
+
+    @Override
+    public void takeDamage(int amount) {
+        boolean wasActive = getIsActive();
+        super.takeDamage(amount); // applies cooldown, reduces health, and calls removeEnemy() if <= 0
+
+        // if we were active and now we're not, the enemy just died this frame
+        if (wasActive && !getIsActive() && !hasDied) {
+            hasDied = true;
+            try {
+                if (currentMap instanceof Maps.FirstRoom) {
+                    Maps.FirstRoom firstRoom = (Maps.FirstRoom) currentMap;
+                    Point dropLoc = firstRoom.getMapTile(4, 4).getLocation(); // where the ogre was
+                    firstRoom.addEnhancedMapTile(new DoorKey(dropLoc));
+                    System.out.println("[Ogre] Dropped key at " + dropLoc.x + ", " + dropLoc.y);
+                }
+            } catch (Exception e) {
+                System.out.println("[Ogre] Failed to drop key: " + e.getMessage());
+            }
+        }
+    }
    
 }

@@ -96,7 +96,7 @@ public class TestMap extends Map {
         Zombie zombie = new Zombie(4, getMapTile(18, 7).getLocation());
         enemies.add(zombie);
 
-        Ogre ogre = new Ogre(5, getMapTile(6, 9).getLocation());
+        Ogre ogre = new Ogre(5, getMapTile(6, 9).getLocation(), null);
         enemies.add(ogre);
 
         return enemies;
