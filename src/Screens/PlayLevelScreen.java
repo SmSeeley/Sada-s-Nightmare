@@ -21,6 +21,11 @@ import Maps.Desert_2;
 import Maps.Desert_3;
 import Maps.Desert_4;
 import Maps.Desert_5;
+import Maps.Fire_1;
+import Maps.Fire_2;
+import Maps.Fire_3;
+import Maps.Fire_4;
+import Maps.Fire_5;
 import Maps.FirstRoom;
 import Maps.Room4Dungeon;
 import Maps.Room5Dungeon;
@@ -266,6 +271,18 @@ public class PlayLevelScreen extends Screen implements GameListener {
             nextMap = new Winter_4();
         } else if ("Winter_5".equalsIgnoreCase(next)) {
             nextMap = new Winter_5();
+        } else if ("Fire_1".equalsIgnoreCase(next))  {
+            nextMap = new Fire_1();
+            AudioPlayer.stopAll();
+            AudioPlayer.playLoop("Resources/audio/FireMusic.wav", -3.0f);
+        } else if ("Fire_2".equalsIgnoreCase(next)) {
+            nextMap = new Fire_2();
+        } else if ("Fire_3".equalsIgnoreCase(next)) {
+            nextMap = new Fire_3();
+        } else if ("Fire_4".equalsIgnoreCase(next)) {
+            nextMap = new Fire_4();
+        } else if ("Fire_5".equalsIgnoreCase(next)) {
+            nextMap = new Fire_5();
         }
         else {
             System.out.println("[PlayLevelScreen] Unknown map: " + next);
@@ -325,6 +342,20 @@ public class PlayLevelScreen extends Screen implements GameListener {
                         }
                         lastDamageTime = now;
                         if (gameOverTriggered) {
+                            triggerGameOver(); // centralized, fast SFX
+                        }
+                        return;
+                    }
+                }
+                for (Enemy enemies : map.getEnemies()) {
+                    if (enemies.exists() && p.getBounds().intersects(enemies.getBounds())) {
+                        boolean died = p.takeDamage(1);
+
+                        // DAMAGE SFX
+                        AudioPlayer.playSound("Resources/audio/Damage_Effect.wav", -4.0f);
+
+                        lastDamageTime = now;
+                        if (died) {
                             triggerGameOver(); // centralized, fast SFX
                         }
                         return;

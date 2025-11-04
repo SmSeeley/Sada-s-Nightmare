@@ -3,7 +3,6 @@ package Enemies;
 import Builders.FrameBuilder;
 import Engine.GraphicsHandler;
 import Engine.ImageLoader;
-import EnhancedMapTiles.DoorKey;
 import GameObject.Frame;
 import GameObject.ImageEffect;
 import GameObject.SpriteSheet;
@@ -11,14 +10,18 @@ import Level.Enemy;
 import Level.Map;
 import Level.Player;
 import Utils.Point;
-import java.awt.Color;
+import EnhancedMapTiles.DoorKey;
 import java.util.HashMap;
 
 public class Ogre extends Enemy {
 
     private final int DETECTION_RADIUS = 100;
-    private Map currentMap;
+
     public static boolean hasDied = false;
+
+    private Map currentMap;
+
+    //public boolean keyDropped = false;
 
     public Ogre(int id, Point location, Map map) {
         super(id, location.x, location.y, new SpriteSheet(ImageLoader.load("ogre.png"), 24, 24), "STAND_RIGHT");
@@ -32,15 +35,15 @@ public class Ogre extends Enemy {
 
             put("STAND_RIGHT", new Frame[] {
                 new FrameBuilder(spriteSheet.getSprite(0, 0))
-                    .withScale(4)
-                    .withBounds(4,2,15,15)
+                    .withScale(3)
+                    .withBounds(3,2,15,15)
                     .build()
             });
 
             put("STAND_LEFT", new Frame[] {
                 new FrameBuilder(spriteSheet.getSprite(0, 0))
-                    .withScale(4)
-                    .withBounds(5,2,15,15)
+                    .withScale(3)
+                    .withBounds(3,2,17,20)
                     .withImageEffect(ImageEffect.FLIP_HORIZONTAL)
                     .build()
             });
@@ -113,8 +116,28 @@ public class Ogre extends Enemy {
     //}
     @Override
         public void draw(GraphicsHandler graphicsHandler) {
-            //drawBounds(graphicsHandler, new Color(255, 0, 0, 100));
             super.draw(graphicsHandler);
         }
 
+    @Override
+    public void takeDamage(int amount) {
+        boolean wasActive = getIsActive();
+        super.takeDamage(amount); // applies cooldown, reduces health, and calls removeEnemy() if <= 0
+
+        // if we were active and now we're not, the enemy just died this frame
+        if (wasActive && !getIsActive() && !hasDied) {
+            hasDied = true;
+            try {
+                if (currentMap instanceof Maps.FirstRoom) {
+                    Maps.FirstRoom firstRoom = (Maps.FirstRoom) currentMap;
+                    Point dropLoc = firstRoom.getMapTile(4, 3).getLocation(); // where the ogre was
+                    firstRoom.addEnhancedMapTile(new DoorKey(dropLoc));
+                    System.out.println("[Ogre] Dropped key at " + dropLoc.x + ", " + dropLoc.y);
+                }
+            } catch (Exception e) {
+                System.out.println("[Ogre] Failed to drop key: " + e.getMessage());
+            }
+        }
+    }
+   
 }

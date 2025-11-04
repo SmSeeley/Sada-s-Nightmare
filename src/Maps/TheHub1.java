@@ -3,6 +3,7 @@ package Maps;
 
 import EnhancedMapTiles.*;
 import Level.*;
+import NPCs.Shopkeeper;
 import Tilesets.DungeonWallsTileSet;
 import Utils.Point;
 import java.util.ArrayList;
@@ -13,6 +14,16 @@ public class TheHub1 extends Map {
     public TheHub1() {
         super("TheHub1.txt", new DungeonWallsTileSet());
         this.playerStartPosition = getMapTile(10, 10).getLocation();
+    }
+
+     @Override
+    public ArrayList<NPC> loadNPCs() {
+        ArrayList<NPC> npcs = new ArrayList<>();
+
+        Shopkeeper shopkeeper = new Shopkeeper(2, getMapTile(14, 12).getLocation());
+        shopkeeper.setInteractScript(new Scripts.TestMap.ShopkeeperScript(shopkeeper));
+        npcs.add(shopkeeper);
+        return npcs;
     }
 
     @Override
@@ -47,7 +58,7 @@ public class TheHub1 extends Map {
         enhancedMapTiles.add(doorC);
 
         NormalDoor doorD = new NormalDoor(getMapTile(14, 2).getLocation())
-        .toMap("ThirdRoomDungeon", 10, 10)
+        .toMap("Fire_1", 10, 10)
         .withTileSizePixels(48, 48);
         enhancedMapTiles.add(doorD);
 
