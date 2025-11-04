@@ -9,6 +9,7 @@ import EnhancedMapTiles.DoorKey;
 import EnhancedMapTiles.HealthPotion;
 import Game.GameState;
 import Game.ScreenCoordinator;
+import Level.Enemy;
 import Level.FlagManager;
 import Level.GameListener;
 import Level.Map;
@@ -16,21 +17,20 @@ import Level.MapEntity;
 import Level.MapEntityStatus;
 import Level.NPC;
 import Level.Player;
+import Maps.*;
 import Players.Sada;
 import Utils.Direction;
 import Utils.Point;
-import Maps.*;
-
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.awt.Font;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.imageio.ImageIO;
 
 public class PlayLevelScreen extends Screen implements GameListener {
 
@@ -309,7 +309,24 @@ public class PlayLevelScreen extends Screen implements GameListener {
                     // no damage if this NPC is a Wizard (projectiles handle that)
                     if (npc instanceof NPCs.Wizard) continue;
 
+                    //same with shopkeeper
+                    if (npc instanceof NPCs.Shopkeeper) continue;
+
                     if (npc.exists() && p.getBounds().intersects(npc.getBounds())) {
+                        boolean died = p.takeDamage(1);
+
+                        // DAMAGE SFX
+                        AudioPlayer.playSound("Resources/audio/Damage_Effect.wav", -4.0f);
+
+                        lastDamageTime = now;
+                        if (died) {
+                            triggerGameOver(); // centralized, fast SFX
+                        }
+                        return;
+                    }
+                }
+                for (Enemy enemies : map.getEnemies()) {
+                    if (enemies.exists() && p.getBounds().intersects(enemies.getBounds())) {
                         boolean died = p.takeDamage(1);
 
                         // DAMAGE SFX

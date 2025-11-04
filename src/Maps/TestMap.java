@@ -8,8 +8,9 @@ import EnhancedMapTiles.Sword;
 import Level.*;
 import NPCs.Bug;
 import NPCs.Dinosaur;
-import NPCs.greenNinja;
+import NPCs.Shopkeeper;
 import NPCs.Wizard;
+import NPCs.greenNinja;
 import Scripts.SimpleTextScript;
 import Scripts.TestMap.*;
 import Tilesets.CommonTileset;
@@ -79,6 +80,11 @@ public class TestMap extends Map {
         Bug bug = new Bug(3, getMapTile(7, 12).getLocation().subtractX(20));
         bug.setInteractScript(new BugScript());
         npcs.add(bug);
+
+
+        Shopkeeper shopkeeper = new Shopkeeper(4, getMapTile(20, 8).getLocation());
+        shopkeeper.setInteractScript(new ShopkeeperScript(shopkeeper));
+        npcs.add(shopkeeper);
 
         return npcs;
     }

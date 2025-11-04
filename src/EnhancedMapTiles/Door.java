@@ -8,7 +8,6 @@ import GameObject.SpriteSheet;
 import Level.*;
 import ScriptActions.*;
 import Utils.Point;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;

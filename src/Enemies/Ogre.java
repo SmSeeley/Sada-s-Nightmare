@@ -130,7 +130,7 @@ public class Ogre extends Enemy {
             try {
                 if (currentMap instanceof Maps.FirstRoom) {
                     Maps.FirstRoom firstRoom = (Maps.FirstRoom) currentMap;
-                    Point dropLoc = firstRoom.getMapTile(4, 4).getLocation(); // where the ogre was
+                    Point dropLoc = firstRoom.getMapTile(4, 3).getLocation(); // where the ogre was
                     firstRoom.addEnhancedMapTile(new DoorKey(dropLoc));
                     System.out.println("[Ogre] Dropped key at " + dropLoc.x + ", " + dropLoc.y);
                 }
