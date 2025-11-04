@@ -265,7 +265,7 @@ public class PlayLevelScreen extends Screen implements GameListener {
         if (playLevelScreenState == PlayLevelScreenState.RUNNING) {
             if (now - lastDamageTime >= damageCooldown) {
                 for (NPC npc : map.getNPCs()) {
-                    // Skip damage if this NPC is a Wizard (projectiles handle that)
+                    //no damage if this NPC is a Wizard 
                     if (npc instanceof NPCs.Wizard) continue;
 
                     if (npc.exists() && p.getBounds().intersects(npc.getBounds())) {
