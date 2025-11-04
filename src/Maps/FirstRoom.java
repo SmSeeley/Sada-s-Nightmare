@@ -62,8 +62,8 @@ public class FirstRoom extends Map {
         ArrayList<Enemy> enemies = new ArrayList<>();
         ogre = new Ogre(5, getMapTile(4, 4).getLocation(), this);
         enemies.add(ogre);
-        vladmir = new Vladmir(1, getMapTile(9,7).getLocation());
-        enemies.add(vladmir);
+        //vladmir = new Vladmir(1, getMapTile(9,7).getLocation());
+        //enemies.add(vladmir);
         return enemies;
     }
 
