@@ -9,6 +9,7 @@ import EnhancedMapTiles.DoorKey;
 import EnhancedMapTiles.HealthPotion;
 import Game.GameState;
 import Game.ScreenCoordinator;
+import Level.Enemy;
 import Level.FlagManager;
 import Level.GameListener;
 import Level.Map;
@@ -300,6 +301,20 @@ public class PlayLevelScreen extends Screen implements GameListener {
                     if (npc instanceof NPCs.Shopkeeper) continue;
 
                     if (npc.exists() && p.getBounds().intersects(npc.getBounds())) {
+                        boolean died = p.takeDamage(1);
+
+                        // DAMAGE SFX
+                        AudioPlayer.playSound("Resources/audio/Damage_Effect.wav", -4.0f);
+
+                        lastDamageTime = now;
+                        if (died) {
+                            triggerGameOver(); // centralized, fast SFX
+                        }
+                        return;
+                    }
+                }
+                for (Enemy enemies : map.getEnemies()) {
+                    if (enemies.exists() && p.getBounds().intersects(enemies.getBounds())) {
                         boolean died = p.takeDamage(1);
 
                         // DAMAGE SFX

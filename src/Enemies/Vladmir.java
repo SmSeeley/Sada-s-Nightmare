@@ -137,7 +137,7 @@ public class Vladmir extends Enemy {
 
         if (distanceSquared <= detectionRadiusSquared) {
             if (playerCenterX < vladmirCenterX) {
-                currentAnimationName = "STAND_LEFT";
+                currentAnimationName = "SHOOT_RIGHT";
             } else {
                 currentAnimationName = "STAND_RIGHT";
         }
@@ -163,7 +163,7 @@ public class Vladmir extends Enemy {
 
     //Have Vladmir chase Sada
     public void chase(Sada sada) {
-    float chaseSpeed = 1.5f; 
+    float chaseSpeed = 1.0f; 
     float vladX = getX();
     float vladY = getY();
     float sadaX = sada.getX();
