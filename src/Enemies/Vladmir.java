@@ -10,7 +10,6 @@ import Level.Enemy;
 import Level.Player;
 import Players.Sada;
 import Utils.Point;
-import EnhancedMapTiles.DoorKey;
 import java.util.HashMap;
 
 public class Vladmir extends Enemy {
@@ -19,7 +18,14 @@ public class Vladmir extends Enemy {
 
     private final int DETECTION_RADIUS = 100;
 
-    public boolean keyDropped = false;
+    //public boolean keyDropped = false;
+    private final int ATTACK_RANGE = 25;
+    private final int ATTACK_DAMAGE = 1;
+    private int attackCooldown = 60; //1 second cool down for attacks
+    private int attackTimer = 0;
+
+    private final long contactCooldown = 1000; // 1 second cooldown
+    private long lastContactTime = 0;
 
     public Vladmir(int id, Point location) {
         super(id, location.x, location.y, new SpriteSheet(ImageLoader.load("Vladmir.png"), 24, 24), "STAND_RIGHT");
@@ -85,7 +91,6 @@ public class Vladmir extends Enemy {
                         .build()
             });
 
-            // Treat SHOOT_* as the swing/attack animations
             put("SHOOT_RIGHT", new Frame[] {
                 new FrameBuilder(spriteSheet.getSprite(0, 1), 14)
                         .withScale(3)
@@ -119,7 +124,6 @@ public class Vladmir extends Enemy {
 
    @Override
     public void update(Player player) {
-
         float vladmirCenterX = getBounds().getX() + (getBounds().getWidth() / 2);
         float playerCenterX = player.getBounds().getX() + (player.getBounds().getWidth() / 2);
 
@@ -136,60 +140,79 @@ public class Vladmir extends Enemy {
                 currentAnimationName = "STAND_LEFT";
             } else {
                 currentAnimationName = "STAND_RIGHT";
-            }
         }
+        }
+
+        //take health when in contact
         if (player instanceof Sada) {
-            chase((Sada) player);
+            Sada sada = (Sada) player;
+            long now = System.currentTimeMillis();
+            if (this.intersects(sada) && (now - lastContactTime >= contactCooldown)) {
+                sada.takeDamage(1); 
+                lastContactTime = now;
+                System.out.println("[Vladmir] Sada took contact damage!");
+            }
+
+            if (attackTimer > 0) attackTimer--;
+            chase(sada);
         }
+
         super.update(player);
     }
     
     public boolean isDead() {
-    return health <= 0;
+        return health <= 0;
     }
 
     @Override
-        public void draw(GraphicsHandler graphicsHandler) {
-            super.draw(graphicsHandler);
-        }
+    public void draw(GraphicsHandler graphicsHandler) {
+        super.draw(graphicsHandler);
+    }
     
 
-    //Have Vladmir chase Sada
+    //Vladmir chases Sada
     public void chase(Sada sada) {
-    float chaseSpeed = 1.5f; 
+        float chaseSpeed = 1.5f; 
+        float vladX = getX();
+        float vladY = getY();
+        float sadaX = sada.getX();
+        float sadaY = sada.getY();
 
-    float vladX = getX();
-    float vladY = getY();
-    float sadaX = sada.getX();
-    float sadaY = sada.getY();
+        float dx = sadaX - vladX;
+        float dy = sadaY - vladY;
+        float distance = (float) Math.sqrt(dx * dx + dy * dy);
 
-    // Calculate distance in each direction
-    float dx = sadaX - vladX;
-    float dy = sadaY - vladY;
+        // attack in range
+        if (distance <= ATTACK_RANGE) {
+            if (attackTimer == 0) {
+                if (Math.abs(dx) > Math.abs(dy)) {
+                    currentAnimationName = dx > 0 ? "SHOOT_RIGHT" : "SHOOT_LEFT";
+                } else {
+                    currentAnimationName = dy > 0 ? "SHOOT_DOWN" : "SHOOT_UP";
+                }
 
-    // Stop chasing if they’re touching
-    if (Math.abs(dx) < 5 && Math.abs(dy) < 5) {
-        currentAnimationName = dx < 0 ? "SHOOT_DOWN" : "SHOOT_UP";
-        return;
-    }
-
-    if (Math.abs(dx) > Math.abs(dy)) {
-        // move horizontally
-        if (dx > 0) {
-            moveXHandleCollision(chaseSpeed);
-            currentAnimationName = "STAND_RIGHT";
-        } else {
-            moveXHandleCollision(-chaseSpeed);
-            currentAnimationName = "STAND_LEFT";
+                sada.takeDamage(ATTACK_DAMAGE); 
+                attackTimer = attackCooldown;
+            }
+            return; //skip movement while attacking
         }
-        } else {
-        // move vertically 
-        if (dy > 0) {
-            moveYHandleCollision(chaseSpeed);
+
+        if (Math.abs(dx) > Math.abs(dy)) {
+            if (dx > 0) {
+                moveXHandleCollision(chaseSpeed);
+                currentAnimationName = "WALK_RIGHT";
             } else {
-            moveYHandleCollision(-chaseSpeed);
+                moveXHandleCollision(-chaseSpeed);
+                currentAnimationName = "WALK_LEFT";
+            }
+        } else {
+            if (dy > 0) {
+                moveYHandleCollision(chaseSpeed);
+                currentAnimationName = "WALK_RIGHT"; 
+            } else {
+                moveYHandleCollision(-chaseSpeed);
+                currentAnimationName = "WALK_LEFT"; 
             }
         }
     }
 }
-

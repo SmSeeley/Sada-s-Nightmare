@@ -17,6 +17,8 @@ public class FirstRoom extends Map {
     private Ogre ogre;
     private Vladmir vladmir;
 
+    private boolean keySpawned = false; // Added flag to ensure key spawns once
+
     public FirstRoom() {
         super("FirstRoom.txt", new DungeonWallsTileSet());
         this.playerStartPosition = getMapTile(4, 7).getLocation();
@@ -34,6 +36,7 @@ public class FirstRoom extends Map {
         enhancedMapTiles.add(new Blood(getMapTile(12, 7).getLocation()));
         enhancedMapTiles.add(new Emptybarrel(getMapTile(3, 4).getLocation()));
         enhancedMapTiles.add(new Emptybarrel(getMapTile(4, 6).getLocation()));
+        
         
 
         Point coinLoc = getMapTile(5, 5).getLocation();
@@ -57,7 +60,7 @@ public class FirstRoom extends Map {
     @Override
     public ArrayList<Enemy> loadEnemies() {
         ArrayList<Enemy> enemies = new ArrayList<>();
-        ogre = new Ogre(5, getMapTile(4, 4).getLocation());
+        ogre = new Ogre(5, getMapTile(4, 4).getLocation(), this);
         enemies.add(ogre);
         vladmir = new Vladmir(1, getMapTile(9,7).getLocation());
         enemies.add(vladmir);
@@ -77,13 +80,5 @@ public class FirstRoom extends Map {
     @Override
     public void update(Player player) { 
         super.update(player);
-
-        /*if (ogre != null && ogre.isDead() && !ogre.keyDropped) {
-            // Instead of dropping a DoorKey tile, increment the key count stat directly
-            EnhancedMapTiles.DoorKey.keysCollected++;
-            // Mark that key has been "collected" to prevent multiple increments
-            ogre.keyDropped = true;
-            System.out.println("[FirstRoom] Ogre died - incremented key count to " + EnhancedMapTiles.DoorKey.keysCollected);
-        }*/
     }
 }
