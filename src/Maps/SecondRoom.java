@@ -8,6 +8,7 @@ import Level.Enemy;
 import Level.EnhancedMapTile;
 import Level.Map;
 import Level.NPC;
+import NPCs.Shopkeeper;
 import NPCs.Wizard;
 import Tilesets.DungeonWallsTileSet;
 import Utils.Point;
@@ -84,6 +85,10 @@ public class SecondRoom extends Map {
         Wizard wizard = new Wizard(1, getMapTile(15, 2).getLocation());
         wizard.setInteractScript(new Scripts.TestMap.WizardRiddleScript());
         npcs.add(wizard);
+
+        Shopkeeper shopkeeper = new Shopkeeper(2, getMapTile(12, 2).getLocation());
+        shopkeeper.setInteractScript(new Scripts.TestMap.ShopkeeperScript(shopkeeper));
+        npcs.add(shopkeeper);
         return npcs;
     }
 

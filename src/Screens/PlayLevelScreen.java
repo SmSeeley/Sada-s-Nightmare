@@ -16,21 +16,22 @@ import Level.MapEntity;
 import Level.MapEntityStatus;
 import Level.NPC;
 import Level.Player;
-import Maps.Desert_1;
-import Maps.FirstRoom;
-import Maps.SecondRoom;
-import Maps.TestMap;
-import Maps.ThirdRoomDungeon;
 import Players.Sada;
 import Utils.Direction;
 import Utils.Point;
+import Maps.*;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.awt.Font;
 import java.awt.Color;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PlayLevelScreen extends Screen implements GameListener {
 
@@ -74,6 +75,15 @@ public class PlayLevelScreen extends Screen implements GameListener {
     private int keyWidth = 75;
     private int keyHeight = 75;
     private int keyCount = 0;
+
+    // --- UI: Transient banner message (non-blocking “textbox”) ---
+    private String transientMessage = null;
+    private long transientMessageUntil = 0L;
+
+    private void triggerTransientMessage(String text, long durationMs) {
+        transientMessage = text;
+        transientMessageUntil = System.currentTimeMillis() + Math.max(0, durationMs);
+    }
 
     public PlayLevelScreen(ScreenCoordinator screenCoordinator) {
         this.screenCoordinator = screenCoordinator;
@@ -184,8 +194,36 @@ public class PlayLevelScreen extends Screen implements GameListener {
             nextMap = new SecondRoom();
         } else if ("ThirdRoomDungeon".equalsIgnoreCase(next)) {
             nextMap = new ThirdRoomDungeon();
-        } else if ("Desert_1".equalsIgnoreCase(next)) {
+        } else if ("Room4Dungeon".equalsIgnoreCase(next)) {
+            nextMap = new Room4Dungeon();
+        } else if ("Room5Dungeon".equalsIgnoreCase(next)) {
+            nextMap = new Room5Dungeon();
+        } else if ("TheHub1".equalsIgnoreCase(next)) {
+            nextMap = new TheHub1();
+            AudioPlayer.stopAll();
+            AudioPlayer.playLoop("Resources/audio/TheHubMusic.wav", -3.0f);
+
+            // Show 4s welcome banner on entering the hub
+            triggerTransientMessage(
+                "Welcome to the Dream Hall! Here you can trade coins for better weapons, and access other regions!",
+                6000
+            );
+        } else if ("Desert_1".equalsIgnoreCase(next))  {
             nextMap = new Desert_1();
+            AudioPlayer.stopAll();
+            AudioPlayer.playLoop("Resources/audio/Desert.wav", -3.0f);
+        } else if ("Desert_2".equalsIgnoreCase(next))  {
+            nextMap = new Desert_2();
+        } else if ("Desert_3".equalsIgnoreCase(next))  {
+            nextMap = new Desert_3();
+        } else if ("Desert_4".equalsIgnoreCase(next))  {
+            nextMap = new Desert_4();
+        } else if ("Desert_5".equalsIgnoreCase(next))  {
+            nextMap = new Desert_5();
+        } else if ("Winter_1".equalsIgnoreCase(next))  {
+            nextMap = new Winter_1();
+            AudioPlayer.stopAll();
+            AudioPlayer.playLoop("Resources/audio/WinterBliss.wav", -3.0f);
         } else {
             System.out.println("[PlayLevelScreen] Unknown map: " + next);
             return;
@@ -227,7 +265,7 @@ public class PlayLevelScreen extends Screen implements GameListener {
         if (playLevelScreenState == PlayLevelScreenState.RUNNING) {
             if (now - lastDamageTime >= damageCooldown) {
                 for (NPC npc : map.getNPCs()) {
-                    // Skip damage if this NPC is a Wizard (projectiles handle that)
+                    //no damage if this NPC is a Wizard 
                     if (npc instanceof NPCs.Wizard) continue;
 
                     if (npc.exists() && p.getBounds().intersects(npc.getBounds())) {
@@ -299,7 +337,41 @@ public class PlayLevelScreen extends Screen implements GameListener {
             case RUNNING:
                 map.draw(player, graphicsHandler);
 
-                // draw hearts
+                // --- transient banner (non-blocking) with word-wrap ---
+                if (transientMessage != null && System.currentTimeMillis() < transientMessageUntil) {
+                    Font bannerFont = new Font("Arial", Font.BOLD, 24);
+                    int textX = 50;
+                    int textY = 100;
+                    int maxWidthPx = 600; // adjust if your game window is wider/narrower
+                    int lineSpacing = 6;
+
+                    List<String> lines = wrapToWidth(transientMessage, bannerFont, maxWidthPx);
+
+                    int y = textY;
+                    for (String line : lines) {
+                        // shadow
+                        graphicsHandler.drawString(
+                                line,
+                                textX + 2, y + 2,
+                                bannerFont,
+                                new Color(0, 0, 0, 200)
+                        );
+                        // main
+                        graphicsHandler.drawString(
+                                line,
+                                textX, y,
+                                bannerFont,
+                                Color.WHITE
+                        );
+                        // advance Y by font height + spacing
+                        y += getFontHeight(bannerFont) + lineSpacing;
+                    }
+                } else if (transientMessage != null) {
+                    // Time elapsed — clear so we don't keep checking
+                    transientMessage = null;
+                }
+
+                // --- hearts ---
                 int startX = 20;
                 int startY = 20;
                 int currentHealth = player.getHealth();
@@ -317,7 +389,7 @@ public class PlayLevelScreen extends Screen implements GameListener {
                     }
                 }
 
-                // coin icon + counter
+                // --- coin icon + counter ---
                 int coinX = 275;
                 int coinY = 5;
                 graphicsHandler.drawImage(coinIcon, coinX, coinY, coinWidth, coinHeight);
@@ -326,7 +398,7 @@ public class PlayLevelScreen extends Screen implements GameListener {
                 graphicsHandler.drawString(" " + coinCount, coinTextX, coinTextY,
                         new Font("Arial", Font.BOLD, 24), Color.WHITE);
 
-                // key icon + counter
+                // --- key icon + counter ---
                 int keyX = 380;
                 int keyY = 5;
                 graphicsHandler.drawImage(keyIcon, keyX, keyY, keyWidth, keyHeight);
@@ -363,5 +435,93 @@ public class PlayLevelScreen extends Screen implements GameListener {
 
     private enum PlayLevelScreenState {
         RUNNING, LEVEL_COMPLETED, GAME_OVER
+    }
+
+    /**
+     * Wraps a string to a maximum pixel width using FontMetrics.
+     * This creates a temporary Graphics2D to measure the font.
+     */
+    private List<String> wrapToWidth(String text, Font font, int maxWidthPx) {
+        List<String> lines = new ArrayList<>();
+        if (text == null || text.isEmpty()) {
+            return lines;
+        }
+
+        // Prepare a tiny graphics to measure text
+        BufferedImage tmp = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = tmp.createGraphics();
+        g2.setFont(font);
+        FontMetrics fm = g2.getFontMetrics();
+
+        String[] words = text.split("\\s+");
+        StringBuilder current = new StringBuilder();
+
+        for (String word : words) {
+            String test = current.length() == 0 ? word : current + " " + word;
+            int width = fm.stringWidth(test);
+
+            if (width <= maxWidthPx) {
+                current.setLength(0);
+                current.append(test);
+            } else {
+                // push current line and start a new one
+                if (current.length() > 0) {
+                    lines.add(current.toString());
+                    current.setLength(0);
+                }
+                // If a single word is longer than max width, hard-break it
+                if (fm.stringWidth(word) > maxWidthPx) {
+                    lines.addAll(hardBreakWord(word, fm, maxWidthPx));
+                } else {
+                    current.append(word);
+                }
+            }
+        }
+
+        if (current.length() > 0) {
+            lines.add(current.toString());
+        }
+
+        g2.dispose();
+        return lines;
+    }
+
+    /**
+     * Hard-breaks a very long word so it fits maxWidthPx.
+     */
+    private List<String> hardBreakWord(String word, FontMetrics fm, int maxWidthPx) {
+        List<String> parts = new ArrayList<>();
+        StringBuilder chunk = new StringBuilder();
+
+        for (int i = 0; i < word.length(); i++) {
+            char c = word.charAt(i);
+            String test = chunk.toString() + c;
+            if (fm.stringWidth(test) <= maxWidthPx) {
+                chunk.append(c);
+            } else {
+                if (chunk.length() > 0) {
+                    parts.add(chunk.toString());
+                    chunk.setLength(0);
+                }
+                chunk.append(c);
+            }
+        }
+        if (chunk.length() > 0) {
+            parts.add(chunk.toString());
+        }
+        return parts;
+    }
+
+    /**
+     * Returns approximate font height for vertical spacing.
+     */
+    private int getFontHeight(Font font) {
+        BufferedImage tmp = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = tmp.createGraphics();
+        g2.setFont(font);
+        FontMetrics fm = g2.getFontMetrics();
+        int h = fm.getAscent() + fm.getDescent();
+        g2.dispose();
+        return h;
     }
 }
