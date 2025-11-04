@@ -24,7 +24,6 @@ public class TheHub1 extends Map {
         enhancedMapTiles.add(new Emptybarrel(getMapTile(4, 6).getLocation()));
 
         enhancedMapTiles.add(new WaterBarrel(getMapTile(15, 8).getLocation()));
-        enhancedMapTiles.add(new Emptybarrel(getMapTile(5, 3).getLocation()));
         enhancedMapTiles.add(new WaterBarrel(getMapTile(4, 14).getLocation()));
 
         Point coinLoc = getMapTile(5, 5).getLocation();

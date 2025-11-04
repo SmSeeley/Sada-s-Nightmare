@@ -27,7 +27,6 @@ import java.awt.Font;
 import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -55,7 +54,7 @@ public class PlayLevelScreen extends Screen implements GameListener {
 
     // --- Damage cooldown ---
     private long lastDamageTime = 0;
-    private final long damageCooldown = 1000;
+    private final long damageCooldown = 500;
 
     // --- UI: Hearts ---
     private BufferedImage fullHeartImage;
@@ -85,13 +84,28 @@ public class PlayLevelScreen extends Screen implements GameListener {
         transientMessageUntil = System.currentTimeMillis() + Math.max(0, durationMs);
     }
 
+    // --- Game over trigger guard + constants ---
+    private boolean gameOverTriggered = false;
+    private static final String GAME_OVER_SFX = "Resources/audio/gameover.wav";
+
+    private void triggerGameOver() {
+        if (gameOverTriggered) return;
+        gameOverTriggered = true;
+
+        playLevelScreenState = PlayLevelScreenState.GAME_OVER;
+
+        // Only stop the looping music so our preloaded SFX stays cached
+        AudioPlayer.stopLoop();
+        AudioPlayer.playSound(GAME_OVER_SFX, -3.0f);
+    }
+
     public PlayLevelScreen(ScreenCoordinator screenCoordinator) {
         this.screenCoordinator = screenCoordinator;
     }
 
     @Override
     public void initialize() {
-        // Kill *any* prior loops/SFX (e.g., title music) before starting gameplay music
+        // Stop any previous loops/SFX (fresh start for this screen)
         AudioPlayer.stopAll();
 
         // flags
@@ -118,6 +132,12 @@ public class PlayLevelScreen extends Screen implements GameListener {
         winScreen = new WinScreen(this);
         gameOverScreen = new GameOverScreen(this);
         playLevelScreenState = PlayLevelScreenState.RUNNING;
+
+        // reset game-over guard
+        gameOverTriggered = false;
+
+        // Preload ONLY the gameover SFX so first play has zero I/O latency
+        AudioPlayer.preloadSound(GAME_OVER_SFX, 1);
 
         // load UI images
         try {
@@ -149,9 +169,9 @@ public class PlayLevelScreen extends Screen implements GameListener {
 
     @Override
     public void update() {
-        // game over check
+        // Immediate health check -> trigger game over fast
         if (player.getHealth() <= 0) {
-            playLevelScreenState = PlayLevelScreenState.GAME_OVER;
+            triggerGameOver();
         }
 
         // handle queued door map changes
@@ -203,7 +223,7 @@ public class PlayLevelScreen extends Screen implements GameListener {
             AudioPlayer.stopAll();
             AudioPlayer.playLoop("Resources/audio/TheHubMusic.wav", -3.0f);
 
-            // Show 4s welcome banner on entering the hub
+            // Show welcome banner (6s, as in your copy)
             triggerTransientMessage(
                 "Welcome to the Dream Hall! Here you can trade coins for better weapons, and access other regions!",
                 6000
@@ -265,11 +285,10 @@ public class PlayLevelScreen extends Screen implements GameListener {
         if (playLevelScreenState == PlayLevelScreenState.RUNNING) {
             if (now - lastDamageTime >= damageCooldown) {
                 for (NPC npc : map.getNPCs()) {
-                    //no damage if this NPC is a Wizard 
+                    // no damage if this NPC is a Wizard (projectiles handle that)
                     if (npc instanceof NPCs.Wizard) continue;
 
                     if (npc.exists() && p.getBounds().intersects(npc.getBounds())) {
-                        System.out.println("Collision detected!");
                         boolean died = p.takeDamage(1);
 
                         // DAMAGE SFX
@@ -277,7 +296,7 @@ public class PlayLevelScreen extends Screen implements GameListener {
 
                         lastDamageTime = now;
                         if (died) {
-                            playLevelScreenState = PlayLevelScreenState.GAME_OVER;
+                            triggerGameOver(); // centralized, fast SFX
                         }
                         return;
                     }
@@ -301,7 +320,7 @@ public class PlayLevelScreen extends Screen implements GameListener {
                     projectile.setMapEntityStatus(MapEntityStatus.REMOVED);
                     lastDamageTime = now;
                     if (playerDied) {
-                        playLevelScreenState = PlayLevelScreenState.GAME_OVER;
+                        triggerGameOver(); // unified
                     }
                     return;
                 }
@@ -342,7 +361,7 @@ public class PlayLevelScreen extends Screen implements GameListener {
                     Font bannerFont = new Font("Arial", Font.BOLD, 24);
                     int textX = 50;
                     int textY = 100;
-                    int maxWidthPx = 600; // adjust if your game window is wider/narrower
+                    int maxWidthPx = 600; // adjust if needed
                     int lineSpacing = 6;
 
                     List<String> lines = wrapToWidth(transientMessage, bannerFont, maxWidthPx);
@@ -363,11 +382,9 @@ public class PlayLevelScreen extends Screen implements GameListener {
                                 bannerFont,
                                 Color.WHITE
                         );
-                        // advance Y by font height + spacing
                         y += getFontHeight(bannerFont) + lineSpacing;
                     }
                 } else if (transientMessage != null) {
-                    // Time elapsed — clear so we don't keep checking
                     transientMessage = null;
                 }
 
@@ -428,7 +445,6 @@ public class PlayLevelScreen extends Screen implements GameListener {
     }
 
     public void goBackToMenu() {
-        // Nuke all audio so title loop starts cleanly
         AudioPlayer.stopAll();
         screenCoordinator.setGameState(GameState.MENU);
     }
@@ -437,17 +453,14 @@ public class PlayLevelScreen extends Screen implements GameListener {
         RUNNING, LEVEL_COMPLETED, GAME_OVER
     }
 
-    /**
-     * Wraps a string to a maximum pixel width using FontMetrics.
-     * This creates a temporary Graphics2D to measure the font.
-     */
+    // =========================
+    // Word-wrap helpers
+    // =========================
+
     private List<String> wrapToWidth(String text, Font font, int maxWidthPx) {
         List<String> lines = new ArrayList<>();
-        if (text == null || text.isEmpty()) {
-            return lines;
-        }
+        if (text == null || text.isEmpty()) return lines;
 
-        // Prepare a tiny graphics to measure text
         BufferedImage tmp = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = tmp.createGraphics();
         g2.setFont(font);
@@ -464,12 +477,10 @@ public class PlayLevelScreen extends Screen implements GameListener {
                 current.setLength(0);
                 current.append(test);
             } else {
-                // push current line and start a new one
                 if (current.length() > 0) {
                     lines.add(current.toString());
                     current.setLength(0);
                 }
-                // If a single word is longer than max width, hard-break it
                 if (fm.stringWidth(word) > maxWidthPx) {
                     lines.addAll(hardBreakWord(word, fm, maxWidthPx));
                 } else {
@@ -486,9 +497,6 @@ public class PlayLevelScreen extends Screen implements GameListener {
         return lines;
     }
 
-    /**
-     * Hard-breaks a very long word so it fits maxWidthPx.
-     */
     private List<String> hardBreakWord(String word, FontMetrics fm, int maxWidthPx) {
         List<String> parts = new ArrayList<>();
         StringBuilder chunk = new StringBuilder();
@@ -506,15 +514,10 @@ public class PlayLevelScreen extends Screen implements GameListener {
                 chunk.append(c);
             }
         }
-        if (chunk.length() > 0) {
-            parts.add(chunk.toString());
-        }
+        if (chunk.length() > 0) parts.add(chunk.toString());
         return parts;
     }
 
-    /**
-     * Returns approximate font height for vertical spacing.
-     */
     private int getFontHeight(Font font) {
         BufferedImage tmp = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = tmp.createGraphics();
