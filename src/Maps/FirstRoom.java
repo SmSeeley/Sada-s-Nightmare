@@ -4,7 +4,7 @@ package Maps;
 import Enemies.Ogre;
 import EnhancedMapTiles.*;
 import Level.*;
-import NPCs.Wizard;
+import NPCs.*;
 import NPCs.greenNinja;
 import Scripts.TestMap.greenNinjaScript;
 import Tilesets.DungeonWallsTileSet;

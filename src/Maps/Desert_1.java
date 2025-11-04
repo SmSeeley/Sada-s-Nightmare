@@ -28,16 +28,17 @@ public class Desert_1 extends Map {
         ArrayList<EnhancedMapTile> enhancedMapTiles = new ArrayList<>();
 
         //Doors in room 1
-        NormalDoor doorB = new NormalDoor(getMapTile(10, 10).getLocation())
-        .toMap("FirstRoom", 8, 8)
+        NormalDoor doorB = new NormalDoor(getMapTile(10, 1).getLocation())
+        .toMap("Desert_2", 10, 10)
         .withTileSizePixels(48, 48);
         enhancedMapTiles.add(doorB);
-
 
         return enhancedMapTiles;
 
 
     }
+
+    
  
 }
 
