@@ -223,9 +223,9 @@ public class PlayLevelScreen extends Screen implements GameListener {
             AudioPlayer.stopAll();
             AudioPlayer.playLoop("Resources/audio/TheHubMusic.wav", -3.0f);
 
-            // Show welcome banner (6s, as in your copy)
+            // Show welcome banner (6s)
             triggerTransientMessage(
-                "Welcome to the Dream Hall! Here you can trade coins for better weapons, and access other regions!",
+                "Welcome to the Dream Hall Here you can trade coins for better weapons, and access other regions!",
                 6000
             );
         } else if ("Desert_1".equalsIgnoreCase(next))  {
@@ -244,7 +244,16 @@ public class PlayLevelScreen extends Screen implements GameListener {
             nextMap = new Winter_1();
             AudioPlayer.stopAll();
             AudioPlayer.playLoop("Resources/audio/WinterBliss.wav", -3.0f);
-        } else {
+        } else if ("Winter_2".equalsIgnoreCase(next)) {
+            nextMap = new Winter_2();
+        } else if ("Winter_3".equalsIgnoreCase(next)) {
+            nextMap = new Winter_3();
+        } else if ("Winter_4".equalsIgnoreCase(next)) {
+            nextMap = new Winter_4();
+        } else if ("Winter_5".equalsIgnoreCase(next)) {
+            nextMap = new Winter_5();
+        }
+        else {
             System.out.println("[PlayLevelScreen] Unknown map: " + next);
             return;
         }
@@ -356,7 +365,7 @@ public class PlayLevelScreen extends Screen implements GameListener {
             case RUNNING:
                 map.draw(player, graphicsHandler);
 
-                // --- transient banner (non-blocking) with word-wrap ---
+                // --- transient banner (non-blocking) with word-wrap & pink highlight for "Dream Hall" ---
                 if (transientMessage != null && System.currentTimeMillis() < transientMessageUntil) {
                     Font bannerFont = new Font("Arial", Font.BOLD, 24);
                     int textX = 50;
@@ -364,24 +373,15 @@ public class PlayLevelScreen extends Screen implements GameListener {
                     int maxWidthPx = 600; // adjust if needed
                     int lineSpacing = 6;
 
-                    List<String> lines = wrapToWidth(transientMessage, bannerFont, maxWidthPx);
+                    // Keep 'Dream Hall' together if possible using non-breaking space
+                    String wrappedText = transientMessage.replace("Dream Hall", "Dream\u00A0Hall");
+
+                    List<String> lines = wrapToWidth(wrappedText, bannerFont, maxWidthPx);
 
                     int y = textY;
                     for (String line : lines) {
-                        // shadow
-                        graphicsHandler.drawString(
-                                line,
-                                textX + 2, y + 2,
-                                bannerFont,
-                                new Color(0, 0, 0, 200)
-                        );
-                        // main
-                        graphicsHandler.drawString(
-                                line,
-                                textX, y,
-                                bannerFont,
-                                Color.WHITE
-                        );
+                        // draw with pink highlight
+                        drawLineWithDreamHallHighlight(graphicsHandler, line, bannerFont, textX, y);
                         y += getFontHeight(bannerFont) + lineSpacing;
                     }
                 } else if (transientMessage != null) {
@@ -451,6 +451,67 @@ public class PlayLevelScreen extends Screen implements GameListener {
 
     private enum PlayLevelScreenState {
         RUNNING, LEVEL_COMPLETED, GAME_OVER
+    }
+
+    // =========================
+    // Highlight helpers for "Dream Hall"
+    // =========================
+
+    // Pink used for "Dream Hall"
+    private static final Color DREAM_HALL_PINK = new Color(255, 105, 180); // Hot pink; tweak to taste
+
+    /** Draw a single line of text, coloring every occurrence of "Dream Hall" (or with NBSP) in pink, with a shadow. */
+    private void drawLineWithDreamHallHighlight(GraphicsHandler g, String line, Font font, int x, int y) {
+        final String targetA = "Dream Hall";
+        final String targetB = "Dream\u00A0Hall";
+
+        // Prepare font metrics for X advances
+        BufferedImage tmp = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = tmp.createGraphics();
+        g2.setFont(font);
+        FontMetrics fm = g2.getFontMetrics();
+
+        int cursorX = x;
+        int i = 0;
+        while (i < line.length()) {
+            int idx = indexOfEither(line, targetA, targetB, i);
+            if (idx < 0) {
+                String rest = line.substring(i);
+                // shadow
+                g.drawString(rest, cursorX + 2, y + 2, font, new Color(0, 0, 0, 200));
+                // main
+                g.drawString(rest, cursorX, y, font, Color.WHITE);
+                cursorX += fm.stringWidth(rest);
+                break;
+            }
+
+            if (idx > i) {
+                String pre = line.substring(i, idx);
+                g.drawString(pre, cursorX + 2, y + 2, font, new Color(0, 0, 0, 200));
+                g.drawString(pre, cursorX, y, font, Color.WHITE);
+                cursorX += fm.stringWidth(pre);
+            }
+
+            String target = line.startsWith(targetA, idx) ? targetA : targetB;
+
+            // Draw highlighted segment in pink
+            g.drawString(target, cursorX + 2, y + 2, font, new Color(0, 0, 0, 200));
+            g.drawString(target, cursorX, y, font, DREAM_HALL_PINK);
+            cursorX += fm.stringWidth(target);
+
+            i = idx + target.length();
+        }
+
+        g2.dispose();
+    }
+
+    /** Finds next index of either s1 or s2 in 'text' starting at 'from'. Returns -1 if neither found. */
+    private int indexOfEither(String text, String s1, String s2, int from) {
+        int i1 = text.indexOf(s1, from);
+        int i2 = text.indexOf(s2, from);
+        if (i1 == -1) return i2;
+        if (i2 == -1) return i1;
+        return Math.min(i1, i2);
     }
 
     // =========================
