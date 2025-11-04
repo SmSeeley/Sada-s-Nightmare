@@ -8,17 +8,21 @@ import GameObject.Frame;
 import GameObject.ImageEffect;
 import GameObject.SpriteSheet;
 import Level.Enemy;
+import Level.Map;
 import Level.Player;
 import Utils.Point;
 import java.awt.Color;
 import java.util.HashMap;
 
 public class Ogre extends Enemy {
-    private final int DETECTION_RADIUS = 100;
-    public boolean keyDropped = false;
 
-    public Ogre(int id, Point location) {
-        super(id, location.x, location.y, new SpriteSheet(ImageLoader.load("ogre.png"), 24, 24), "STAND_RIGHT",4);
+    private final int DETECTION_RADIUS = 100;
+    private Map currentMap;
+    public static boolean hasDied = false;
+
+    public Ogre(int id, Point location, Map map) {
+        super(id, location.x, location.y, new SpriteSheet(ImageLoader.load("ogre.png"), 24, 24), "STAND_RIGHT");
+        this.currentMap = map;
     }  
     
     // overrides loadAnimations method to define animation for ogre
@@ -69,9 +73,15 @@ public class Ogre extends Enemy {
         //if (!keyDropped && health <= 0) {
             //dropKey();
         //}
+        if (isDead() && !hasDied) {
+            markAsDead();
+            System.out.println("[Ogre] has died, dropping key!");
+        }
         super.update(player);
+
+        
     }
-    private void dropKey() {
+    /*private void dropKey() {
         keyDropped = true;
         Point dropLoc = new Point(getBounds().getX(), getBounds().getY());
         DoorKey key = new DoorKey(dropLoc);
@@ -83,23 +93,28 @@ public class Ogre extends Enemy {
         } else {
             System.out.println("[Ogre] Map was null, couldn’t add key!");
         }
-    }
+    }*/
     public boolean isDead() {
-    return health <= 0;
+    return hasDied || !getIsActive() || health <= 0;
     }
 
-    public boolean hasDroppedKey() {
-        return keyDropped;
+    public void markAsDead() {
+        hasDied = true;
     }
 
-    public DoorKey createKey() {
-        Point dropLoc = new Point(getBounds().getX(), getBounds().getY());
-        keyDropped = true;  // mark as dropped
-        return new DoorKey(dropLoc);
-    }
+    //public boolean hasDroppedKey() {
+        //return keyDropped;
+    //}
+
+    //public DoorKey createKey() {
+        //Point dropLoc = new Point(getBounds().getX(), getBounds().getY());
+        //keyDropped = true;  // mark as dropped
+        //return new DoorKey(dropLoc);
+    //}
     @Override
         public void draw(GraphicsHandler graphicsHandler) {
             //drawBounds(graphicsHandler, new Color(255, 0, 0, 100));
             super.draw(graphicsHandler);
         }
+
 }

@@ -50,7 +50,7 @@ public class MenuScreen extends Screen {
 
         // Center text
         String playStr = "PLAY GAME";
-        String creditsStr = "CREDITS";
+        String creditsStr = "CONTROLS";
 
         int playWidth = playStr.length() * 14;
         int creditsWidth = creditsStr.length() * 14;

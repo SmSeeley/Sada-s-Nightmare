@@ -30,7 +30,7 @@ public class SecondRoom extends Map {
         .withTileSizePixels(48, 48);
         enhancedMapTiles.add(doorB);
 
-        Door doorC = new Door(getMapTile(10, 1).getLocation())
+        NormalDoor doorC = new NormalDoor(getMapTile(10, 1).getLocation())
         .toMap("ThirdRoomDungeon", 10, 10)
         .withTileSizePixels(48, 48);
         enhancedMapTiles.add(doorC);

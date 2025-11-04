@@ -16,7 +16,8 @@ public class Enemy extends MapEntity {
     private boolean isActive = true;
     protected int id = 0;
     protected boolean isLocked = false;
-    private boolean keyDropped = false;
+    //private boolean keyDropped = false;
+    protected Player player;
 
     // damage cooldown
     private final long damageCooldown = 500;
@@ -115,28 +116,15 @@ public class Enemy extends MapEntity {
         }
     }
 
-    // update method to handle enemy logic
     public void update(Player player) {
+        if (!getIsActive()) return; // stop updating if not active
         if (shootTimer > 0) {
             shootTimer--;
         }
         if (!isLocked) {
             this.performAction(player);
         }
-        super.update();
-        // If the enemy has been deactivated, skip all logic (no movement, no shooting)
-        if (!getIsActive()) {
-            return;
-        }
-
-        if (shootTimer > 0) {
-            shootTimer--;
-        }
-
-        if (!isLocked) {
-            this.performAction(player);
-        }
-
+        checkPlayerCollision(player); // ✅ ensures Sada can take damage
         super.update();
     }
 
@@ -242,48 +230,57 @@ public class Enemy extends MapEntity {
         if (health <= 0) {
             removeEnemy();
         }
-}
+    }
 
 
-    public void setIsActive(boolean isActive) {
-        this.isActive = isActive;
-        if (!isActive) {
-            // additional safety: lock so no more actions, and clear shoot timer
-            lock();
-            shootTimer = 0;
+        public void setIsActive(boolean isActive) {
+            this.isActive = isActive;
+            if (!isActive) {
+                // additional safety: lock so no more actions, and clear shoot timer
+                lock();
+                shootTimer = 0;
+            }
         }
-    }
 
-    public boolean getIsActive() {
-        return isActive;
-    }
+        public boolean getIsActive() {
+            return isActive;
+        }
 
     
 
+        public void removeEnemy() {
+        setIsActive(false);
+        lock();
+        shootTimer = 0;
+
+    ///incrament keys when enemy dies
+    /*if (!keyDropped) {
     public void removeEnemy() {
-    setIsActive(false);
-    lock();
-    shootTimer = 0;
-
-    //incrament keys when enemy dies
-    if (!keyDropped) {
-        keyDropped = true; // ensure this only happens once per enemy
-        EnhancedMapTiles.DoorKey.keysCollected++;
         System.out.println("[Enemy] Enemy defeated — incremented key count to " + EnhancedMapTiles.DoorKey.keysCollected);
+    }*/
+
+        try {
+            this.setLocation(-10000, -10000);
+        } catch (Exception ignored) {}
+
+        try {
+            if (this.map != null) {
+                java.lang.reflect.Method m = this.map.getClass().getMethod("removeMapEntity", Level.MapEntity.class);
+                if (m != null) {
+                    m.invoke(this.map, this);
+                }
+            }
+        } catch (Exception ignored) {}
     }
-
-    try {
-        this.setLocation(-10000, -10000);
-    } catch (Exception ignored) {}
-
-    try {
-        if (this.map != null) {
-            java.lang.reflect.Method m = this.map.getClass().getMethod("removeMapEntity", Level.MapEntity.class);
-            if (m != null) {
-                m.invoke(this.map, this);
+    // Method to check and apply damage to Sada when colliding
+    public void checkPlayerCollision(Player player) {
+        if (getIsActive() && this.intersects(player)) {
+            long now = System.currentTimeMillis();
+            if (now - lastDamageTime >= damageCooldown) {
+                lastDamageTime = now;
+                player.takeDamage(1); // damage Sada by 1 (adjust if needed)
+                System.out.println("Sada took damage from enemy!");
             }
         }
-    } catch (Exception ignored) {}
+    }
 }
-}
-
