@@ -1,6 +1,7 @@
 package EnhancedMapTiles;
 
 import Builders.FrameBuilder;
+import Engine.AudioPlayer;
 import Engine.ImageLoader;
 import GameObject.Frame;
 import GameObject.GameObject;
@@ -10,7 +11,9 @@ import Level.MapEntity;
 import Level.Player;
 import Level.*;
 import Scripts.*;
-import ScriptActions.*;
+import ScriptActions.LockPlayerScriptAction;
+import ScriptActions.ScriptAction;
+import ScriptActions.UnlockPlayerScriptAction;
 import Utils.Point;
 
 import java.lang.reflect.Field;
@@ -41,10 +44,9 @@ public class NormalDoor extends EnhancedMapTile {
     private Frame openFrame;
 
     // target map info
-    private String targetMapName = null;     // e.g., "SecondRoom" or "FirstRoom"
+    private String targetMapName = null;          // e.g., "SecondRoom" or "FirstRoom"
     private int spawnTileX = 0, spawnTileY = 0;   // where to drop the player on target map (tile coords)
-    // tile size used for tile->pixel conversion (your render tiles are 48x48)
-    private int tileW = 48, tileH = 48;
+    private int tileW = 48, tileH = 48;           // rendered tile size
 
     public NormalDoor(Point location) {
         super(location.x, location.y,
@@ -62,6 +64,7 @@ public class NormalDoor extends EnhancedMapTile {
                 if (isOpen) return actions;
 
                 actions.add(new LockPlayerScriptAction());
+
                 actions.add(new ScriptAction() {
                     @Override
                     public Level.ScriptState execute() {
@@ -70,12 +73,21 @@ public class NormalDoor extends EnhancedMapTile {
                         setIsUncollidable(true);      // once opened, no longer blocks
                         teleportCooldown = 0;
 
+                        // swap art to open frame
                         try {
                             boolean swapped = setGameObjectFrame(doorObj, openFrame);
                             System.out.println("[Door] swapped frame on doorObj = " + swapped);
                         } catch (Throwable th) {
                             System.out.println("[Door] WARN: frame swap failed: " + th);
                         }
+
+                        // ✅ play door open SFX (non-looping)
+                        try {
+                            AudioPlayer.playSound("Resources/audio/Door_Open.wav", -6.0f);
+                        } catch (Throwable s) {
+                            System.out.println("[Door] Could not play Door_Open.wav: " + s);
+                        }
+
                         return Level.ScriptState.COMPLETED;
                     }
                 });
@@ -162,7 +174,6 @@ public class NormalDoor extends EnhancedMapTile {
         try {
             Class<?> keyCls = Class.forName("Engine.Key");
             Class<?> kbCls  = Class.forName("Engine.Keyboard");
-            // try both "E" and "e" just in case enum name differs
             Object KEY_E = null;
             try { KEY_E = keyCls.getField("E").get(null); } catch (Throwable ignored) {}
             if (KEY_E == null) {
