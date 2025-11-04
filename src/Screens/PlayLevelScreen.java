@@ -9,28 +9,26 @@ import EnhancedMapTiles.DoorKey;
 import EnhancedMapTiles.HealthPotion;
 import Game.GameState;
 import Game.ScreenCoordinator;
+import Level.Enemy;
 import Level.FlagManager;
 import Level.GameListener;
 import Level.Map;
 import Level.MapEntity;
 import Level.MapEntityStatus;
-import Level.NPC;
 import Level.Player;
 import Maps.Desert_1;
 import Maps.FirstRoom;
 import Maps.SecondRoom;
-import Maps.TestMap;
 import Maps.ThirdRoomDungeon;
 import Players.Sada;
 import Utils.Direction;
 import Utils.Point;
-
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.awt.Font;
 import java.awt.Color;
+import java.awt.Font;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import javax.imageio.ImageIO;
 
 public class PlayLevelScreen extends Screen implements GameListener {
 
@@ -226,22 +224,22 @@ public class PlayLevelScreen extends Screen implements GameListener {
 
         if (playLevelScreenState == PlayLevelScreenState.RUNNING) {
             if (now - lastDamageTime >= damageCooldown) {
-                for (NPC npc : map.getNPCs()) {
-                    //no damage if this NPC is a Wizard 
-                    if (npc instanceof NPCs.Wizard) continue;
+                for (Enemy enemy : map.getEnemies()) {
+                    // only takes damage when touched by fire and desert monster
+                    if ((enemy instanceof Fireblob || enemy instanceof Desertmonster || enemy instanceof Twoheadedogre) && enemy.exists()) {
+                        if (enemy.exists() && p.getBounds().intersects(enemy.getBounds())) {
+                            System.out.println("Collision detected!");
+                            boolean died = p.takeDamage(2);
 
-                    if (npc.exists() && p.getBounds().intersects(npc.getBounds())) {
-                        System.out.println("Collision detected!");
-                        boolean died = p.takeDamage(1);
+                            // DAMAGE SFX
+                            AudioPlayer.playSound("Resources/audio/Damage_Effect.wav", -4.0f);
 
-                        // DAMAGE SFX
-                        AudioPlayer.playSound("Resources/audio/Damage_Effect.wav", -4.0f);
-
-                        lastDamageTime = now;
-                        if (died) {
-                            playLevelScreenState = PlayLevelScreenState.GAME_OVER;
+                            lastDamageTime = now;
+                            if (died) {
+                                playLevelScreenState = PlayLevelScreenState.GAME_OVER;
+                            }
+                            return;
                         }
-                        return;
                     }
                 }
             }

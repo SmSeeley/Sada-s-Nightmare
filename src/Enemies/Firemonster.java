@@ -13,29 +13,30 @@ import Utils.Point;
 import java.awt.Color;
 import java.util.HashMap;
 
-public class Ogre extends Enemy {
+public class Firemonster extends Enemy {
     private final int DETECTION_RADIUS = 100;
+
     public boolean keyDropped = false;
 
-    public Ogre(int id, Point location) {
-        super(id, location.x, location.y, new SpriteSheet(ImageLoader.load("ogre.png"), 24, 24), "STAND_RIGHT",4);
+    public Firemonster(int id, Point location) {
+        super(id, location.x, location.y, new SpriteSheet(ImageLoader.load("firemonster.png"), 24, 24), "STAND_RIGHT", 16);
     }  
     
-    // overrides loadAnimations method to define animation for ogre
+    // overrides loadAnimations method to define animation
     @Override
     public HashMap<String, Frame[]> loadAnimations(SpriteSheet spriteSheet) {
         return new HashMap<String, Frame[]>() {{
 
             put("STAND_RIGHT", new Frame[] {
                 new FrameBuilder(spriteSheet.getSprite(0, 0))
-                    .withScale(4)
+                    .withScale(3)
                     .withBounds(4,2,15,15)
                     .build()
             });
 
             put("STAND_LEFT", new Frame[] {
                 new FrameBuilder(spriteSheet.getSprite(0, 0))
-                    .withScale(4)
+                    .withScale(3)
                     .withBounds(5,2,15,15)
                     .withImageEffect(ImageEffect.FLIP_HORIZONTAL)
                     .build()
@@ -47,20 +48,19 @@ public class Ogre extends Enemy {
 
    @Override
     public void update(Player player) {
-
-        float ogreCenterX = getBounds().getX() + (getBounds().getWidth() / 2);
+        float firemonsterCenterX = getBounds().getX() + (getBounds().getWidth() / 2);
         float playerCenterX = player.getBounds().getX() + (player.getBounds().getWidth() / 2);
 
-        float ogreCenterY = getBounds().getY() + (getBounds().getHeight() / 2);
+        float firemonsterCenterY = getBounds().getY() + (getBounds().getHeight() / 2);
         float playerCenterY = player.getBounds().getY() + (player.getBounds().getHeight() / 2);
 
-        float distanceX = playerCenterX - ogreCenterX;
-        float distanceY = playerCenterY - ogreCenterY;
+        float distanceX = playerCenterX - firemonsterCenterX;
+        float distanceY = playerCenterY - firemonsterCenterY;
         float distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
         float detectionRadiusSquared = DETECTION_RADIUS * DETECTION_RADIUS;
 
         if (distanceSquared <= detectionRadiusSquared) {
-            if (playerCenterX < ogreCenterX) {
+            if (playerCenterX < firemonsterCenterX) {
                 currentAnimationName = "STAND_LEFT";
             } else {
                 currentAnimationName = "STAND_RIGHT";
@@ -79,9 +79,9 @@ public class Ogre extends Enemy {
         // Register the key into the current map’s enhanced tiles list
         if (map != null) {
             map.addEnhancedMapTile(key);
-            System.out.println("[Ogre] Dropped key at " + dropLoc.x + ", " + dropLoc.y);
+            System.out.println("[firemonster] Dropped key at " + dropLoc.x + ", " + dropLoc.y);
         } else {
-            System.out.println("[Ogre] Map was null, couldn’t add key!");
+            System.out.println("[firemonster] Map was null, couldn’t add key!");
         }
     }
     public boolean isDead() {

@@ -9,7 +9,6 @@ import Utils.Direction;
 import Utils.Point;
 import java.awt.Color;
 import java.util.HashMap;
-import EnhancedMapTiles.DoorKey;
 
 
 // This class for enemies
@@ -20,17 +19,25 @@ public class Enemy extends MapEntity {
     private boolean keyDropped = false;
 
     // damage cooldown
-    private final long damageCooldown = 1000; // 1 second cooldown
+    private final long damageCooldown = 500;
     private long lastDamageTime = 0;
 
     // health variables
     protected int maxHealth = 5;
     protected int health = maxHealth;
-
+    
     // projectile shooting variables
     protected int shootTimer = 0;
     protected final int SHOOT_COOLDOWN = 240;
 
+    // consstructor that handles max health
+    public Enemy(int id, float x, float y, SpriteSheet spriteSheet, String startingAnimation, int maxHealth) {
+        super(x, y, spriteSheet, startingAnimation);
+        this.id = id;
+        this.maxHealth = maxHealth;
+        this.health = maxHealth;
+    }
+    
     public Enemy(int id, float x, float y, SpriteSheet spriteSheet, String startingAnimation) {
         super(x, y, spriteSheet, startingAnimation);
         this.id = id;
@@ -259,11 +266,11 @@ public class Enemy extends MapEntity {
     shootTimer = 0;
 
     //incrament keys when enemy dies
-    /*if (!keyDropped) {
+    if (!keyDropped) {
         keyDropped = true; // ensure this only happens once per enemy
         EnhancedMapTiles.DoorKey.keysCollected++;
         System.out.println("[Enemy] Enemy defeated — incremented key count to " + EnhancedMapTiles.DoorKey.keysCollected);
-    }*/
+    }
 
     try {
         this.setLocation(-10000, -10000);
