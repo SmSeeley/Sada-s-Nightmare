@@ -29,7 +29,7 @@ public class Shopkeeper extends NPC {
     
     // Shop items and prices
     private final String[] shopItems = {"Health Potion (+1 heart) - 3 coins", "Archer's Bow (+3 Damage) - 7 coins", "Exit Shop"};
-    private final int[] itemPrices = {3, 1, 0}; // 0 for exit
+    private final int[] itemPrices = {1, 1, 0}; // 0 for exit
     
     public Shopkeeper(int id, Point location) {
         super(id, location.x, location.y, new SpriteSheet(ImageLoader.load("Shopkeeper.png"), 24, 24), "STAND_DOWN");
@@ -101,8 +101,9 @@ public class Shopkeeper extends NPC {
                 
                 switch (selectedOption) {
                     case 0: // Health Potion
-                        // Add health to player
-                        System.out.println("Purchased Health Potion! Player healed.");
+                       // Give player 1 heart using player's heal method
+                       player.heal(1);
+                       System.out.println("Purchased Health Potion! +1 Heart added!");
                         break;
                     case 1: // Archer's Bow
                         // Give player Archers Bow (set bow flag)
