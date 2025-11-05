@@ -49,7 +49,7 @@ public class Room5Dungeon extends Map {
         enhancedMapTiles.add(toSecond);
 
         //Doors in room 1
-        NormalDoor doorB = new NormalDoor(getMapTile(10, 1).getLocation())
+        DreamDoor doorB = new DreamDoor(getMapTile(10, 1).getLocation())
         .toMap("TheHub1", 10, 10)
         .withTileSizePixels(48, 48);
         enhancedMapTiles.add(doorB);
