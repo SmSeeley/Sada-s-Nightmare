@@ -128,10 +128,10 @@ public class Ogre extends Enemy {
         if (wasActive && !getIsActive() && !hasDied) {
             hasDied = true;
             try {
-                if (currentMap instanceof Maps.FirstRoom) {
-                    Maps.FirstRoom firstRoom = (Maps.FirstRoom) currentMap;
-                    Point dropLoc = firstRoom.getMapTile(4, 3).getLocation(); // where the ogre was
-                    firstRoom.addEnhancedMapTile(new DoorKey(dropLoc));
+                if (currentMap instanceof Maps.ThirdRoomDungeon) {
+                    Maps.ThirdRoomDungeon ThirdRoomDungeon = (Maps.ThirdRoomDungeon) currentMap;
+                    Point dropLoc = ThirdRoomDungeon.getMapTile(10, 3).getLocation(); // where the ogre was
+                    ThirdRoomDungeon.addEnhancedMapTile(new DoorKey(dropLoc));
                     System.out.println("[Ogre] Dropped key at " + dropLoc.x + ", " + dropLoc.y);
                 }
             } catch (Exception e) {

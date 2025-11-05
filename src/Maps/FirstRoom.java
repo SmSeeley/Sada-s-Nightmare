@@ -54,16 +54,6 @@ public class FirstRoom extends Map {
         return enhancedMapTiles;
     }
 
-    @Override
-    public ArrayList<Enemy> loadEnemies() {
-        ArrayList<Enemy> enemies = new ArrayList<>();
-        ogre = new Ogre(5, getMapTile(4, 4).getLocation(),this);
-        enemies.add(ogre);
-        //vladmir = new Vladmir(1, getMapTile(9,7).getLocation());
-        //enemies.add(vladmir);
-        return enemies;
-    }
-
     // Necessary code to allow dynamic addition to the map's enhanced tiles list
     public ArrayList<EnhancedMapTile> getEnhancedMapTiles() {
         return enhancedMapTiles;

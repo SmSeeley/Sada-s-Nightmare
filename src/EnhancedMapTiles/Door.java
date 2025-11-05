@@ -68,7 +68,7 @@ public class Door extends EnhancedMapTile {
                 actions.add(new LockPlayerScriptAction());
 
                 // Check key count NOW (at interaction time)
-                if (DoorKey.keysCollected < 1) {
+                if (DoorKey.keysCollected == 1) {
                     // NO KEY -> show message and exit
                     TextboxScriptAction t = new TextboxScriptAction();
                     t.addText("It's locked. You need a key.");
