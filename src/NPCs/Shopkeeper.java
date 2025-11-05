@@ -28,8 +28,8 @@ public class Shopkeeper extends NPC {
     private KeyLocker menuKeyLocker = new KeyLocker();
     
     // Shop items and prices
-    private final String[] shopItems = {"Health Potion - 3 coins", "Archer's Bow - 7 coins", "Exit Shop"};
-    private final int[] itemPrices = {3, 7, 0}; // 0 for exit
+    private final String[] shopItems = {"Health Potion (+1 heart) - 3 coins", "Archer's Bow (+3 Damage) - 7 coins", "Exit Shop"};
+    private final int[] itemPrices = {3, 1, 0}; // 0 for exit
     
     public Shopkeeper(int id, Point location) {
         super(id, location.x, location.y, new SpriteSheet(ImageLoader.load("Shopkeeper.png"), 24, 24), "STAND_DOWN");
@@ -104,17 +104,17 @@ public class Shopkeeper extends NPC {
                         // Add health to player
                         System.out.println("Purchased Health Potion! Player healed.");
                         break;
-                    case 1: // Magic Sword
-                        // Give player magic sword (set sword flag)
+                    case 1: // Archer's Bow
+                        // Give player Archers Bow (set bow flag)
                         try {
-                            Class<?> swordClass = Class.forName("EnhancedMapTiles.Sword");
-                            java.lang.reflect.Field hasSwordField = swordClass.getDeclaredField("hasSword");
-                            hasSwordField.setAccessible(true);
-                            hasSwordField.setBoolean(null, true);
-                            player.setHasSword(true);
-                            System.out.println("Purchased Magic Sword! Attack power increased.");
+                            Class<?> bowClass = Class.forName("EnhancedMapTiles.ArchersBow");
+                            java.lang.reflect.Field hasBowField = bowClass.getDeclaredField("hasBow");
+                            hasBowField.setAccessible(true);
+                            hasBowField.setBoolean(null, true);
+                            player.setHasBow(true);
+                            System.out.println("Purchased Archer's Bow! Attack power adjusted.");
                         } catch (Exception e) {
-                            System.out.println("Purchased Magic Sword!");
+                            System.out.println("Purchased Archer's Bow! Failed to equip.");
                         }
                         break;
                 }
