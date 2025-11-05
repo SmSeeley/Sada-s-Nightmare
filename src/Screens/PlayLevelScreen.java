@@ -326,7 +326,7 @@ public class PlayLevelScreen extends Screen implements GameListener {
             if (now - lastDamageTime >= damageCooldown) {
                 for (Enemy enemy : map.getEnemies()) {
                     // only takes damage when touched by fire and desert monster
-                    if ((enemy instanceof Fireblob || enemy instanceof Desertmonster || enemy instanceof Twoheadedogre) && enemy.exists()) {
+                    if ((enemy instanceof Fireblob || enemy instanceof Desertboss || enemy instanceof Twoheadedogre) && enemy.exists()) {
                         if (enemy.exists() && p.getBounds().intersects(enemy.getBounds())) {
                             System.out.println("Collision detected!");
                             boolean died = p.takeDamage(1);

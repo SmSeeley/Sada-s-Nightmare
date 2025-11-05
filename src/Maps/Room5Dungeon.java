@@ -1,6 +1,7 @@
 //Map that user will walk into
 package Maps;
 
+import Enemies.Twoheadedogre;
 import EnhancedMapTiles.*;
 import Level.*;
 import Tilesets.DungeonWallsTileSet;
@@ -9,6 +10,7 @@ import java.util.ArrayList;
 
 public class Room5Dungeon extends Map {
 
+    private Twoheadedogre twoheadedogre;
 
     public Room5Dungeon() {
         super("Room4Dungeon.txt", new DungeonWallsTileSet());
@@ -55,6 +57,15 @@ public class Room5Dungeon extends Map {
         enhancedMapTiles.add(doorB);
 
         return enhancedMapTiles;
+    }
+
+    @Override
+    public ArrayList<Enemy> loadEnemies() {
+        ArrayList<Enemy> enemies = new ArrayList<>();
+        twoheadedogre = new Twoheadedogre(5, getMapTile(10, 2).getLocation());
+        enemies.add(twoheadedogre);
+        
+        return enemies;
     }
 
 

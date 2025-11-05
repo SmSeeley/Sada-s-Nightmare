@@ -35,8 +35,8 @@ public class Projectile extends MapEntity {
     }
     
     public void setDamage(int damage) {
-    this.damage = damage;
-}
+        this.damage = damage;
+    }
 
     @Override
     public HashMap<String, Frame[]> loadAnimations(SpriteSheet spriteSheet) {
@@ -54,7 +54,7 @@ public class Projectile extends MapEntity {
     public void update() {
        float moveAmount = 0; 
         
-       if (null != direction) // attempt to move and store the actual distance moved
+       
         switch (direction) {
             case RIGHT:
                 moveAmount = moveXHandleCollision(speed);

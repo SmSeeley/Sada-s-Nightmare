@@ -2,13 +2,18 @@
 
 package Maps;
 
+import Enemies.Firemonster;
 import EnhancedMapTiles.*;
+import Level.Enemy;
 import Level.EnhancedMapTile;
 import Level.Map;
 import Tilesets.FireTileset;
 import java.util.ArrayList;
 
 public class Fire_2 extends Map {
+    
+    private Firemonster firemonster;
+
    public Fire_2() {
         super("Fire_2.txt", new FireTileset());
         this.playerStartPosition =  getMapTile(4, 7).getLocation();
@@ -36,6 +41,14 @@ public class Fire_2 extends Map {
 
         return enhancedMapTiles;
 
+    }
+
+    @Override
+    public ArrayList<Enemy> loadEnemies() {
+        ArrayList<Enemy> enemies = new ArrayList<>();
+        firemonster = new Firemonster(5, getMapTile(8, 3).getLocation());
+        enemies.add(firemonster);
+        return enemies;
     }
    
 }
