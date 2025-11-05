@@ -9,14 +9,34 @@ import EnhancedMapTiles.DoorKey;
 import EnhancedMapTiles.HealthPotion;
 import Game.GameState;
 import Game.ScreenCoordinator;
+import Level.Enemy;
 import Level.FlagManager;
 import Level.GameListener;
 import Level.Map;
 import Level.MapEntity;
 import Level.MapEntityStatus;
-import Level.NPC;
 import Level.Player;
-import Maps.*;
+import Maps.Desert_1;
+import Maps.Desert_2;
+import Maps.Desert_3;
+import Maps.Desert_4;
+import Maps.Desert_5;
+import Maps.Fire_1;
+import Maps.Fire_2;
+import Maps.Fire_3;
+import Maps.Fire_4;
+import Maps.Fire_5;
+import Maps.FirstRoom;
+import Maps.Room4Dungeon;
+import Maps.Room5Dungeon;
+import Maps.SecondRoom;
+import Maps.TheHub1;
+import Maps.ThirdRoomDungeon;
+import Maps.Winter_1;
+import Maps.Winter_2;
+import Maps.Winter_3;
+import Maps.Winter_4;
+import Maps.Winter_5;
 import Players.Sada;
 import Utils.Direction;
 import Utils.Point;
@@ -251,6 +271,18 @@ public class PlayLevelScreen extends Screen implements GameListener {
             nextMap = new Winter_4();
         } else if ("Winter_5".equalsIgnoreCase(next)) {
             nextMap = new Winter_5();
+        } else if ("Fire_1".equalsIgnoreCase(next))  {
+            nextMap = new Fire_1();
+            AudioPlayer.stopAll();
+            AudioPlayer.playLoop("Resources/audio/FireMusic.wav", -3.0f);
+        } else if ("Fire_2".equalsIgnoreCase(next)) {
+            nextMap = new Fire_2();
+        } else if ("Fire_3".equalsIgnoreCase(next)) {
+            nextMap = new Fire_3();
+        } else if ("Fire_4".equalsIgnoreCase(next)) {
+            nextMap = new Fire_4();
+        } else if ("Fire_5".equalsIgnoreCase(next)) {
+            nextMap = new Fire_5();
         }
         else {
             System.out.println("[PlayLevelScreen] Unknown map: " + next);
@@ -292,14 +324,31 @@ public class PlayLevelScreen extends Screen implements GameListener {
 
         if (playLevelScreenState == PlayLevelScreenState.RUNNING) {
             if (now - lastDamageTime >= damageCooldown) {
-                for (NPC npc : map.getNPCs()) {
-                    // no damage if this NPC is a Wizard (projectiles handle that)
-                    if (npc instanceof NPCs.Wizard) continue;
+                for (Enemy enemy : map.getEnemies()) {
+                    // only takes damage when touched by fire and desert monster
+                    if ((enemy instanceof Fireblob || enemy instanceof Desertboss || enemy instanceof Twoheadedogre) && enemy.exists()) {
+                        if (enemy.exists() && p.getBounds().intersects(enemy.getBounds())) {
+                            System.out.println("Collision detected!");
+                            boolean died = p.takeDamage(1);
 
-                    //same with shopkeeper
-                    if (npc instanceof NPCs.Shopkeeper) continue;
+                            // DAMAGE SFX
+                            AudioPlayer.playSound("Resources/audio/Damage_Effect.wav", -4.0f);
 
-                    if (npc.exists() && p.getBounds().intersects(npc.getBounds())) {
+                            lastDamageTime = now;
+                            if (died) {
+                                playLevelScreenState = PlayLevelScreenState.GAME_OVER;
+                            }
+                            return;
+                        }
+                        lastDamageTime = now;
+                        if (gameOverTriggered) {
+                            triggerGameOver(); // centralized, fast SFX
+                        }
+                        return;
+                    }
+                }
+                for (Enemy enemies : map.getEnemies()) {
+                    if (enemies.exists() && p.getBounds().intersects(enemies.getBounds())) {
                         boolean died = p.takeDamage(1);
 
                         // DAMAGE SFX

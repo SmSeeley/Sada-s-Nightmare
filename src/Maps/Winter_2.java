@@ -1,20 +1,20 @@
 package Maps;
 
-
+import Enemies.Watermonster;
 import EnhancedMapTiles.*;
 import Level.*;
 import Tilesets.*;
-
 import java.util.ArrayList;
 
 // Represents a test map to be used in a level
 public class Winter_2 extends Map {
 
+    private Watermonster watermonster;
+
     public Winter_2() {
         super("Winter_2.txt", new WinterTileset());
         this.playerStartPosition = getMapTile(4, 7).getLocation();
     }
-
 
     @Override
     public ArrayList<EnhancedMapTile> loadEnhancedMapTiles() {
@@ -32,10 +32,16 @@ public class Winter_2 extends Map {
         .withTileSizePixels(48, 48);
         enhancedMapTiles.add(doorC);
 
-
         return enhancedMapTiles;
+    }
 
-
+    @Override
+    public ArrayList<Enemy> loadEnemies() {
+        ArrayList<Enemy> enemies = new ArrayList<>();
+        watermonster = new Watermonster(5, getMapTile(8, 4).getLocation());
+        enemies.add(watermonster);
+        
+        return enemies;
     }
  
 }

@@ -14,18 +14,14 @@ import java.awt.Color;
 import java.util.HashMap;
 
 public class Zombie extends Enemy {
-
-    private int health = 5;
     
     // defining shooting range
-    private final int SHOOT_RANGE_HORIZONTAL = 300;
+    private final int SHOOT_RANGE_HORIZONTAL = 1000;
     private final int VERTICAL_TOLERANCE = 300;
-
-
      
     // creates zombie object
     public Zombie(int id, Point location) {
-        super(id, location.x, location.y, new SpriteSheet(ImageLoader.load("Zombie.png"), 24, 24), "STAND_RIGHT");
+        super(id, location.x, location.y, new SpriteSheet(ImageLoader.load("Zombie.png"), 24, 24), "STAND_RIGHT",6);
     }  
     
     // overrides loadAnimations method to define animation for zombie
@@ -43,7 +39,7 @@ public class Zombie extends Enemy {
             put("STAND_LEFT", new Frame[] {
                 new FrameBuilder(spriteSheet.getSprite(0, 0))
                     .withScale(3)
-                    .withBounds(3,2,17,20)
+                    .withBounds(3,1,15,20)
                     .withImageEffect(ImageEffect.FLIP_HORIZONTAL)
                     .build()
             });

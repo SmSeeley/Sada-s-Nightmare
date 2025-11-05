@@ -16,7 +16,7 @@ public class Skull extends EnhancedMapTile {
 
     /** Uses Resources/barrel.png */
     public Skull(Point location) {
-        this(location, "Skull.png");
+        this(location, "SkullTile.png");
     }
 
     public Skull(Point location, String imageFileName) {

@@ -14,11 +14,11 @@ import java.util.HashMap;
 // A projectile shot by an enemy
 public class Projectile extends MapEntity {
 
-    private float speed = 2.0f; // speed of projectile
+    private float speed = 1.5f; // speed of projectile
     private Direction direction; // direction its moving 
     private int damage = 1; 
 
-    private  final float MAX_DISTANCE = 300f;
+    private  final float MAX_DISTANCE = 600f;
     private float distanceTraveled = 0;
 
     public Projectile(Point location, SpriteSheet spriteSheet, String startingAnimation, Direction direction) {
@@ -32,6 +32,10 @@ public class Projectile extends MapEntity {
         }
         setMap(this.map);
 
+    }
+    
+    public void setDamage(int damage) {
+        this.damage = damage;
     }
 
     @Override
@@ -48,14 +52,24 @@ public class Projectile extends MapEntity {
 
     @Override
     public void update() {
-       // System.out.println("Projectile x: " + x + ", y: " + y); 
        float moveAmount = 0; 
         
-        // attempt to move and store the actual distance moved
-       if (direction == Direction.RIGHT) {
-            moveAmount = moveXHandleCollision(speed);
-        } else if (direction == Direction.LEFT) {
-            moveAmount = moveXHandleCollision(-speed);
+       
+        switch (direction) {
+            case RIGHT:
+                moveAmount = moveXHandleCollision(speed);
+                break;
+            case LEFT:
+                moveAmount = moveXHandleCollision(-speed);
+                break;
+            case UP:
+                moveAmount = moveYHandleCollision(-speed);
+                break;
+            case DOWN:
+                moveAmount = moveYHandleCollision(speed);
+                break;
+            default:
+                break;
         }
 
         distanceTraveled += Math.abs(moveAmount);

@@ -5,9 +5,6 @@ import Enemies.Ogre;
 import Enemies.Vladmir;
 import EnhancedMapTiles.*;
 import Level.*;
-import NPCs.*;
-import NPCs.greenNinja;
-import Scripts.TestMap.greenNinjaScript;
 import Tilesets.DungeonWallsTileSet;
 import Utils.Point;
 import java.util.ArrayList;
@@ -60,7 +57,7 @@ public class FirstRoom extends Map {
     @Override
     public ArrayList<Enemy> loadEnemies() {
         ArrayList<Enemy> enemies = new ArrayList<>();
-        ogre = new Ogre(5, getMapTile(4, 4).getLocation(), this);
+        ogre = new Ogre(5, getMapTile(4, 4).getLocation(),this);
         enemies.add(ogre);
         //vladmir = new Vladmir(1, getMapTile(9,7).getLocation());
         //enemies.add(vladmir);

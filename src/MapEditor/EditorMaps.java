@@ -26,6 +26,11 @@ public class EditorMaps {
             add("Winter_3");
             add("Winter_4");
             add("Winter_5");
+            add("Fire_1");
+            add("Fire_2");
+            add("Fire_3");
+            add("Fire_4");
+            add("Fire_5");
         }};
     }
 
@@ -67,6 +72,16 @@ public class EditorMaps {
                 return new Winter_4();
             case "Winter_5":
                 return new Winter_5();
+            case "Fire_1":
+                return new Fire_1();
+            case "Fire_2":
+                return new Fire_2();
+            case "Fire_3":
+                return new Fire_3();
+            case "Fire_4":
+                return new Fire_4();
+            case "Fire_5":
+                return new Fire_5();
             default:
                 throw new RuntimeException("Unrecognized map name");
         }
