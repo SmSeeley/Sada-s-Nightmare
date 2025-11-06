@@ -2,19 +2,18 @@
 
 package Maps;
 
-import Enemies.Zombie;
+import Enemies.Fireblob;
 import EnhancedMapTiles.*;
 import Level.Enemy;
 import Level.EnhancedMapTile;
 import Level.Map;
-import Level.NPC;
-import NPCs.Wizard;
-import Tilesets.DungeonWallsTileSet;
 import Tilesets.FireTileset;
-import Utils.Point;
 import java.util.ArrayList;
 
 public class Fire_1 extends Map {
+
+    private Fireblob fireblob;
+
    public Fire_1() {
         super("Fire_1.txt", new FireTileset());
         this.playerStartPosition =  getMapTile(4, 7).getLocation();
@@ -36,6 +35,14 @@ public class Fire_1 extends Map {
 
         return enhancedMapTiles;
 
+    }
+
+    @Override
+    public ArrayList<Enemy> loadEnemies() {
+        ArrayList<Enemy> enemies = new ArrayList<>();
+        fireblob = new Fireblob(5, getMapTile(4, 4).getLocation());
+        enemies.add(fireblob);
+        return enemies;
     }
    
 }

@@ -483,6 +483,8 @@ public abstract class Player extends GameObject {
 
     public abstract void setHasSword(boolean b);
 
+    public abstract void setHasBow(boolean b);
+
    
     
 }

@@ -4,7 +4,7 @@ package Maps;
 import EnhancedMapTiles.*;
 import Level.*;
 import NPCs.Shopkeeper;
-import Tilesets.DungeonWallsTileSet;
+import Tilesets.*;
 import Utils.Point;
 import java.util.ArrayList;
 
@@ -12,11 +12,11 @@ public class TheHub1 extends Map {
 
 
     public TheHub1() {
-        super("TheHub1.txt", new DungeonWallsTileSet());
+        super("TheHub1.txt", new Cloud());
         this.playerStartPosition = getMapTile(10, 10).getLocation();
     }
 
-     @Override
+    @Override
     public ArrayList<NPC> loadNPCs() {
         ArrayList<NPC> npcs = new ArrayList<>();
 
@@ -30,13 +30,6 @@ public class TheHub1 extends Map {
     public ArrayList<EnhancedMapTile> loadEnhancedMapTiles() {
         ArrayList<EnhancedMapTile> enhancedMapTiles = new ArrayList<>();
 
-        enhancedMapTiles.add(new WaterBarrel(getMapTile(4, 9).getLocation()));
-        enhancedMapTiles.add(new Emptybarrel(getMapTile(12, 7).getLocation()));
-        enhancedMapTiles.add(new Emptybarrel(getMapTile(4, 6).getLocation()));
-
-        enhancedMapTiles.add(new WaterBarrel(getMapTile(15, 8).getLocation()));
-        enhancedMapTiles.add(new WaterBarrel(getMapTile(4, 14).getLocation()));
-
         Point coinLoc = getMapTile(5, 5).getLocation();
         if (!Coin.isCollectedAt(coinLoc)) {
             enhancedMapTiles.add(new Coin(coinLoc));
@@ -47,23 +40,22 @@ public class TheHub1 extends Map {
             enhancedMapTiles.add(new HealthPotion(potionLoc));
         }
 
-        NormalDoor doorB = new NormalDoor(getMapTile(6, 2).getLocation())
+        SandDoor doorB = new SandDoor(getMapTile(6, 3).getLocation())
         .toMap("Desert_1", 10, 10)
         .withTileSizePixels(48, 48);
         enhancedMapTiles.add(doorB);
-        
-        NormalDoor doorC = new NormalDoor(getMapTile(10, 2).getLocation())
+       
+        IceDoor doorC = new IceDoor(getMapTile(10, 3).getLocation())
         .toMap("Winter_1", 10, 10)
         .withTileSizePixels(48, 48);
         enhancedMapTiles.add(doorC);
 
-        NormalDoor doorD = new NormalDoor(getMapTile(14, 2).getLocation())
+        FireDoor doorD = new FireDoor(getMapTile(14, 3).getLocation())
         .toMap("Fire_1", 10, 10)
         .withTileSizePixels(48, 48);
         enhancedMapTiles.add(doorD);
 
         return enhancedMapTiles;
     }
-
 
 }

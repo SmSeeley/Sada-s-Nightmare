@@ -94,5 +94,6 @@ public class Zombie extends Enemy {
                 shootProjectile(directionToShoot); // shoots projectile
             }
         }
+        
     }
 }

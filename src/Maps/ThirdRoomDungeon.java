@@ -6,8 +6,11 @@ import Level.*;
 import Tilesets.DungeonWallsTileSet;
 import Utils.Point;
 import java.util.ArrayList;
+import Enemies.Ogre;
 
 public class ThirdRoomDungeon extends Map {
+
+    private Ogre ogre;
 
 
     public ThirdRoomDungeon() {
@@ -49,12 +52,18 @@ public class ThirdRoomDungeon extends Map {
         enhancedMapTiles.add(toSecond);
 
         //Doors in room 1
-        NormalDoor doorB = new NormalDoor(getMapTile(10, 1).getLocation())
+        Door doorB = new Door(getMapTile(10, 1).getLocation())
         .toMap("Room4Dungeon", 10, 10)
         .withTileSizePixels(48, 48);
         enhancedMapTiles.add(doorB);
-
         return enhancedMapTiles;
+    }
+
+    public ArrayList<Enemy> loadEnemies() {
+    ArrayList<Enemy> enemies = new ArrayList<>();
+        ogre = new Ogre(5, getMapTile(4, 4).getLocation(),this);
+        enemies.add(ogre);
+        return enemies;
     }
 
 

@@ -3,6 +3,7 @@ package Enemies;
 import Builders.FrameBuilder;
 import Engine.GraphicsHandler;
 import Engine.ImageLoader;
+import EnhancedMapTiles.DoorKey;
 import GameObject.Frame;
 import GameObject.ImageEffect;
 import GameObject.SpriteSheet;
@@ -10,10 +11,9 @@ import Level.Enemy;
 import Level.Map;
 import Level.Player;
 import Utils.Point;
-import EnhancedMapTiles.DoorKey;
 import java.util.HashMap;
 
-public class Ogre extends Enemy {
+public class Desertboss extends Enemy {
 
     private final int DETECTION_RADIUS = 100;
 
@@ -21,14 +21,12 @@ public class Ogre extends Enemy {
 
     private Map currentMap;
 
-    //public boolean keyDropped = false;
-
-    public Ogre(int id, Point location, Map map) {
-        super(id, location.x, location.y, new SpriteSheet(ImageLoader.load("ogre.png"), 24, 24), "STAND_RIGHT");
+    public Desertboss(int id, Point location, Map map) {
+        super(id, location.x, location.y, new SpriteSheet(ImageLoader.load("desertBoss.png"), 24, 24), "STAND_RIGHT",16);
         this.currentMap = map;
     }  
     
-    // overrides loadAnimations method to define animation for ogre
+    // overrides loadAnimations method to define animation
     @Override
     public HashMap<String, Frame[]> loadAnimations(SpriteSheet spriteSheet) {
         return new HashMap<String, Frame[]>() {{
@@ -36,38 +34,36 @@ public class Ogre extends Enemy {
             put("STAND_RIGHT", new Frame[] {
                 new FrameBuilder(spriteSheet.getSprite(0, 0))
                     .withScale(3)
-                    .withBounds(3,2,15,15)
+                    .withBounds(4,2,15,15)
                     .build()
             });
 
             put("STAND_LEFT", new Frame[] {
                 new FrameBuilder(spriteSheet.getSprite(0, 0))
                     .withScale(3)
-                    .withBounds(3,2,17,20)
+                    .withBounds(5,2,15,15)
                     .withImageEffect(ImageEffect.FLIP_HORIZONTAL)
                     .build()
             });
-            
-
         }};
     }
 
    @Override
     public void update(Player player) {
 
-        float ogreCenterX = getBounds().getX() + (getBounds().getWidth() / 2);
+        float desertCenterX = getBounds().getX() + (getBounds().getWidth() / 2);
         float playerCenterX = player.getBounds().getX() + (player.getBounds().getWidth() / 2);
 
-        float ogreCenterY = getBounds().getY() + (getBounds().getHeight() / 2);
+        float desertCenterY = getBounds().getY() + (getBounds().getHeight() / 2);
         float playerCenterY = player.getBounds().getY() + (player.getBounds().getHeight() / 2);
 
-        float distanceX = playerCenterX - ogreCenterX;
-        float distanceY = playerCenterY - ogreCenterY;
+        float distanceX = playerCenterX - desertCenterX;
+        float distanceY = playerCenterY - desertCenterY;
         float distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
         float detectionRadiusSquared = DETECTION_RADIUS * DETECTION_RADIUS;
 
         if (distanceSquared <= detectionRadiusSquared) {
-            if (playerCenterX < ogreCenterX) {
+            if (playerCenterX < desertCenterX) {
                 currentAnimationName = "STAND_LEFT";
             } else {
                 currentAnimationName = "STAND_RIGHT";
@@ -78,7 +74,7 @@ public class Ogre extends Enemy {
         //}
         if (isDead() && !hasDied) {
             markAsDead();
-            System.out.println("[Ogre] has died, dropping key!");
+            System.out.println("[Desertmonster] has died, dropping key!");
         }
         super.update(player);
 
@@ -128,16 +124,15 @@ public class Ogre extends Enemy {
         if (wasActive && !getIsActive() && !hasDied) {
             hasDied = true;
             try {
-                if (currentMap instanceof Maps.ThirdRoomDungeon) {
-                    Maps.ThirdRoomDungeon ThirdRoomDungeon = (Maps.ThirdRoomDungeon) currentMap;
-                    Point dropLoc = ThirdRoomDungeon.getMapTile(10, 3).getLocation(); // where the ogre was
-                    ThirdRoomDungeon.addEnhancedMapTile(new DoorKey(dropLoc));
-                    System.out.println("[Ogre] Dropped key at " + dropLoc.x + ", " + dropLoc.y);
+                if (currentMap instanceof Maps.Desert_5) {
+                    Maps.Desert_5 desert_5 = (Maps.Desert_5) currentMap;
+                    Point dropLoc = desert_5.getMapTile(9, 4).getLocation(); 
+                    desert_5.addEnhancedMapTile(new DoorKey(dropLoc));
+                    System.out.println("[Monster] Dropped key at " + dropLoc.x + ", " + dropLoc.y);
                 }
             } catch (Exception e) {
-                System.out.println("[Ogre] Failed to drop key: " + e.getMessage());
+                System.out.println("[Monster] Failed to drop key: " + e.getMessage());
             }
         }
     }
-   
 }

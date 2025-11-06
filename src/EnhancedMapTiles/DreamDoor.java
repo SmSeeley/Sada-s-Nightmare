@@ -1,101 +1,93 @@
 package EnhancedMapTiles;
 
 import Builders.FrameBuilder;
+import Engine.AudioPlayer;
 import Engine.ImageLoader;
 import GameObject.Frame;
 import GameObject.GameObject;
 import GameObject.SpriteSheet;
+import Level.EnhancedMapTile;
+import Level.MapEntity;
+import Level.Player;
 import Level.*;
-import ScriptActions.*;
+import Scripts.*;
+import ScriptActions.LockPlayerScriptAction;
+import ScriptActions.ScriptAction;
+import ScriptActions.UnlockPlayerScriptAction;
 import Utils.Point;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 /**
- * Door that requires a key. Press E/SPACE near the door:
- * - If you have no key -> shows textbox: "It's locked. You need a key."
- * - If you have a key  -> consumes one key, opens (becomes passable),
- *   and allows teleporting (as you already implemented).
+ * Door that opens via interact script.
+ * AFTER opening, pressing E (or SPACE) near the door will swap to another map and spawn the player there.
+ * Repeatable (cooldown prevents double-triggering).
  */
-public class Door extends EnhancedMapTile {
+public class DreamDoor extends EnhancedMapTile {
 
-    private static final int TELEPORT_COOLDOWN_FRAMES = 12;
-    private static final float BAND_LEFT_PAD   = 40f;
+    // --- behavior tuning ---
+    private static final int TELEPORT_COOLDOWN_FRAMES = 12;   // debounce key presses
+    private static final float BAND_LEFT_PAD   = 40f;         // proximity band around door
     private static final float BAND_RIGHT_PAD  = 56f;
     private static final float BAND_TOP_PAD    = 56f;
     private static final float BAND_BOTTOM_PAD = 56f;
 
+    // state
     private boolean isOpen = false;
     private int teleportCooldown = 0;
 
+    // render
     private GameObject doorObj;
     private Frame closedFrame;
     private Frame openFrame;
 
-    // optional map change (your existing fields)
-    private String targetMapName = null;
-    private int spawnTileX = 0, spawnTileY = 0;
+    // target map info
+    private String targetMapName = null;          // e.g., "SecondRoom" or "FirstRoom"
+    private int spawnTileX = 0, spawnTileY = 0;   // where to drop the player on target map (tile coords)
+    private int tileW = 48, tileH = 48;           // rendered tile size
 
-    private Point baseDestination;
-    private Point afterOpenTarget;
-
-    private int lastTileW = 48;
-    private int lastTileH = 48;
-
-    private int arrivalDx = 6;      // px to the right from door tile left
-    private int arrivalDyExtra = 6; // extra px below one full tile
-
-    private int tileW = 48, tileH = 48;
-
-    public Door(Point location) {
+    public DreamDoor(Point location) {
         super(location.x, location.y,
-                new SpriteSheet(ImageLoader.load("Locked_Door.png"), 16, 32),
+                new SpriteSheet(ImageLoader.load("DreamDoor.png"), 16, 32),
                 TileType.NOT_PASSABLE);
 
-        // KEEP collidable while locked (blocked).
-        setIsUncollidable(false);
+        // block until opened
+        setIsUncollidable(true);
 
-        // Interact script: branch depending on whether player has a key
+        // interact script to open the door (one-time) and swap frame
         setInteractScript(new Script() {
             @Override
             public ArrayList<ScriptAction> loadScriptActions() {
                 ArrayList<ScriptAction> actions = new ArrayList<>();
-
-                // If already open, no need to do anything here
                 if (isOpen) return actions;
 
                 actions.add(new LockPlayerScriptAction());
 
-                // Check key count NOW (at interaction time)
-                if (DoorKey.keysCollected == 1) {
-                    // NO KEY -> show message and exit
-                    TextboxScriptAction t = new TextboxScriptAction();
-                    t.addText("It's locked. You need a key.");
-                    actions.add(t);
-
-                    actions.add(new UnlockPlayerScriptAction());
-                    return actions;
-                }
-
-                // HAS KEY -> consume and open
                 actions.add(new ScriptAction() {
                     @Override
                     public Level.ScriptState execute() {
-                        System.out.println("[Door] Opening door (consuming key). Keys before open: " + DoorKey.keysCollected);
-                        DoorKey.keysCollected = Math.max(0, DoorKey.keysCollected - 1);
-
+                        System.out.println("[Door] opening...");
                         isOpen = true;
-                        // Let player walk through now
-                        setIsUncollidable(true);
+                        setIsUncollidable(true);      // once opened, no longer blocks
+                        teleportCooldown = 0;
 
-                        // Swap art to the open-door frame
+                        // swap art to open frame
                         try {
                             boolean swapped = setGameObjectFrame(doorObj, openFrame);
-                            System.out.println("[Door] Swapped frame on doorObj = " + swapped);
+                            System.out.println("[Door] swapped frame on doorObj = " + swapped);
                         } catch (Throwable th) {
                             System.out.println("[Door] WARN: frame swap failed: " + th);
                         }
+
+                        // ✅ play door open SFX (non-looping)
+                        try {
+                            AudioPlayer.playSound("Resources/audio/Door_Open.wav", -6.0f);
+                        } catch (Throwable s) {
+                            System.out.println("[Door] Could not play Door_Open.wav: " + s);
+                        }
+
                         return Level.ScriptState.COMPLETED;
                     }
                 });
@@ -107,39 +99,25 @@ public class Door extends EnhancedMapTile {
     }
 
     /** Configure which map & where this door should send the player (tile coordinates). */
-    public Door toMap(String mapName, int spawnTileX, int spawnTileY) {
+    public DreamDoor toMap(String mapName, int spawnTileX, int spawnTileY) {
         this.targetMapName = mapName;
         this.spawnTileX = spawnTileX;
         this.spawnTileY = spawnTileY;
         return this;
     }
 
-    public Door withTileSizePixels(int tileW, int tileH) {
+    /** If your map uses a different rendered tile size, set it here. */
+    public DreamDoor withTileSizePixels(int tileW, int tileH) {
         this.tileW = tileW;
         this.tileH = tileH;
         return this;
-    }
-
-    public void setDestination(Point doorTileTopLeftPixels) {
-        this.baseDestination = doorTileTopLeftPixels;
-        this.afterOpenTarget = computeArrivalFromBase(baseDestination);
-        System.out.println("[Door] setDestination base(pixels) = " + baseDestination.x + "," + baseDestination.y
-                + " -> arrival " + afterOpenTarget.x + "," + afterOpenTarget.y);
-    }
-
-    private Point computeArrivalFromBase(Point base) {
-        int ax = (int) base.x + arrivalDx;
-        int ay = (int) base.y + lastTileH + arrivalDyExtra; // one tile below + a few px
-        if (ax < 0) ax = 0;
-        if (ay < 0) ay = 0;
-        return new Point(ax, ay);
     }
 
     @Override
     protected GameObject loadBottomLayer(SpriteSheet sheet) {
         closedFrame = new FrameBuilder(sheet.getSubImage(0, 0))
                 .withScale(3)
-                .withBounds(0, 16, 16, 16) // collide on lower half
+                .withBounds(0, 16, 16, 16) // collide lower half
                 .build();
 
         SpriteSheet openSheet = new SpriteSheet(ImageLoader.load("DoorOpen.png"), 16, 32);
@@ -148,7 +126,7 @@ public class Door extends EnhancedMapTile {
                 .withBounds(0, 16, 16, 16)
                 .build();
 
-        // Lift 16px so art sits on floor
+        // lift by 16px so the base sits on the floor visually
         doorObj = new GameObject(x, y - 16, closedFrame);
         return doorObj;
     }
@@ -165,8 +143,8 @@ public class Door extends EnhancedMapTile {
 
         if (confirm && near && teleportCooldown == 0) {
             if (targetMapName != null) {
-                int spawnPx = spawnTileX * tileW + 6;         // gentle offset
-                int spawnPy = spawnTileY * tileH + tileH + 6; // land just below the door
+                int spawnPx = spawnTileX * tileW + 6;           // small offset so feet land comfortably
+                int spawnPy = spawnTileY * tileH + tileH + 6;   // one tile below + a bump
                 Point spawn = new Point(spawnPx, spawnPy);
 
                 queueMapChange(targetMapName, spawn);
@@ -178,6 +156,7 @@ public class Door extends EnhancedMapTile {
         }
     }
 
+    // ---- glue: call PlayLevelScreen queue method directly ----
     private void queueMapChange(String mapName, Point spawnPixels) {
         try {
             Screens.PlayLevelScreen.queueMapChange(mapName, spawnPixels);
@@ -188,7 +167,10 @@ public class Door extends EnhancedMapTile {
         }
     }
 
+    // -------- helpers (input, proximity, reflection utilities) --------
+
     private boolean isConfirmDown() {
+        // Try Engine.Key.E / Engine.Key.SPACE in a flexible way
         try {
             Class<?> keyCls = Class.forName("Engine.Key");
             Class<?> kbCls  = Class.forName("Engine.Keyboard");
@@ -200,11 +182,13 @@ public class Door extends EnhancedMapTile {
             Object KEY_SPACE = null;
             try { KEY_SPACE = keyCls.getField("SPACE").get(null); } catch (Throwable ignored) {}
             Method isDown = kbCls.getMethod("isKeyDown", keyCls);
+
             boolean e = (KEY_E != null) && (boolean) isDown.invoke(null, KEY_E);
             boolean sp = (KEY_SPACE != null) && (boolean) isDown.invoke(null, KEY_SPACE);
             return e || sp;
         } catch (Throwable ignored) {
-            return true; // fallback for dev
+            // If reflection fails, default to true so door still works in dev
+            return true;
         }
     }
 
@@ -233,7 +217,6 @@ public class Door extends EnhancedMapTile {
         return (cx >= left && cx <= right && cy >= top && cy <= bottom);
     }
 
-    /** Swap the Frame stored inside a GameObject. */
     private boolean setGameObjectFrame(GameObject obj, Frame newFrame) {
         if (obj == null || newFrame == null) return false;
         Class<?> c = obj.getClass();
@@ -253,7 +236,6 @@ public class Door extends EnhancedMapTile {
         } catch (Throwable ignored) {}
         return false;
     }
-
     private boolean trySetFrameField(GameObject obj, Class<?> cls, String fieldName, Frame value) {
         try { Field f = cls.getDeclaredField(fieldName); f.setAccessible(true); f.set(obj, value); return true; }
         catch (Throwable ignored) { return false; }
