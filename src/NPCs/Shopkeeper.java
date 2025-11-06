@@ -102,7 +102,7 @@ public class Shopkeeper extends NPC {
                 switch (selectedOption) {
                     case 0: // Health Potion
                        // Give player 1 heart using player's heal method
-                       player.heal(1);
+                       player.heal(5);
                        System.out.println("Purchased Health Potion! +1 Heart added!");
                         break;
                     case 1: // Archer's Bow
