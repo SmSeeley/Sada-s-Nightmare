@@ -329,7 +329,7 @@ public class PlayLevelScreen extends Screen implements GameListener {
                     if ((enemy instanceof Fireblob || enemy instanceof Desertmonster || enemy instanceof Twoheadedogre) && enemy.exists()) {
                         if (enemy.exists() && p.getBounds().intersects(enemy.getBounds())) {
                             System.out.println("Collision detected!");
-                            boolean died = p.takeDamage(1);
+                            boolean died = p.takeDamage(0.5);
 
                             // DAMAGE SFX
                             AudioPlayer.playSound("Resources/audio/Damage_Effect.wav", -4.0f);

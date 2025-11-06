@@ -452,7 +452,7 @@ public abstract class Player extends GameObject {
         }
     }
 
-    public boolean takeDamage(int amount) {
+    public boolean takeDamage(double amount) {
         this.health -= amount;
         if(this.health <= 0) {
             this.health = 0;
