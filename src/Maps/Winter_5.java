@@ -21,16 +21,12 @@ public class Winter_5 extends Map {
         ArrayList<EnhancedMapTile> enhancedMapTiles = new ArrayList<>();
 
         //Doors in room 1
-        NormalDoor doorB = new NormalDoor(getMapTile(10, 2).getLocation())
+         //Doors in room 1
+        LockedDreamDoor doorB = new LockedDreamDoor(getMapTile(10, 2).getLocation())
         .toMap("TheHub1", 10, 10)
         .withTileSizePixels(48, 48);
         enhancedMapTiles.add(doorB);
 
-        //Doors in room 1
-        NormalDoor doorC = new NormalDoor(getMapTile(10, 12).getLocation())
-        .toMap("Winter_4", 10, 10)
-        .withTileSizePixels(48, 48);
-        enhancedMapTiles.add(doorC);
 
 
         return enhancedMapTiles;

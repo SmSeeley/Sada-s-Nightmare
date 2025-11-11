@@ -18,7 +18,7 @@ import java.util.ArrayList;
  * - If keys <= 0: shows "It's locked. You need a key." for 2 seconds.
  * - If keys >= 1: consumes 1 key, opens (becomes passable), and allows teleport.
  */
-public class Door extends EnhancedMapTile {
+public class LockedDreamDoor extends EnhancedMapTile {
 
     private static final int TELEPORT_COOLDOWN_FRAMES = 12;
     private static final float BAND_LEFT_PAD = 40f;
@@ -40,9 +40,9 @@ public class Door extends EnhancedMapTile {
     private int arrivalDx = 6;
     private int arrivalDyExtra = 6;
 
-    public Door(Point location) {
+    public LockedDreamDoor(Point location) {
         super(location.x, location.y,
-                new SpriteSheet(ImageLoader.load("Locked_Door.png"), 16, 32),
+                new SpriteSheet(ImageLoader.load("LockedDreamDoor.png"), 16, 32),
                 TileType.NOT_PASSABLE);
 
         setIsUncollidable(false);
@@ -111,14 +111,14 @@ public class Door extends EnhancedMapTile {
         });
     }
 
-    public Door toMap(String mapName, int spawnTileX, int spawnTileY) {
+    public LockedDreamDoor toMap(String mapName, int spawnTileX, int spawnTileY) {
         this.targetMapName = mapName;
         this.spawnTileX = spawnTileX;
         this.spawnTileY = spawnTileY;
         return this;
     }
 
-    public Door withTileSizePixels(int tileW, int tileH) {
+    public LockedDreamDoor withTileSizePixels(int tileW, int tileH) {
         this.tileW = tileW;
         this.tileH = tileH;
         return this;

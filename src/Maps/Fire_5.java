@@ -25,13 +25,6 @@ public class Fire_5 extends Map {
         ArrayList<EnhancedMapTile> enhancedMapTiles = new ArrayList<>();
 
 
-
-        NormalDoor doorC = new NormalDoor(getMapTile(10, 2).getLocation())
-        .toMap("TheHub1", 10, 10)
-        .withTileSizePixels(48, 48);
-        enhancedMapTiles.add(doorC);
-
-
         return enhancedMapTiles;
 
     }
@@ -43,5 +36,5 @@ public class Fire_5 extends Map {
         enemies.add(vladmir);
         return enemies;
     }
-   
+   w
 }
