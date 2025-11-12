@@ -259,6 +259,8 @@ public class PlayLevelScreen extends Screen implements GameListener {
             nextMap = new Desert_4();
         } else if ("Desert_5".equalsIgnoreCase(next))  {
             nextMap = new Desert_5();
+            AudioPlayer.stopAll();
+            AudioPlayer.playLoop("Resources/audio/SandBattle.wav", -3.0f);
         } else if ("Winter_1".equalsIgnoreCase(next))  {
             nextMap = new Winter_1();
             AudioPlayer.stopAll();
@@ -271,6 +273,8 @@ public class PlayLevelScreen extends Screen implements GameListener {
             nextMap = new Winter_4();
         } else if ("Winter_5".equalsIgnoreCase(next)) {
             nextMap = new Winter_5();
+            AudioPlayer.stopAll();
+            AudioPlayer.playLoop("Resources/audio/IceBattle.wav", -3.0f);
         } else if ("Fire_1".equalsIgnoreCase(next))  {
             nextMap = new Fire_1();
             AudioPlayer.stopAll();
@@ -283,6 +287,8 @@ public class PlayLevelScreen extends Screen implements GameListener {
             nextMap = new Fire_4();
         } else if ("Fire_5".equalsIgnoreCase(next)) {
             nextMap = new Fire_5();
+            AudioPlayer.stopAll();
+            AudioPlayer.playLoop("Resources/audio/FinalBattle.wav", -3.0f);
         }
         else {
             System.out.println("[PlayLevelScreen] Unknown map: " + next);

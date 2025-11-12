@@ -4,11 +4,14 @@ package Maps;
 import EnhancedMapTiles.*;
 import Level.*;
 import Tilesets.*;
+import Utils.Point;
 
 import java.util.ArrayList;
 
 // Represents a test map to be used in a level
 public class Winter_5 extends Map {
+
+    private Map currentMap;
 
     public Winter_5() {
         super("Winter_5.txt", new WinterTileset());
@@ -18,6 +21,9 @@ public class Winter_5 extends Map {
 
     @Override
     public ArrayList<EnhancedMapTile> loadEnhancedMapTiles() {
+
+        
+
         ArrayList<EnhancedMapTile> enhancedMapTiles = new ArrayList<>();
 
         //Doors in room 1
@@ -26,8 +32,6 @@ public class Winter_5 extends Map {
         .toMap("TheHub1", 10, 10)
         .withTileSizePixels(48, 48);
         enhancedMapTiles.add(doorB);
-
-
 
         return enhancedMapTiles;
 
