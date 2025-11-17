@@ -8,14 +8,20 @@ import Level.ScriptState;
 import ScriptActions.*;
 import EnhancedMapTiles.Coin;
 import Level.Player;
+import Level.NPC;
 
 public class WizardRiddleScript extends Script {
 
     private boolean answered = false;
-    //reference to sada
+    //reference to sada and wizard
     protected Player player;
+    private NPC wizard;
 
-
+    public WizardRiddleScript(Player player, NPC wizard) {
+        this.player = player;
+        this.wizard = wizard;
+    }
+    
     @Override
     public ArrayList<ScriptAction> loadScriptActions() {
         ArrayList<ScriptAction> scriptActions = new ArrayList<>();
@@ -52,6 +58,12 @@ public class WizardRiddleScript extends Script {
                             // Add 2 coins to player's global coin count here
                             Coin.coinsCollected += 2;
                             System.out.println("[WizardRiddleScript] Added 2 coins to player. Total coins: " + Coin.coinsCollected);
+                            //remove wizard when player correctly answers
+                            if (wizard != null) {
+                                wizard.removeNPC();
+                                System.out.println("[WizardRiddleScript] Wizard removed from the map.");
+                            }
+
                             return ScriptState.COMPLETED;
                         }
                     });

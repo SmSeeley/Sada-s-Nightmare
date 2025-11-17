@@ -36,5 +36,4 @@ public class Fire_5 extends Map {
         enemies.add(vladmir);
         return enemies;
     }
-   w
 }

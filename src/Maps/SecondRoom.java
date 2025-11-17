@@ -82,7 +82,7 @@ public class SecondRoom extends Map {
     public ArrayList<NPC> loadNPCs() {
         ArrayList<NPC> npcs = new ArrayList<>();
         Wizard wizard = new Wizard(1, getMapTile(15, 2).getLocation());
-        wizard.setInteractScript(new Scripts.TestMap.WizardRiddleScript());
+        wizard.setInteractScript(new Scripts.TestMap.WizardRiddleScript(getPlayer(), wizard));
         npcs.add(wizard);
 
         return npcs;
