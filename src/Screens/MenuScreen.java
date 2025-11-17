@@ -96,7 +96,7 @@ public class MenuScreen extends Screen {
         if (selectPressed) {
             stopTitleMusic(); // stop music before leaving the menu
             if (hoveredIndex == 0) {
-                screenCoordinator.setGameState(GameState.LEVEL);
+                screenCoordinator.setGameState(GameState.INTRO);
             } else {
                 screenCoordinator.setGameState(GameState.CREDITS);
             }

@@ -14,7 +14,7 @@ import Utils.Point;
 
 public class HealthPotion extends EnhancedMapTile { 
     private GameObject potionObject;
-    public static final int HEAL_AMOUNT = 4; // Heals 1 heart
+    public static final int HEAL_AMOUNT = 10; // Heals 1 heart
 
         private static final java.util.HashSet<String> collectedPotions = new java.util.HashSet<>();
 

@@ -21,7 +21,7 @@ public class Fire_4 extends Map {
 
 
 
-        NormalDoor doorC = new NormalDoor(getMapTile(10, 2).getLocation())
+        BossDoor doorC = new BossDoor(getMapTile(10, 2).getLocation())
         .toMap("Fire_5", 10, 10)
         .withTileSizePixels(48, 48);
         enhancedMapTiles.add(doorC);
