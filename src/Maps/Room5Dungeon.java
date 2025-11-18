@@ -2,6 +2,7 @@
 package Maps;
 
 import Enemies.Twoheadedogre;
+import Enemies.Zombie;
 import EnhancedMapTiles.*;
 import Level.*;
 import Tilesets.DungeonWallsTileSet;
@@ -28,7 +29,6 @@ public class Room5Dungeon extends Map {
         enhancedMapTiles.add(new Blood(getMapTile(9, 4).getLocation()));
         enhancedMapTiles.add(new Blood(getMapTile(12, 7).getLocation()));
         enhancedMapTiles.add(new Emptybarrel(getMapTile(4, 6).getLocation()));
-        enhancedMapTiles.add(new WaterBarrel(getMapTile(8, 11).getLocation()));
         enhancedMapTiles.add(new Blood(getMapTile(15, 2).getLocation()));
         enhancedMapTiles.add(new Skull(getMapTile(15, 8).getLocation()));
         enhancedMapTiles.add(new Skull(getMapTile(5, 3).getLocation()));
@@ -64,6 +64,13 @@ public class Room5Dungeon extends Map {
         ArrayList<Enemy> enemies = new ArrayList<>();
         twoheadedogre = new Twoheadedogre(5, getMapTile(10, 2).getLocation());
         enemies.add(twoheadedogre);
+
+        Zombie zombie = new Zombie(4, getMapTile(4, 7).getLocation());
+        enemies.add(zombie);
+
+        Zombie zombie3 = new Zombie(4, getMapTile(4, 10).getLocation());
+        enemies.add(zombie3);
+
         
         return enemies;
     }

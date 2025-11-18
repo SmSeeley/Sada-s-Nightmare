@@ -40,6 +40,11 @@ import Maps.Winter_5;
 import Players.Sada;
 import Utils.Direction;
 import Utils.Point;
+import Level.*;
+
+// dialogue / UI
+import ui.DialogueOverlay;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -94,7 +99,7 @@ public class PlayLevelScreen extends Screen implements GameListener {
     private int keyHeight = 75;
     private int keyCount = 0;
 
-    // --- UI: Transient banner message (non-blocking “textbox”) ---
+    // --- UI: Transient banner message (non-blocking) ---
     private String transientMessage = null;
     private long transientMessageUntil = 0L;
 
@@ -117,6 +122,35 @@ public class PlayLevelScreen extends Screen implements GameListener {
         AudioPlayer.stopLoop();
         AudioPlayer.playSound(GAME_OVER_SFX, -3.0f);
     }
+
+    // === Dialogue overlay for blocking textboxes ===
+    private DialogueOverlay dialogue;
+    private boolean firstRoomIntroShown = false; // ensure it only happens once
+
+    // Desert_5 boss intro sequence
+    private boolean desert5IntroShown = false;      // run once
+    private boolean desert5SequenceActive = false;  // are we in that sequence?
+    private int desert5Phase = 0;                   // 0 = boss, 1 = Sada
+
+    // Winter_5 boss intro sequence
+    private boolean Winter5IntroShown = false;
+    private boolean Winter5SequenceActive = false;
+    private int Winter5Phase = 0;
+
+    // Fire_5 Final boss intro sequence
+    private boolean Fire5IntroShown = false;
+    private boolean Fire5SequenceActive = false;
+    private int Fire5Phase = 0;
+
+    // Portrait paths (relative to Resources/, since ImageLoader adds that)
+    private static final String SADA_SAD_PORTRAIT   = "sada/SadaSad.png";
+    private static final String BOSS_PORTRAIT_PATH  = "sada/Desert_Boss.png"; // desert boss
+    private static final String ANGRY_SAD_PORTRAIT  = "sada/SadaAngry.png";
+    private static final String Vladimir_PORTRAIT   = "sada/Vladimir_Ui_Image.png";
+    private static final String Boomer_Portrait     = "sada/meow.png";
+
+    // Final boss victory guard – make sure we only trigger credits once
+    private boolean finalBossVictoryHandled = false;
 
     public PlayLevelScreen(ScreenCoordinator screenCoordinator) {
         this.screenCoordinator = screenCoordinator;
@@ -154,6 +188,7 @@ public class PlayLevelScreen extends Screen implements GameListener {
 
         // reset game-over guard
         gameOverTriggered = false;
+        finalBossVictoryHandled = false;
 
         // Preload ONLY the gameover SFX so first play has zero I/O latency
         AudioPlayer.preloadSound(GAME_OVER_SFX, 1);
@@ -184,10 +219,85 @@ public class PlayLevelScreen extends Screen implements GameListener {
 
         // background music — safe now (we stopped everything above)
         AudioPlayer.playLoop("Resources/audio/main_game.wav", -5.0f);
+
+        // create dialogue overlay
+        dialogue = new DialogueOverlay();
+
+        // First room intro cutscene (Sada is sad) – only once
+        if (!firstRoomIntroShown && map instanceof FirstRoom) {
+            dialogue.start(
+                SADA_SAD_PORTRAIT,
+                "Huh??? Am I Dreaming???",
+                "I Need to Find Boomer, I Miss Him So Much "
+            );
+            AudioPlayer.playSound("Resources/audio/Sad1.wav", -10.0f);
+            firstRoomIntroShown = true;
+        }
+
+        // reset boss sequence state flags (but keep IntroShown booleans so they only fire once)
+        desert5SequenceActive = false;
+        desert5Phase = 0;
+
+        Winter5SequenceActive = false;
+        Winter5Phase = 0;
+
+        Fire5SequenceActive = false;
+        Fire5Phase = 0;
     }
 
     @Override
     public void update() {
+        // 1) If any blocking dialogue is active, freeze EVERYTHING.
+        if (dialogue != null && dialogue.isBlocking()) {
+            dialogue.update();
+            return;
+        }
+
+        // 2) Desert_5 boss sequence
+        if (desert5SequenceActive) {
+            handleDesert5SequenceProgression();
+
+            if (dialogue != null && dialogue.isBlocking()) {
+                dialogue.update();
+                return;
+            }
+
+            if (desert5SequenceActive) {
+                return;
+            }
+        }
+
+        // 3) Winter_5 boss sequence
+        if (Winter5SequenceActive) {
+            handleWinter5SequenceProgression();
+
+            if (dialogue != null && dialogue.isBlocking()) {
+                dialogue.update();
+                return;
+            }
+
+            if (Winter5SequenceActive) {
+                return;
+            }
+        }
+
+        // 4) Fire_5 final boss sequence
+        if (Fire5SequenceActive) {
+            handleFire5SequenceProgression();
+
+            if (dialogue != null && dialogue.isBlocking()) {
+                dialogue.update();
+                return;
+            }
+
+            if (Fire5SequenceActive) {
+                return;
+            }
+        }
+
+        // 5) From this point on, no dialogue is blocking and all boss intros are over.
+        //    Gameplay is allowed to run.
+
         // Immediate health check -> trigger game over fast
         if (player.getHealth() <= 0) {
             triggerGameOver();
@@ -205,6 +315,26 @@ public class PlayLevelScreen extends Screen implements GameListener {
                 map.update(player);
                 coinCount = Coin.coinsCollected;
                 keyCount = DoorKey.keysCollected;
+
+                // === NEW: Final boss victory check for Fire_5 ===
+                if (!finalBossVictoryHandled && map instanceof Fire_5) {
+                    boolean vladAlive = false;
+                    for (Enemy enemy : map.getEnemies()) {
+                        if (enemy instanceof Vladmir && enemy.exists()) {
+                            vladAlive = true;
+                            break;
+                        }
+                    }
+
+                    // If no living Vladmir is found, trigger credits
+                    if (!vladAlive) {
+                        finalBossVictoryHandled = true;
+                        AudioPlayer.stopAll();
+                        screenCoordinator.setGameState(GameState.CREDITS);
+                        return;
+                    }
+                }
+
                 break;
 
             case LEVEL_COMPLETED:
@@ -261,6 +391,11 @@ public class PlayLevelScreen extends Screen implements GameListener {
             nextMap = new Desert_5();
             AudioPlayer.stopAll();
             AudioPlayer.playLoop("Resources/audio/SandBattle.wav", -3.0f);
+
+            // Start Desert_5 boss intro if not yet shown
+            if (!desert5IntroShown) {
+                startDesert5Intro();
+            }
         } else if ("Winter_1".equalsIgnoreCase(next))  {
             nextMap = new Winter_1();
             AudioPlayer.stopAll();
@@ -275,6 +410,10 @@ public class PlayLevelScreen extends Screen implements GameListener {
             nextMap = new Winter_5();
             AudioPlayer.stopAll();
             AudioPlayer.playLoop("Resources/audio/IceBattle.wav", -3.0f);
+
+            if (!Winter5IntroShown) {
+                startWinter5Intro();
+            }
         } else if ("Fire_1".equalsIgnoreCase(next))  {
             nextMap = new Fire_1();
             AudioPlayer.stopAll();
@@ -289,6 +428,10 @@ public class PlayLevelScreen extends Screen implements GameListener {
             nextMap = new Fire_5();
             AudioPlayer.stopAll();
             AudioPlayer.playLoop("Resources/audio/FinalBattle.wav", -3.0f);
+
+            if (!Fire5IntroShown) {
+                startFire5Intro();
+            }
         }
         else {
             System.out.println("[PlayLevelScreen] Unknown map: " + next);
@@ -323,51 +466,228 @@ public class PlayLevelScreen extends Screen implements GameListener {
                 " spawn=" + (spawn != null ? (spawn.x + "," + spawn.y) : "null"));
     }
 
-    // collisions with NPCs (enemies)
+    // =========================
+    // Desert_5 Intro Sequence Helpers
+    // =========================
+
+    /** Called when we first load Desert_5. */
+    private void startDesert5Intro() {
+        desert5SequenceActive = true;
+        desert5Phase = 0;
+
+        if (dialogue == null) {
+            dialogue = new DialogueOverlay();
+        }
+
+        // Phase 0: Sand boss speaks
+        AudioPlayer.playSound("Resources/audio/SandbossSound.wav", -10.0f);
+        dialogue.start(
+            BOSS_PORTRAIT_PATH,
+            "EAT SAND SADA. YOUR TIME HAS COME"
+        );
+    }
+
+    /** Called from update() after dialogue stops blocking, to chain boss -> Sada -> end. */
+    private void handleDesert5SequenceProgression() {
+        if (!desert5SequenceActive) return;
+
+        if (dialogue != null && dialogue.isBlocking()) {
+            return;
+        }
+
+        // Phase 0 just finished: boss line -> now Sada responds
+        if (desert5Phase == 0) {
+            desert5Phase = 1;
+            AudioPlayer.playSound("Resources/audio/you will never defeat me.wav", -3.0f);
+            dialogue.start(
+                ANGRY_SAD_PORTRAIT,
+                "You will never defeat me",
+                "Guess I'll have to kill you"
+            );
+            return;
+        }
+
+        // Phase 1 just finished: sequence done
+        if (desert5Phase == 1) {
+            desert5SequenceActive = false;
+            desert5Phase = 0;
+            desert5IntroShown = true;
+        }
+    }
+
+    // =========================
+    // Winter_5 Intro Sequence
+    // =========================
+
+    /** Called when we first load Winter_5 */
+    private void startWinter5Intro() {
+        Winter5SequenceActive = true;
+        Winter5Phase = 0;
+
+        if (dialogue == null) {
+            dialogue = new DialogueOverlay();
+        }
+
+        AudioPlayer.playSound("Resources/audio/IceBossSound.wav", -10.0f);
+        dialogue.start(
+            BOSS_PORTRAIT_PATH,
+            "Your fate has been decided"
+        );
+    }
+
+    private void handleWinter5SequenceProgression() {
+        if (!Winter5SequenceActive) return;
+
+        if (dialogue != null && dialogue.isBlocking()) {
+            return;
+        }
+
+        if (Winter5Phase == 0) {
+            Winter5Phase = 1;
+            AudioPlayer.playSound("Resources/audio/Time to change fate.wav", -3.0f);
+            dialogue.start(
+                ANGRY_SAD_PORTRAIT,
+                "Its Time To Change Fate",
+                "You are going down!"
+            );
+            return;
+        }
+
+        if (Winter5Phase == 1) {
+            Winter5SequenceActive = false;
+            Winter5Phase = 0;
+            Winter5IntroShown = true;
+        }
+    }
+
+    // =========================
+    // Fire_5 Final Boss Intro Sequence
+    // =========================
+
+    /** Called when we first load Fire_5 */
+    private void startFire5Intro() {
+        Fire5SequenceActive = true;
+        Fire5Phase = 0;
+
+        if (dialogue == null) {
+            dialogue = new DialogueOverlay();
+        }
+
+        // Phase 0: Sada confronts Vladimir
+        dialogue.start(
+            ANGRY_SAD_PORTRAIT,
+            "Vladimir I finally found you...",
+            "GIVE ME BACK MY BOOMER"
+        );
+    }
+
+    private void handleFire5SequenceProgression() {
+        if (!Fire5SequenceActive) return;
+
+        if (dialogue != null && dialogue.isBlocking()) {
+            return;
+        }
+
+        // Phase 0 just finished: Boomer cries for help
+        if (Fire5Phase == 0) {
+            Fire5Phase = 1;
+            AudioPlayer.playSound("Resources/audio/boomer.wav", -3.0f);
+            dialogue.start(
+                Boomer_Portrait,
+                "*bobcat noise* SADA HELP ME"
+            );
+            return;
+        }
+
+        // Phase 1 just finished: Vladimir mocks Sada (with specific SFX)
+        if (Fire5Phase == 1) {
+            Fire5Phase = 2;
+            AudioPlayer.playSound("Resources/audio/Vla2_Cant help but feel sorry for you.wav", -3.0f);
+            dialogue.start(
+                Vladimir_PORTRAIT,
+                "I cant help but feel sorry for you"
+            );
+            return;
+        }
+
+        // Phase 2 just finished: Sada snaps (SadaAngry SFX + "ILL KILL YOU")
+        if (Fire5Phase == 2) {
+            Fire5Phase = 3;
+            AudioPlayer.playSound("Resources/audio/SadaAngry.wav", -3.0f);
+            dialogue.start(
+                ANGRY_SAD_PORTRAIT,
+                "ILL KILL YOU"
+            );
+            return;
+        }
+
+        // Phase 3 finished: sequence over, fight can start
+        if (Fire5Phase == 3) {
+            Fire5SequenceActive = false;
+            Fire5Phase = 0;
+            Fire5IntroShown = true;
+
+            // === START VLADMIR FIGHT HERE ===
+            for (Enemy enemy : map.getEnemies()) {
+                if (enemy instanceof Vladmir) {
+                    ((Vladmir) enemy).startFight();
+                    break;
+                }
+            }
+        }
+    }
+
+    // =========================
+    // Gameplay collision handlers
+    // =========================
+
+    /** Unified enemy touch damage, works in all rooms; Vladmir does no contact damage. */
     private void handleEnemyCollisions() {
+        if (playLevelScreenState != PlayLevelScreenState.RUNNING) {
+            return;
+        }
+
         Player p = map.getPlayer();
         long now = System.currentTimeMillis();
 
-        if (playLevelScreenState == PlayLevelScreenState.RUNNING) {
-            if (now - lastDamageTime >= damageCooldown) {
-                for (Enemy enemy : map.getEnemies()) {
-                    // only takes damage when touched by fire and desert monster
-                    if ((enemy instanceof Fireblob || enemy instanceof Desertboss || enemy instanceof Twoheadedogre) && enemy.exists()) {
-                        if (enemy.exists() && p.getBounds().intersects(enemy.getBounds())) {
-                            System.out.println("Collision detected!");
-                            boolean died = p.takeDamage(0.5);
+        if (now - lastDamageTime < damageCooldown) {
+            return;
+        }
 
-                            // DAMAGE SFX
-                            AudioPlayer.playSound("Resources/audio/Damage_Effect.wav", -4.0f);
-
-                            lastDamageTime = now;
-                            if (died) {
-                                playLevelScreenState = PlayLevelScreenState.GAME_OVER;
-                            }
-                            return;
-                        }
-                        lastDamageTime = now;
-                        if (gameOverTriggered) {
-                            triggerGameOver(); // centralized, fast SFX
-                        }
-                        return;
-                    }
-                }
-                for (Enemy enemies : map.getEnemies()) {
-                    if (enemies.exists() && p.getBounds().intersects(enemies.getBounds())) {
-                        boolean died = p.takeDamage(1);
-
-                        // DAMAGE SFX
-                        AudioPlayer.playSound("Resources/audio/Damage_Effect.wav", -4.0f);
-
-                        lastDamageTime = now;
-                        if (died) {
-                            triggerGameOver(); // centralized, fast SFX
-                        }
-                        return;
-                    }
-                }
+        for (Enemy enemy : map.getEnemies()) {
+            if (enemy == null || !enemy.exists()) {
+                continue;
             }
+
+            // Vladmir: no contact damage
+            if (enemy instanceof Vladmir) {
+                continue;
+            }
+
+            if (!p.getBounds().intersects(enemy.getBounds())) {
+                continue;
+            }
+
+            double damageAmount;
+            if (enemy instanceof Fireblob || enemy instanceof Desertboss || enemy instanceof Twoheadedogre) {
+                damageAmount = 0.5;
+            } else {
+                damageAmount = 1.0;
+            }
+
+            boolean died = p.takeDamage(damageAmount);
+
+            // DAMAGE SFX
+            AudioPlayer.playSound("Resources/audio/Damage_Effect.wav", -4.0f);
+
+            lastDamageTime = now;
+
+            if (died) {
+                triggerGameOver();
+            }
+
+            // Only one enemy hit per frame
+            return;
         }
     }
 
@@ -413,6 +733,7 @@ public class PlayLevelScreen extends Screen implements GameListener {
 
     @Override
     public void onWin() {
+        // Keep this as a fallback for non-final levels
         playLevelScreenState = PlayLevelScreenState.LEVEL_COMPLETED;
     }
 
@@ -480,6 +801,11 @@ public class PlayLevelScreen extends Screen implements GameListener {
                 int keyTextY = keyY + (keyHeight / 2) + 5;
                 graphicsHandler.drawString(" " + keyCount, keyTextX, keyTextY,
                         new Font("Arial", Font.BOLD, 24), Color.WHITE);
+
+                // draw dialogue overlay last (on top of HUD)
+                if (dialogue != null) {
+                    dialogue.draw(graphicsHandler);
+                }
                 break;
 
             case LEVEL_COMPLETED:

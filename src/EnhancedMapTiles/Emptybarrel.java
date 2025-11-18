@@ -16,7 +16,7 @@ public class Emptybarrel extends EnhancedMapTile {
 
     /** Uses Resources/barrel.png */
     public Emptybarrel(Point location) {
-        this(location, "EmptyBarrel.png");
+        this(location, "NewEmptyBarrel.png");
     }
 
     public Emptybarrel(Point location, String imageFileName) {

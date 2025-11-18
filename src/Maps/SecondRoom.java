@@ -62,12 +62,6 @@ public class SecondRoom extends Map {
         Emptybarrel EmptyBarrel_2 = new Emptybarrel(getMapTile(4, 6).getLocation());
         enhancedMapTiles.add(EmptyBarrel_2);
 
-        Point swordLoc = getMapTile(6, 5).getLocation(); 
-        if (!Sword.isCollectedAt(swordLoc)) {
-            Sword sword = new Sword(swordLoc);
-            enhancedMapTiles.add(sword);
-        }
-
         Point potionLoc = getMapTile(10, 10).getLocation();
         if (!HealthPotion.isCollectedAt(potionLoc)) {
             enhancedMapTiles.add(new HealthPotion(potionLoc));
