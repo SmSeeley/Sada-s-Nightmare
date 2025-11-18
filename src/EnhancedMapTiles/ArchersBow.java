@@ -115,7 +115,7 @@ public class ArchersBow extends EnhancedMapTile {
                 } catch (Exception ignored) {}
             }
 
-            // ✅ Play special pickup sound
+            // Play special pickup sound
             try {
                 AudioPlayer.playSound("Resources/audio/Key_Item.wav", -3.0f); // volume around 70%
             } catch (Exception e) {

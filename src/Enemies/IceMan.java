@@ -15,17 +15,17 @@ import java.util.HashMap;
 public class IceMan extends Enemy {
 
     // distance before switching to a stab animation
-    private final int STAB_ANIM_DISTANCE = 60;
+    private final int STAB_ANIM_DISTANCE = 90;
 
     private final int ATTACK_RANGE_X = 35;
     private final int ATTACK_RANGE_Y = 35;
-    private final int ATTACK_COOLDOWN = 45;
+    private final int ATTACK_COOLDOWN = 130;
 
     // width of just the sword
     private final float SWORD_WIDTH = 11f;
 
     // chase speed
-    private final float CHASE_SPEED = 0.8f;
+    private final float CHASE_SPEED = 0.5f;
 
     private int shootTimer = 0;
 
@@ -136,7 +136,7 @@ public class IceMan extends Enemy {
 
         //only damage when sword is hitting sada
         if (shootTimer == 0 && isSwordTouchingPlayer(player, dx)) {
-            player.takeDamage(.5);
+            player.takeDamage(.1);
             shootTimer = ATTACK_COOLDOWN;
         }
     }

@@ -107,27 +107,50 @@ public class Sada extends Player {
 
     // Add method to shoot arrows:
     private void shootArrow() {
-        try {
-            
-            float arrowX = this.getX();  // Center arrow horizontally
-            float arrowY = this.getY();  // Center arrow vertically
-            String direction = getCurrentAnimationName();
+    try {
+        // Start from Sada's bounds center (world space)
+        var b = getBounds();
 
-            System.out.println("Player actual position: (" + this.getX() + "," + this.getY() + ")");
-            System.out.println("Arrow spawn position: (" + arrowX + "," + arrowY + ")");
-            // Create arrow based on direction
-            Arrow arrow = new Arrow(arrowX, arrowY, direction);
-            arrows.add(arrow);
+        // Start at Sada's center:
+        float arrowX = b.getX() + b.getWidth() / 2;
+        float arrowY = b.getY() + b.getHeight() / 2;
 
-            System.out.println("Arrow shot! Direction: " + direction + 
-                           " Position: (" + arrowX + "," + arrowY + ") " +
-                           " Total arrows: " + arrows.size());
+        String anim = getCurrentAnimationName().toLowerCase();
 
-        } catch (Exception e) {
-            System.out.println("Failed to shoot arrow: " + e.getMessage());
-            e.printStackTrace();
+        // Adjust arrow spawn depending on shooting direction
+        if (anim.contains("right")) {
+            arrowX = b.getX() + b.getWidth() + 6;   // spawn slightly to right
+            arrowY = b.getY() - 11;                  // raise arrow a bit
+        } 
+        else if (anim.contains("left")) {
+            arrowX = b.getX() - 6;                  // left of Sada
+            arrowY = b.getY() - 11;                  // raise arrow a bit
+        } 
+        else if (anim.contains("up")) {
+            arrowX = b.getX() + 15;                 // slightly right to match bow sprite
+            arrowY = b.getY() - 20;                  // above her head
+        } 
+        else if (anim.contains("down")) {
+            arrowX = b.getX() + 15;                 // slight right
+            arrowY = b.getY() + b.getHeight() + 5;  // below Sada
         }
+
+        // Create arrow
+        Arrow arrow = new Arrow(arrowX, arrowY, anim);
+        //give arrows the same map as sada
+        arrow.setMap(this.map);
+
+        arrows.add(arrow);
+
+        System.out.println("Arrow shot! Direction: " + anim +
+                " Position: (" + arrowX + "," + arrowY + ") " +
+                " Total arrows: " + arrows.size());
+
+    } catch (Exception e) {
+        System.out.println("Failed to shoot arrow: " + e.getMessage());
+        e.printStackTrace();
     }
+}
 
 
 
@@ -359,7 +382,6 @@ public class Sada extends Player {
         }};
     }
 
-    // ===== Helpers =====
 
     private boolean isAttackAnimation(String animName) {
         if (animName == null) return false;

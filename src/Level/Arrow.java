@@ -9,6 +9,7 @@ import Engine.ImageLoader;
 import Level.MapEntity;
 import Utils.Direction;
 
+
 public class Arrow extends MapEntity {
     private Direction direction;
     private float speed = 2.8f;
