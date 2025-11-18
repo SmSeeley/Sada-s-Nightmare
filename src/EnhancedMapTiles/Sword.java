@@ -25,7 +25,7 @@ public class Sword extends EnhancedMapTile {
 
     private static final java.util.HashSet<String> collectedSwords = new java.util.HashSet<>();
     private static boolean hasSword = false;
-    private static int swordDamage = 10;
+    private static int swordDamage = 2;
 
     // Textbox handling
     private TextboxScriptAction activeTextbox = null;

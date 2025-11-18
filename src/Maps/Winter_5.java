@@ -33,6 +33,16 @@ public class Winter_5 extends Map {
         .withTileSizePixels(48, 48);
         enhancedMapTiles.add(doorB);
 
+        Point potionLoc = getMapTile(6, 10).getLocation();
+        if (!HealthPotion.isCollectedAt(potionLoc)) {
+            enhancedMapTiles.add(new HealthPotion(potionLoc));
+        }
+
+        Point potionLoc2 = getMapTile(14, 10).getLocation();
+        if (!HealthPotion.isCollectedAt(potionLoc2)) {
+            enhancedMapTiles.add(new HealthPotion(potionLoc2));
+        }
+
         return enhancedMapTiles;
 
 
