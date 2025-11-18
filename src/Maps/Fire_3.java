@@ -23,7 +23,7 @@ public class Fire_3 extends Map {
 
 
 
-        NormalDoor doorC = new NormalDoor(getMapTile(10, 2).getLocation())
+        Door doorC = new Door(getMapTile(10, 2).getLocation())
         .toMap("Fire_4", 10, 10)
         .withTileSizePixels(48, 48);
         enhancedMapTiles.add(doorC);
