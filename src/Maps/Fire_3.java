@@ -3,6 +3,7 @@
 package Maps;
 
 import EnhancedMapTiles.*;
+import Level.Enemy;
 import Level.EnhancedMapTile;
 import Level.Map;
 import Level.NPC;
@@ -12,7 +13,18 @@ import Utils.Point;
 
 import java.util.ArrayList;
 
+import Enemies.Fireblob;
+import Enemies.*;
+
 public class Fire_3 extends Map {
+
+    private Fireblob fireblob;
+    private Fireblob fireblob1;
+    private Fireblob fireblob2;
+    private Firemonster firemonster;
+    private Firemonster firemonster2;
+
+    
    public Fire_3() {
         super("Fire_3.txt", new FireTileset());
         this.playerStartPosition =  getMapTile(4, 7).getLocation();
@@ -47,6 +59,26 @@ public class Fire_3 extends Map {
         return enhancedMapTiles;
 
     }
+
+    @Override
+    public ArrayList<Enemy> loadEnemies() {
+        ArrayList<Enemy> enemies = new ArrayList<>();
+        fireblob = new Fireblob(5, getMapTile(6, 4).getLocation());
+        fireblob1 = new Fireblob(5, getMapTile(8, 4).getLocation());
+        fireblob2 = new Fireblob(5, getMapTile(10, 4).getLocation());
+
+        firemonster = new Firemonster(5, getMapTile(6, 3).getLocation());
+        enemies.add(firemonster);
+        firemonster2 = new Firemonster(5, getMapTile(10, 3).getLocation());
+        enemies.add(firemonster2);
+        
+        enemies.add(fireblob);
+        enemies.add(fireblob1);
+        enemies.add(fireblob2);
+
+        return enemies;
+    }
+   
 
     @Override
     public ArrayList<NPC> loadNPCs() {

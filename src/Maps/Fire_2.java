@@ -15,6 +15,8 @@ import java.util.ArrayList;
 public class Fire_2 extends Map {
     
     private Firemonster firemonster;
+    private Firemonster firemonster1;
+    private Firemonster firemonster2;
 
    public Fire_2() {
         super("Fire_2.txt", new FireTileset());
@@ -55,6 +57,13 @@ public class Fire_2 extends Map {
         ArrayList<Enemy> enemies = new ArrayList<>();
         firemonster = new Firemonster(5, getMapTile(8, 3).getLocation());
         enemies.add(firemonster);
+
+        firemonster1 = new Firemonster(5, getMapTile(9, 3).getLocation());
+        enemies.add(firemonster1);
+
+        firemonster2 = new Firemonster(5, getMapTile(9, 6).getLocation());
+        enemies.add(firemonster2);
+
         return enemies;
     }
    
