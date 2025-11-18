@@ -3,10 +3,13 @@ package Maps;
 
 import EnhancedMapTiles.*;
 import Level.*;
+<<<<<<< HEAD
 import Tilesets.DesertTileset;
 import Utils.Point;
+=======
+>>>>>>> a9a604368d762224ce3f587205a4cc5d78c121b7
 import NPCs.KeyWizard;
-
+import Tilesets.DesertTileset;
 import java.util.ArrayList;
 
 // Represents a test map to be used in a level
@@ -57,4 +60,3 @@ public class Desert_2 extends Map {
     
  
 }
-
