@@ -3,6 +3,7 @@ package Maps;
 import Enemies.Watermonster;
 import EnhancedMapTiles.*;
 import Level.*;
+import NPCs.KeyWizard;
 import Tilesets.*;
 import java.util.ArrayList;
 
@@ -34,6 +35,8 @@ public class Winter_2 extends Map {
 
         return enhancedMapTiles;
     }
+
+    
 
     @Override
     public ArrayList<Enemy> loadEnemies() {

@@ -5,6 +5,8 @@ package Maps;
 import EnhancedMapTiles.*;
 import Level.EnhancedMapTile;
 import Level.Map;
+import Level.NPC;
+import NPCs.KeyWizard;
 import Tilesets.FireTileset;
 import java.util.ArrayList;
 
@@ -37,6 +39,16 @@ public class Fire_3 extends Map {
 
         return enhancedMapTiles;
 
+    }
+
+    @Override
+    public ArrayList<NPC> loadNPCs() {
+        ArrayList<NPC> npcs = new ArrayList<>();
+        KeyWizard keywizard3 = new KeyWizard(1, getMapTile(15, 2).getLocation());
+        keywizard3.setInteractScript(new Scripts.TestMap.KeyWizardRiddleScript3(getPlayer(), keywizard3));
+        npcs.add(keywizard3);
+
+        return npcs;
     }
    
 }

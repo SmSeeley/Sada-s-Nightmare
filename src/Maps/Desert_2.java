@@ -4,6 +4,8 @@ package Maps;
 import EnhancedMapTiles.*;
 import Level.*;
 import Tilesets.DesertTileset;
+import Level.NPC;
+import NPCs.KeyWizard;
 
 import java.util.ArrayList;
 
@@ -35,6 +37,16 @@ public class Desert_2 extends Map {
         return enhancedMapTiles;
 
 
+    }
+
+    @Override
+    public ArrayList<NPC> loadNPCs() {
+        ArrayList<NPC> npcs = new ArrayList<>();
+        KeyWizard keywizard1 = new KeyWizard(1, getMapTile(15, 2).getLocation());
+        keywizard1.setInteractScript(new Scripts.TestMap.KeyWizardRiddleScript1(getPlayer(), keywizard1));
+        npcs.add(keywizard1);
+
+        return npcs;
     }
 
     
