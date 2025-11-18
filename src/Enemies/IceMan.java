@@ -19,7 +19,7 @@ public class IceMan extends Enemy {
 
     private final int ATTACK_RANGE_X = 35;
     private final int ATTACK_RANGE_Y = 35;
-    private final int ATTACK_COOLDOWN = 130;
+    private final int ATTACK_COOLDOWN = 900;
 
     // width of just the sword
     private final float SWORD_WIDTH = 11f;
@@ -136,7 +136,7 @@ public class IceMan extends Enemy {
 
         //only damage when sword is hitting sada
         if (shootTimer == 0 && isSwordTouchingPlayer(player, dx)) {
-            player.takeDamage(.1);
+            player.takeDamage(1);
             shootTimer = ATTACK_COOLDOWN;
         }
     }
