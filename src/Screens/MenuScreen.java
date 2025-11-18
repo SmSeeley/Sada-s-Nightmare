@@ -95,6 +95,7 @@ public class MenuScreen extends Screen {
 
         if (selectPressed) {
             stopTitleMusic(); // stop music before leaving the menu
+            AudioPlayer.playSound("Resources/audio/SelectSound.wav", -10.0f);
             if (hoveredIndex == 0) {
                 screenCoordinator.setGameState(GameState.INTRO);
             } else {

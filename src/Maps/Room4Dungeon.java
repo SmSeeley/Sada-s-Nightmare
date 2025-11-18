@@ -6,6 +6,9 @@ import Level.*;
 import Tilesets.DungeonWallsTileSet;
 import Utils.Point;
 import java.util.ArrayList;
+
+import Enemies.*;
+
 public class Room4Dungeon extends Map {
 
 
@@ -51,6 +54,7 @@ public class Room4Dungeon extends Map {
         .toMap("Room5Dungeon", 10, 10)
         .withTileSizePixels(48, 48);
         enhancedMapTiles.add(doorB);
+
 
         return enhancedMapTiles;
     }

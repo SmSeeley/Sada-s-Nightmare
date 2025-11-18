@@ -41,18 +41,21 @@ public class FirstRoom extends Map {
             enhancedMapTiles.add(new Coin(coinLoc));
         }
 
-        Point potionLoc = getMapTile(8, 5).getLocation();
-        if (!HealthPotion.isCollectedAt(potionLoc)) {
-            enhancedMapTiles.add(new HealthPotion(potionLoc));
-        }
-
         NormalDoor toSecond = new NormalDoor(getMapTile(8, 2).getLocation())
             .toMap("SecondRoom", 10, 10)
             .withTileSizePixels(48, 48);
         enhancedMapTiles.add(toSecond);
 
+        Point swordLoc = getMapTile(8, 4).getLocation(); 
+        if (!Sword.isCollectedAt(swordLoc)) {
+            Sword sword = new Sword(swordLoc);
+            enhancedMapTiles.add(sword);
+        }
+
         return enhancedMapTiles;
     }
+
+    
 
     // Necessary code to allow dynamic addition to the map's enhanced tiles list
     public ArrayList<EnhancedMapTile> getEnhancedMapTiles() {
