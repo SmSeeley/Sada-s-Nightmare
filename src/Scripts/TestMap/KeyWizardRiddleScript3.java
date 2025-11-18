@@ -7,17 +7,18 @@ import Level.Script;
 import Level.ScriptState;
 import ScriptActions.*;
 import EnhancedMapTiles.Coin;
+import EnhancedMapTiles.DoorKey;
 import Level.Player;
 import Level.NPC;
 
-public class WizardRiddleScript extends Script {
+public class KeyWizardRiddleScript3 extends Script {
 
     private boolean answered = false;
     //reference to sada and wizard
     protected Player player;
     private NPC wizard;
 
-    public WizardRiddleScript(Player player, NPC wizard) {
+    public KeyWizardRiddleScript3(Player player, NPC wizard) {
         this.player = player;
         this.wizard = wizard;
     }
@@ -33,9 +34,8 @@ public class WizardRiddleScript extends Script {
         if (!answered) {
             // Show riddle with choices
             scriptActions.add(new TextboxScriptAction() {{
-                addText("I speak without a mouth and hear without ears.");
-                addText("I have nobody, but I come alive with the wind.");
-                addText("What am I?", new String[] { "Echo", "Shadow" });
+                addText("What is it that given one");
+                addText("You will either have 2 or 1?", new String[] { "A Choice", "An Option" });
             }});
 
             // Conditional logic to check player's answer
@@ -56,7 +56,7 @@ public class WizardRiddleScript extends Script {
                         public ScriptState execute() {
                             answered = true;
                             // Add 2 coins to player's global coin count here
-                            Coin.coinsCollected += 2;
+                            DoorKey.keysCollected ++;
                             System.out.println("[WizardRiddleScript] Added 2 coins to player. Total coins: " + Coin.coinsCollected);
                             //remove wizard when player correctly answers
                             if (wizard != null) {

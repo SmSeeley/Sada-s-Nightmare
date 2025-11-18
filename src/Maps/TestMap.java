@@ -45,8 +45,8 @@ public class TestMap extends Map {
 
 
         //Adjust teleportation so all doors in room 1 teleport to correlated doors in room 2
-        door2.setDestination(door6.getLocation());
-        door6.setDestination(door2.getLocation());
+        //door2.setDestination(door6.getLocation());
+        //door6.setDestination(door2.getLocation());
 
         //add adjusted doors to enhanced map tiles
         enhancedMapTiles.add(door2);
