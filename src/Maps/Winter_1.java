@@ -10,6 +10,8 @@ import java.util.ArrayList;
 public class Winter_1 extends Map {
 
     private Snowmonster snowmonster;
+    private Snowmonster snowmonster2;
+    private Snowmonster snowmonster3;
 
     public Winter_1() {
         super("Winter_1.txt", new WinterTileset());
@@ -36,8 +38,12 @@ public class Winter_1 extends Map {
     @Override
     public ArrayList<Enemy> loadEnemies() {
         ArrayList<Enemy> enemies = new ArrayList<>();
-        snowmonster = new Snowmonster(5, getMapTile(14, 5).getLocation());
+        snowmonster = new Snowmonster(5, getMapTile(14, 3).getLocation());
         enemies.add(snowmonster);
+        snowmonster2 = new Snowmonster(5, getMapTile(14, 6).getLocation());
+        enemies.add(snowmonster2);
+        snowmonster2 = new Snowmonster(5, getMapTile(14, 9).getLocation());
+        enemies.add(snowmonster2);
         
         return enemies;
     }

@@ -9,6 +9,7 @@ import GameObject.SpriteSheet;
 import Level.Enemy;
 import Level.Map;
 import Level.Player;
+import Maps.Room4Dungeon;
 import Utils.Point;
 import EnhancedMapTiles.DoorKey;
 import java.util.HashMap;
@@ -133,7 +134,7 @@ public class Ogre extends Enemy {
                     Point dropLoc = ThirdRoomDungeon.getMapTile(10, 3).getLocation(); // where the ogre was
                     ThirdRoomDungeon.addEnhancedMapTile(new DoorKey(dropLoc));
                     System.out.println("[Ogre] Dropped key at " + dropLoc.x + ", " + dropLoc.y);
-                }
+                }   
             } catch (Exception e) {
                 System.out.println("[Ogre] Failed to drop key: " + e.getMessage());
             }

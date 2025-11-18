@@ -59,5 +59,24 @@ public class Room4Dungeon extends Map {
         return enhancedMapTiles;
     }
 
+    @Override
+    public ArrayList<Enemy> loadEnemies() {
+        ArrayList<Enemy> enemies = new ArrayList<>();
+
+        Zombie zombie = new Zombie(4, getMapTile(5, 7).getLocation());
+        enemies.add(zombie);
+
+        Zombie zombie2 = new Zombie(4, getMapTile(4, 4).getLocation());
+        enemies.add(zombie2);
+
+        Zombie zombie3 = new Zombie(4, getMapTile(4, 10).getLocation());
+        enemies.add(zombie3);
+
+        Ogre ogre = new Ogre(5, getMapTile(10, 2).getLocation(),this);
+        enemies.add(ogre);
+
+        return enemies;
+    }
+
 
 }
