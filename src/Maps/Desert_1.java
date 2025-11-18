@@ -11,6 +11,7 @@ import Scripts.SimpleTextScript;
 import Scripts.TestMap.*;
 import Tilesets.CommonTileset;
 import Tilesets.DesertTileset;
+import Utils.Point;
 
 import java.util.ArrayList;
 
@@ -32,6 +33,11 @@ public class Desert_1 extends Map {
         .toMap("Desert_2", 10, 10)
         .withTileSizePixels(48, 48);
         enhancedMapTiles.add(doorB);
+
+        Point potionLoc = getMapTile(10, 10).getLocation();
+        if (!HealthPotion.isCollectedAt(potionLoc)) {
+            enhancedMapTiles.add(new HealthPotion(potionLoc));
+        }
 
         return enhancedMapTiles;
 
