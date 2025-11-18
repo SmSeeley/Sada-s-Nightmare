@@ -6,6 +6,7 @@ import EnhancedMapTiles.*;
 import Level.*;
 import Tilesets.*;
 import java.util.ArrayList;
+import Utils.Point;
 
 // Represents a test map to be used in a level
 public class Winter_5 extends Map {
