@@ -42,7 +42,7 @@ public class FirstRoom extends Map {
         }
 
         NormalDoor toSecond = new NormalDoor(getMapTile(8, 2).getLocation())
-            .toMap("Winter_3", 10, 10)
+            .toMap("SecondRoom", 10, 10)
             .withTileSizePixels(48, 48);
         enhancedMapTiles.add(toSecond);
 
