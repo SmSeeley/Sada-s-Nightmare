@@ -42,7 +42,7 @@ public class Desert_5 extends Map {
             enhancedMapTiles.add(new HealthPotion(potionLoc2));
         }
 
-
+        
 
         return enhancedMapTiles;
 
