@@ -22,7 +22,7 @@ public class Winter_3 extends Map {
         ArrayList<EnhancedMapTile> enhancedMapTiles = new ArrayList<>();
 
         //Doors in room 1
-        NormalDoor doorB = new NormalDoor(getMapTile(10, 2).getLocation())
+        Door doorB = new Door(getMapTile(10, 2).getLocation())
         .toMap("Winter_4", 10, 10)
         .withTileSizePixels(48, 48);
         enhancedMapTiles.add(doorB);
