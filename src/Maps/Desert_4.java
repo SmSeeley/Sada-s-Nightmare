@@ -1,14 +1,15 @@
 package Maps;
 
 
+import Enemies.Pirate;
 import EnhancedMapTiles.*;
 import Level.*;
 import Tilesets.DesertTileset;
-
 import java.util.ArrayList;
 
 // Represents a test map to be used in a level
 public class Desert_4 extends Map {
+    private Pirate pirate;
 
     public Desert_4() {
         super("Desert_4.txt", new DesertTileset());
@@ -35,6 +36,14 @@ public class Desert_4 extends Map {
         return enhancedMapTiles;
 
 
+    }
+
+    @Override
+    public ArrayList<Enemy> loadEnemies() {
+        ArrayList<Enemy> enemies = new ArrayList<>();
+        pirate = new Pirate(11, getMapTile(10, 4).getLocation());
+        enemies.add(pirate);
+        return enemies;
     }
 
     

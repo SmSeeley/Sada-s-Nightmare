@@ -14,8 +14,11 @@ import java.util.HashMap;
 // A projectile shot by an enemy
 public class Projectile extends MapEntity {
 
-    private float speed = 1.5f; // speed of projectile
+    private float speed = 2f; // speed of projectile
     private Direction direction; // direction its moving 
+    private float directionX; // x-component 
+    private float directionY; // y-component
+    private boolean usesNormalizedDirection; // determine movement type
     private int damage = 1; 
 
     private  final float MAX_DISTANCE = 600f;
@@ -24,6 +27,7 @@ public class Projectile extends MapEntity {
     public Projectile(Point location, SpriteSheet spriteSheet, String startingAnimation, Direction direction) {
         super(location.x, location.y, spriteSheet, "PROJECTILE");
         this.direction = direction;
+        this.usesNormalizedDirection = false; // cardinal movment
         this.animations = loadAnimations(spriteSheet);
         if (animations != null && animations.containsKey(startingAnimation)) {
             currentAnimationName = startingAnimation;
@@ -31,7 +35,20 @@ public class Projectile extends MapEntity {
             System.out.println("Animation is broken");
         }
         setMap(this.map);
+    }
 
+    public Projectile(Point location, SpriteSheet spriteSheet, String startingAnimation, float directionX, float directionY) {
+        super(location.x, location.y, spriteSheet, "PROJECTILE");
+        this.directionX = directionX;
+        this.directionY = directionY;
+        this.usesNormalizedDirection = true; // Indicates arbitrary movement
+        this.animations = loadAnimations(spriteSheet);
+        if (animations != null && animations.containsKey(startingAnimation)) {
+            currentAnimationName = startingAnimation;
+        } else {
+            System.out.println("Animation is broken");
+        }
+        setMap(this.map);
     }
     
     public void setDamage(int damage) {
@@ -52,37 +69,41 @@ public class Projectile extends MapEntity {
 
     @Override
     public void update() {
-       float moveAmount = 0; 
-        
+       float moveX = 0; 
+       float moveY = 0;
        
-        switch (direction) {
-            case RIGHT:
-                moveAmount = moveXHandleCollision(speed);
-                break;
-            case LEFT:
-                moveAmount = moveXHandleCollision(-speed);
-                break;
-            case UP:
-                moveAmount = moveYHandleCollision(-speed);
-                break;
-            case DOWN:
-                moveAmount = moveYHandleCollision(speed);
-                break;
-            default:
-                break;
-        }
+       if(usesNormalizedDirection) {
+            moveX = directionX * speed;
+            moveY = directionY * speed;
+       } else {
+            switch (direction) {
+                case RIGHT:
+                    moveX = speed;
+                    break;
+                case LEFT:
+                    moveX = -speed;
+                    break;
+                case UP:
+                    moveY = -speed;
+                    break;
+                case DOWN:
+                    moveY = speed;
+                    break;
+                default:
+                    break;
+            }
+       }
 
-        distanceTraveled += Math.abs(moveAmount);
-
+       float actualMoveX = moveXHandleCollision(moveX);
+       float actualMoveY = moveYHandleCollision(moveY);
+       
+        distanceTraveled += Math.sqrt(actualMoveX * actualMoveX + actualMoveY * actualMoveY);
+       
         // removes projectile
-        boolean collidedWithSolid = Math.abs(moveAmount) < (speed - 0.001f);
-        
+        boolean collidedWithSolid = Math.abs(actualMoveX) < Math.abs(moveX) || Math.abs(actualMoveY) < Math.abs(moveY);       
         // removal logic
         if (collidedWithSolid) {
-            //projectile hit a wall/solid tile
-            this.mapEntityStatus = MapEntityStatus.REMOVED;
-        } else if (distanceTraveled >= MAX_DISTANCE) {
-            // projectile ran out of range
+            //projectile hit a wall/solid tile remove it 
             this.mapEntityStatus = MapEntityStatus.REMOVED;
         }
         super.update();

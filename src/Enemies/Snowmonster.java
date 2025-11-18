@@ -18,7 +18,7 @@ public class Snowmonster extends Enemy {
     private final int VERTICAL_TOLERANCE = 300;
 
     public Snowmonster(int id, Point location) {
-        super(id, location.x, location.y, new SpriteSheet(ImageLoader.load("snowmonster.png"), 24, 24), "STAND_RIGHT",10);
+        super(id, location.x, location.y, new SpriteSheet(ImageLoader.load("snowmonster.png"), 24, 24), "STAND_RIGHT",14);
     }  
     
     // overrides loadAnimations method to define animation

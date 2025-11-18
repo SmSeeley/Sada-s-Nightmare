@@ -1,15 +1,16 @@
 package Maps;
 
 
+import Enemies.Snowboss;
 import EnhancedMapTiles.*;
 import Level.*;
 import Tilesets.*;
-import Utils.Point;
-
 import java.util.ArrayList;
 
 // Represents a test map to be used in a level
 public class Winter_5 extends Map {
+
+    private Snowboss snowboss;
 
     private Map currentMap;
 
@@ -37,6 +38,15 @@ public class Winter_5 extends Map {
 
 
     }
+
+    @Override
+    public ArrayList<Enemy> loadEnemies() {
+        ArrayList<Enemy> enemies = new ArrayList<>();
+        snowboss = new Snowboss(12, getMapTile(10, 4).getLocation(),this);
+        enemies.add(snowboss);
+        return enemies;
+    }      
+ 
  
 }
 
