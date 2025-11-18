@@ -1,14 +1,17 @@
 package Maps;
 
-
 import EnhancedMapTiles.*;
 import Level.*;
 import Tilesets.*;
 
 import java.util.ArrayList;
 
+import Enemies.IceFlying;
+
 // Represents a test map to be used in a level
 public class Winter_4 extends Map {
+
+    private IceFlying iceflying;
 
     public Winter_4() {
         super("Winter_4.txt", new WinterTileset());
@@ -36,6 +39,14 @@ public class Winter_4 extends Map {
         return enhancedMapTiles;
 
 
+    }
+    @Override
+    public ArrayList<Enemy> loadEnemies() {
+        ArrayList<Enemy> enemies = new ArrayList<>();
+        iceflying = new IceFlying(5, getMapTile(14, 5).getLocation());
+        enemies.add(iceflying);
+        
+        return enemies;
     }
  
 }
