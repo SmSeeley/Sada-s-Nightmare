@@ -31,14 +31,11 @@ public class TheHub1 extends Map {
         ArrayList<EnhancedMapTile> enhancedMapTiles = new ArrayList<>();
 
         Point coinLoc = getMapTile(5, 5).getLocation();
-        if (!Coin.isCollectedAt(coinLoc)) {
-            enhancedMapTiles.add(new Coin(coinLoc));
+        if (!Coin.isCollectedAt("TheHub1", coinLoc)) {
+            enhancedMapTiles.add(new Coin(coinLoc, "TheHub1"));
         }
 
-        Point potionLoc = getMapTile(8, 5).getLocation();
-        if (!HealthPotion.isCollectedAt(potionLoc)) {
-            enhancedMapTiles.add(new HealthPotion(potionLoc));
-        }
+        enhancedMapTiles.add(new HealthPotion(getMapTile(8, 5).getLocation()));
 
         SandDoor doorB = new SandDoor(getMapTile(6, 3).getLocation())
         .toMap("Desert_1", 10, 10)

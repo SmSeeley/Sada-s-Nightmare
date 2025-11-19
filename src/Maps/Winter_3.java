@@ -1,13 +1,12 @@
 package Maps;
 
 
+import Enemies.IceMan;
 import EnhancedMapTiles.*;
 import Level.*;
-import Tilesets.*;
-import Utils.Point;
 import NPCs.KeyWizard;
+import Tilesets.*;
 import java.util.ArrayList;
-import Enemies.IceMan;
 
 // Represents a test map to be used in a level
 public class Winter_3 extends Map {
@@ -34,10 +33,8 @@ public class Winter_3 extends Map {
         .withTileSizePixels(48, 48);
         enhancedMapTiles.add(doorC);
 
-        Point potionLoc = getMapTile(12, 5).getLocation();
-        if (!HealthPotion.isCollectedAt(potionLoc)) {
-            enhancedMapTiles.add(new HealthPotion(potionLoc));
-        }
+        enhancedMapTiles.add(new HealthPotion(getMapTile(12, 5).getLocation()));
+
 
 
 

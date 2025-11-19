@@ -1,13 +1,10 @@
 package Maps;
 
+import Enemies.IceFlying;
 import EnhancedMapTiles.*;
 import Level.*;
 import Tilesets.*;
-import Utils.Point;
-
 import java.util.ArrayList;
-
-import Enemies.IceFlying;
 
 // Represents a test map to be used in a level
 public class Winter_4 extends Map {
@@ -36,19 +33,8 @@ public class Winter_4 extends Map {
         .withTileSizePixels(48, 48);
         enhancedMapTiles.add(doorC);
 
-        
-        Point potionLoc = getMapTile(6, 10).getLocation();
-        if (!HealthPotion.isCollectedAt(potionLoc)) {
-            enhancedMapTiles.add(new HealthPotion(potionLoc));
-        }
-
-        Point potionLoc2 = getMapTile(14, 10).getLocation();
-        if (!HealthPotion.isCollectedAt(potionLoc2)) {
-            enhancedMapTiles.add(new HealthPotion(potionLoc2));
-        }
-
-
-
+        enhancedMapTiles.add(new HealthPotion(getMapTile(6, 10).getLocation()));
+        enhancedMapTiles.add(new HealthPotion(getMapTile(14, 10).getLocation()));
 
         return enhancedMapTiles;
 

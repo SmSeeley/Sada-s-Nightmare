@@ -3,7 +3,6 @@ package Maps;
 import Enemies.Ogre;
 import Enemies.Zombie;
 import EnhancedMapTiles.Door;
-import EnhancedMapTiles.HealthPotion;
 import EnhancedMapTiles.Sword;
 import Level.*;
 import NPCs.Bug;
@@ -35,11 +34,6 @@ public class TestMap extends Map {
         //Doors in room 2
         Door            door6 = new Door(getMapTile(21, 3).getLocation());
 
-
-        // Health potion
-        HealthPotion healthPotion = new HealthPotion(getMapTile(2, 7).getLocation());
-        
-
         //sword in room 2
         Sword sword = new Sword(getMapTile(21, 5).getLocation());
 
@@ -51,9 +45,7 @@ public class TestMap extends Map {
         //add adjusted doors to enhanced map tiles
         enhancedMapTiles.add(door2);
         enhancedMapTiles.add(door6);
-        
-        enhancedMapTiles.add(healthPotion);
-
+    
         enhancedMapTiles.add(sword);
 
         return enhancedMapTiles;

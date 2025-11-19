@@ -10,7 +10,6 @@ import Level.Map;
 import Level.NPC;
 import NPCs.Wizard;
 import Tilesets.DungeonWallsTileSet;
-import Utils.Point;
 import java.util.ArrayList;
 
 public class SecondRoom extends Map {
@@ -62,10 +61,7 @@ public class SecondRoom extends Map {
         Emptybarrel EmptyBarrel_2 = new Emptybarrel(getMapTile(4, 6).getLocation());
         enhancedMapTiles.add(EmptyBarrel_2);
 
-        Point potionLoc = getMapTile(10, 10).getLocation();
-        if (!HealthPotion.isCollectedAt(potionLoc)) {
-            enhancedMapTiles.add(new HealthPotion(potionLoc));
-        }
+        enhancedMapTiles.add(new HealthPotion(getMapTile(10, 2).getLocation()));
 
 
         return enhancedMapTiles;

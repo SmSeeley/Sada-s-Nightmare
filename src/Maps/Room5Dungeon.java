@@ -36,14 +36,12 @@ public class Room5Dungeon extends Map {
         enhancedMapTiles.add(new Blood(getMapTile(6, 12).getLocation()));
 
         Point coinLoc = getMapTile(5, 5).getLocation();
-        if (!Coin.isCollectedAt(coinLoc)) {
-            enhancedMapTiles.add(new Coin(coinLoc));
+        if (!Coin.isCollectedAt("Room5Dungeon", coinLoc)) {
+            enhancedMapTiles.add(new Coin(coinLoc, "Room5Dungeon"));
         }
 
-        Point potionLoc = getMapTile(8, 5).getLocation();
-        if (!HealthPotion.isCollectedAt(potionLoc)) {
-            enhancedMapTiles.add(new HealthPotion(potionLoc));
-        }
+        enhancedMapTiles.add(new HealthPotion(getMapTile(8, 5).getLocation()));
+
 
         NormalDoor toSecond = new NormalDoor(getMapTile(10, 12).getLocation())
             .toMap("Room4Dungeon", 10, 2)

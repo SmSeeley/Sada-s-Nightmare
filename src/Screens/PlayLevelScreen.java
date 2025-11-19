@@ -40,11 +40,6 @@ import Maps.Winter_5;
 import Players.Sada;
 import Utils.Direction;
 import Utils.Point;
-import Level.*;
-
-// dialogue / UI
-import ui.DialogueOverlay;
-
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -55,6 +50,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.imageio.ImageIO;
+import ui.DialogueOverlay;
 
 public class PlayLevelScreen extends Screen implements GameListener {
 
@@ -154,7 +150,13 @@ public class PlayLevelScreen extends Screen implements GameListener {
     private boolean finalBossVictoryHandled = false;
 
     public PlayLevelScreen(ScreenCoordinator screenCoordinator) {
+
+        //reset collectibles
+	    System.out.println("PlayLevelScreen: Resetting coins...");
+        EnhancedMapTiles.Coin.resetAllCoinsTest();
+        System.out.println("PlayLevelScreen: Reset complete, continuing initialization...");
         this.screenCoordinator = screenCoordinator;
+        
     }
 
     @Override

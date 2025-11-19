@@ -5,8 +5,6 @@ import Enemies.Desertboss;
 import EnhancedMapTiles.*;
 import Level.*;
 import Tilesets.DesertTileset;
-import Utils.Point;
-
 import java.util.ArrayList;
 
 // Represents a test map to be used in a level
@@ -32,17 +30,9 @@ public class Desert_5 extends Map {
         .withTileSizePixels(48, 48);
         enhancedMapTiles.add(doorB);
 
-        Point potionLoc = getMapTile(6, 10).getLocation();
-        if (!HealthPotion.isCollectedAt(potionLoc)) {
-            enhancedMapTiles.add(new HealthPotion(potionLoc));
-        }
+        enhancedMapTiles.add(new HealthPotion(getMapTile(6, 10).getLocation()));
 
-        Point potionLoc2 = getMapTile(14, 10).getLocation();
-        if (!HealthPotion.isCollectedAt(potionLoc2)) {
-            enhancedMapTiles.add(new HealthPotion(potionLoc2));
-        }
-
-        
+        enhancedMapTiles.add(new HealthPotion(getMapTile(14, 10).getLocation()));
 
         return enhancedMapTiles;
 

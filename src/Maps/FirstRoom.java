@@ -37,9 +37,11 @@ public class FirstRoom extends Map {
         
 
         Point coinLoc = getMapTile(5, 5).getLocation();
-        if (!Coin.isCollectedAt(coinLoc)) {
-            enhancedMapTiles.add(new Coin(coinLoc));
+        if (!Coin.isCollectedAt("FirstRoom", coinLoc)) {
+            enhancedMapTiles.add(new Coin(coinLoc, "FirstRoom"));
         }
+
+        enhancedMapTiles.add(new HealthPotion(getMapTile(8, 5).getLocation()));
 
         NormalDoor toSecond = new NormalDoor(getMapTile(8, 2).getLocation())
             .toMap("SecondRoom", 10, 10)

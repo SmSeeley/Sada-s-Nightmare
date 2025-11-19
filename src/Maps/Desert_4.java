@@ -5,8 +5,6 @@ import Enemies.Pirate;
 import EnhancedMapTiles.*;
 import Level.*;
 import Tilesets.DesertTileset;
-import Utils.Point;
-
 import java.util.ArrayList;
 
 // Represents a test map to be used in a level
@@ -35,10 +33,8 @@ public class Desert_4 extends Map {
         .withTileSizePixels(48, 48);
         enhancedMapTiles.add(doorC);
 
-        Point potionLoc = getMapTile(6, 8).getLocation();
-        if (!HealthPotion.isCollectedAt(potionLoc)) {
-            enhancedMapTiles.add(new HealthPotion(potionLoc));
-        }
+        enhancedMapTiles.add(new HealthPotion(getMapTile(6, 8).getLocation()));
+
 
         return enhancedMapTiles;
 

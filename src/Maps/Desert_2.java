@@ -3,8 +3,6 @@ package Maps;
 
 import EnhancedMapTiles.*;
 import Level.*;
-import Tilesets.DesertTileset;
-import Utils.Point;
 import NPCs.KeyWizard;
 import Tilesets.DesertTileset;
 import java.util.ArrayList;
@@ -34,10 +32,8 @@ public class Desert_2 extends Map {
         .withTileSizePixels(48, 48);
         enhancedMapTiles.add(doorC);
 
-        Point potionLoc = getMapTile(12, 5).getLocation();
-        if (!HealthPotion.isCollectedAt(potionLoc)) {
-            enhancedMapTiles.add(new HealthPotion(potionLoc));
-        }
+        enhancedMapTiles.add(new HealthPotion(getMapTile(12, 5).getLocation()));
+
 
         return enhancedMapTiles;
 

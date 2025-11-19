@@ -2,17 +2,13 @@
 
 package Maps;
 
+import Enemies.Vladmir;
 import EnhancedMapTiles.*;
 import Level.Enemy;
 import Level.EnhancedMapTile;
 import Level.Map;
 import Tilesets.FireTileset;
-import Utils.Point;
-
 import java.util.ArrayList;
-
-import Enemies.Ogre;
-import Enemies.Vladmir;
 
 public class Fire_5 extends Map {
     private Vladmir vladmir;
@@ -33,25 +29,15 @@ public class Fire_5 extends Map {
         enhancedMapTiles.add(EmptyBarrel_2);
         enhancedMapTiles.add(EmptyBarrel_3);
 
-        Point potionLoc = getMapTile(5, 12).getLocation();
-        if (!HealthPotion.isCollectedAt(potionLoc)) {
-            enhancedMapTiles.add(new HealthPotion(potionLoc));
-        }
+        
 
-        Point potionLoc2 = getMapTile(7, 12).getLocation();
-        if (!HealthPotion.isCollectedAt(potionLoc2)) {
-            enhancedMapTiles.add(new HealthPotion(potionLoc2));
-        }
+        enhancedMapTiles.add(new HealthPotion(getMapTile(5, 12).getLocation()));
 
-         Point potionLoc3 = getMapTile(16, 12).getLocation();
-        if (!HealthPotion.isCollectedAt(potionLoc3)) {
-            enhancedMapTiles.add(new HealthPotion(potionLoc3));
-        }
+        enhancedMapTiles.add(new HealthPotion(getMapTile(7, 12).getLocation()));
 
-         Point potionLoc4 = getMapTile(14, 12).getLocation();
-        if (!HealthPotion.isCollectedAt(potionLoc4)) {
-            enhancedMapTiles.add(new HealthPotion(potionLoc4));
-        }
+        enhancedMapTiles.add(new HealthPotion(getMapTile(16, 12).getLocation()));
+
+        enhancedMapTiles.add(new HealthPotion(getMapTile(14, 12).getLocation()));
 
 
         return enhancedMapTiles;

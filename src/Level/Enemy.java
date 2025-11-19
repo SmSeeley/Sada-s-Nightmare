@@ -252,6 +252,20 @@ public class Enemy extends MapEntity {
         setIsActive(false);
         lock();
         shootTimer = 0;
+        
+        // Drop a coin when enemy is defeated
+        if (this.map != null) {
+            try {
+                EnhancedMapTiles.Coin droppedCoin = new EnhancedMapTiles.Coin(
+                    new Utils.Point(this.x, this.y),
+                    this.map.getMapFileName() // Use map's file name for tracking
+                );
+                this.map.addEnhancedMapTile(droppedCoin);
+                System.out.println("[Enemy] Dropped coin at x=" + this.x + ", y=" + this.y);
+            } catch (Exception e) {
+                System.out.println("[Enemy] Failed to drop coin: " + e.getMessage());
+            }
+        }
 
     ///incrament keys when enemy dies
     /*if (!keyDropped) {

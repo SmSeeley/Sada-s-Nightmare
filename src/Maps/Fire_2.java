@@ -8,8 +8,6 @@ import Level.Enemy;
 import Level.EnhancedMapTile;
 import Level.Map;
 import Tilesets.FireTileset;
-import Utils.Point;
-
 import java.util.ArrayList;
 
 public class Fire_2 extends Map {
@@ -43,10 +41,10 @@ public class Fire_2 extends Map {
         enhancedMapTiles.add(new Skull(getMapTile(11, 8).getLocation()));
         enhancedMapTiles.add(new Skull(getMapTile(4, 3).getLocation()));
 
-        Point potionLoc = getMapTile(10, 10).getLocation();
-        if (!HealthPotion.isCollectedAt(potionLoc)) {
-            enhancedMapTiles.add(new HealthPotion(potionLoc));
-        }
+        
+
+        enhancedMapTiles.add(new HealthPotion(getMapTile(10, 10).getLocation()));
+
 
         return enhancedMapTiles;
 

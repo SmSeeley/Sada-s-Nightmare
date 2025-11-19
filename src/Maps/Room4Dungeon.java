@@ -1,13 +1,12 @@
 //Map that user will walk into
 package Maps;
 
+import Enemies.*;
 import EnhancedMapTiles.*;
 import Level.*;
 import Tilesets.DungeonWallsTileSet;
 import Utils.Point;
 import java.util.ArrayList;
-
-import Enemies.*;
 
 public class Room4Dungeon extends Map {
 
@@ -35,14 +34,12 @@ public class Room4Dungeon extends Map {
         enhancedMapTiles.add(new Blood(getMapTile(5, 10).getLocation()));
 
         Point coinLoc = getMapTile(5, 5).getLocation();
-        if (!Coin.isCollectedAt(coinLoc)) {
-            enhancedMapTiles.add(new Coin(coinLoc));
+        if (!Coin.isCollectedAt("Room4Dungeon", coinLoc)) {
+            enhancedMapTiles.add(new Coin(coinLoc, "Room4Dungeon"));
         }
 
-        Point potionLoc = getMapTile(8, 5).getLocation();
-        if (!HealthPotion.isCollectedAt(potionLoc)) {
-            enhancedMapTiles.add(new HealthPotion(potionLoc));
-        }
+        enhancedMapTiles.add(new HealthPotion(getMapTile(8, 5).getLocation()));
+        
 
         NormalDoor toSecond = new NormalDoor(getMapTile(10, 12).getLocation())
             .toMap("ThirdRoomDungeon", 10, 2)
