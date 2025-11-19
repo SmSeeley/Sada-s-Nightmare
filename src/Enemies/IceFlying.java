@@ -18,7 +18,7 @@ public class IceFlying extends Enemy {
 
     private final int BREATH_RANGE_X = 60;    // switch to breath at ~60px horizontally
     private final int BREATH_RANGE_Y = 40;    // vertical tolerance for breath
-    private final int BREATH_COOLDOWN = 130;   // frames between breaths
+    private final int BREATH_COOLDOWN = 800;   // frames between breaths
 
     // flying chase speed
     private final float FLY_SPEED_X = 0.5f;

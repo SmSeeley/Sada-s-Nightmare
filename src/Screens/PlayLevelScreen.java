@@ -148,6 +148,7 @@ public class PlayLevelScreen extends Screen implements GameListener {
     private static final String ANGRY_SAD_PORTRAIT  = "sada/SadaAngry.png";
     private static final String Vladimir_PORTRAIT   = "sada/Vladimir_Ui_Image.png";
     private static final String Boomer_Portrait     = "sada/meow.png";
+    private static final String BOSS_PORTRAIT_PATH2  = "sada/boss_image.png"; // winter boss
 
     // Final boss victory guard – make sure we only trigger credits once
     private boolean finalBossVictoryHandled = false;
@@ -530,7 +531,7 @@ public class PlayLevelScreen extends Screen implements GameListener {
 
         AudioPlayer.playSound("Resources/audio/IceBossSound.wav", -10.0f);
         dialogue.start(
-            BOSS_PORTRAIT_PATH,
+            BOSS_PORTRAIT_PATH2,
             "Your fate has been decided"
         );
     }

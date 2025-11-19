@@ -4,6 +4,7 @@ package Maps;
 import EnhancedMapTiles.*;
 import Level.*;
 import Tilesets.*;
+import Utils.Point;
 import NPCs.KeyWizard;
 import java.util.ArrayList;
 import Enemies.IceMan;
@@ -32,6 +33,12 @@ public class Winter_3 extends Map {
         .toMap("Winter_3", 10, 10)
         .withTileSizePixels(48, 48);
         enhancedMapTiles.add(doorC);
+
+        Point potionLoc = getMapTile(12, 5).getLocation();
+        if (!HealthPotion.isCollectedAt(potionLoc)) {
+            enhancedMapTiles.add(new HealthPotion(potionLoc));
+        }
+
 
 
         return enhancedMapTiles;

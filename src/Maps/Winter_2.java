@@ -5,6 +5,8 @@ import EnhancedMapTiles.*;
 import Level.*;
 import NPCs.KeyWizard;
 import Tilesets.*;
+import Utils.Point;
+
 import java.util.ArrayList;
 
 // Represents a test map to be used in a level
@@ -32,6 +34,12 @@ public class Winter_2 extends Map {
         .toMap("Winter_2", 10, 10)
         .withTileSizePixels(48, 48);
         enhancedMapTiles.add(doorC);
+
+        Point potionLoc = getMapTile(12, 5).getLocation();
+        if (!HealthPotion.isCollectedAt(potionLoc)) {
+            enhancedMapTiles.add(new HealthPotion(potionLoc));
+        }
+
 
         return enhancedMapTiles;
     }

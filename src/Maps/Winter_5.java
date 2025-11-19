@@ -29,18 +29,18 @@ public class Winter_5 extends Map {
         ArrayList<EnhancedMapTile> enhancedMapTiles = new ArrayList<>();
 
         //Doors in room 1
-         //Doors in room 1
+        //Doors in room 1
         LockedDreamDoor doorB = new LockedDreamDoor(getMapTile(10, 2).getLocation())
         .toMap("TheHub1", 10, 10)
         .withTileSizePixels(48, 48);
         enhancedMapTiles.add(doorB);
 
-        Point potionLoc = getMapTile(6, 10).getLocation();
+        Point potionLoc = getMapTile(5, 10).getLocation();
         if (!HealthPotion.isCollectedAt(potionLoc)) {
             enhancedMapTiles.add(new HealthPotion(potionLoc));
         }
 
-        Point potionLoc2 = getMapTile(14, 10).getLocation();
+        Point potionLoc2 = getMapTile(13, 10).getLocation();
         if (!HealthPotion.isCollectedAt(potionLoc2)) {
             enhancedMapTiles.add(new HealthPotion(potionLoc2));
         }
