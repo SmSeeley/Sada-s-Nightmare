@@ -8,8 +8,8 @@ import GameObject.GameObject;
 import GameObject.SpriteSheet;
 import Level.EnhancedMapTile;
 import Level.Player;
-import Level.TileType;
 import Level.ScriptState;
+import Level.TileType;
 import ScriptActions.TextboxScriptAction;
 import Utils.Point;
 
@@ -23,7 +23,6 @@ public class Sword extends EnhancedMapTile {
     private GameObject swordObject;
     private boolean collected = false;
 
-    private static final java.util.HashSet<String> collectedSwords = new java.util.HashSet<>();
     private static boolean hasSword = false;
     private static int swordDamage = 2;
 
@@ -36,18 +35,6 @@ public class Sword extends EnhancedMapTile {
         super(location.x, location.y,
                 new SpriteSheet(ImageLoader.load("slimehammer.png"), 16, 16),
                 TileType.PASSABLE);
-    }
-
-    private String key() {
-        return "Sword@" + x + "," + y;
-    }
-
-    public static boolean isCollectedAt(float x, float y) {
-        return collectedSwords.contains("Sword@" + x + "," + y);
-    }
-
-    public static boolean isCollectedAt(Point p) {
-        return isCollectedAt(p.x, p.y);
     }
 
     @Override
@@ -98,7 +85,6 @@ public class Sword extends EnhancedMapTile {
         // Detect pickup
         if (player.getBounds().intersects(swordObject.getBounds())) {
             collected = true;
-            collectedSwords.add(key());
             hasSword = true;
 
             swordObject.setLocation(-100, -100);

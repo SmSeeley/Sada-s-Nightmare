@@ -48,11 +48,7 @@ public class FirstRoom extends Map {
             .withTileSizePixels(48, 48);
         enhancedMapTiles.add(toSecond);
 
-        Point swordLoc = getMapTile(8, 4).getLocation(); 
-        if (!Sword.isCollectedAt(swordLoc)) {
-            Sword sword = new Sword(swordLoc);
-            enhancedMapTiles.add(sword);
-        }
+        enhancedMapTiles.add(new Sword(getMapTile(8, 4).getLocation()));
 
         return enhancedMapTiles;
     }

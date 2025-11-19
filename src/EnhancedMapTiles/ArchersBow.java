@@ -24,7 +24,6 @@ public class ArchersBow extends EnhancedMapTile {
     private GameObject bowObject;
     private boolean collected = false;
 
-    private static final java.util.HashSet<String> collectedBows = new java.util.HashSet<>();
     private static boolean hasBow = false;
     private static int bowDamage = 4; // Higher damage than sword
     private static int bowRange = 150; // Bow has range advantage
@@ -38,18 +37,6 @@ public class ArchersBow extends EnhancedMapTile {
         super(location.x, location.y,
                 new SpriteSheet(ImageLoader.load("archersbow.png"), 16, 16),
                 TileType.PASSABLE);
-    }
-
-    private String key() {
-        return "ArchersBow@" + x + "," + y;
-    }
-
-    public static boolean isCollectedAt(float x, float y) {
-        return collectedBows.contains("ArchersBow@" + x + "," + y);
-    }
-
-    public static boolean isCollectedAt(Point p) {
-        return isCollectedAt(p.x, p.y);
     }
 
     @Override
@@ -100,7 +87,6 @@ public class ArchersBow extends EnhancedMapTile {
         // Detect pickup
         if (player.getBounds().intersects(bowObject.getBounds())) {
             collected = true;
-            collectedBows.add(key());
             hasBow = true;
 
             bowObject.setLocation(-100, -100);
