@@ -472,7 +472,7 @@ public abstract class Player extends GameObject {
     @Override
     public Rectangle getBounds() {
         Rectangle original = super.getBounds();
-        int extra = 4; // Increase size by pixels on all sides
+        int extra = 11; // Increase size by pixels on all sides
         return new Rectangle(
             original.getX1() - extra,
             original.getY1() - extra,
@@ -484,6 +484,8 @@ public abstract class Player extends GameObject {
     public abstract void setHasSword(boolean b);
 
     public abstract void setHasBow(boolean b);
+
+    public abstract void setHasWeapon(String weaponName);
 
    
     

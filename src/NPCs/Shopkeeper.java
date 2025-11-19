@@ -24,12 +24,18 @@ import java.util.HashMap;
 public class Shopkeeper extends NPC {
     private boolean shopMenuOpen = false;
     private int selectedOption = 0;
-    private final int maxOptions = 3;
+    private final int maxOptions = 5;
     private KeyLocker menuKeyLocker = new KeyLocker();
     
     // Shop items and prices
-    private final String[] shopItems = {"Health Potion (+1 heart) - 3 coins", "Archer's Bow (+3 Damage) - 7 coins", "Exit Shop"};
-    private final int[] itemPrices = {1, 1, 0}; // 0 for exit
+    private final String[] shopItems = {
+        "Health Potion (+1 heart) - 3 coins", 
+        "Archer's Bow (+3 Damage) - 7 coins", 
+        "Angel Sword (+5 Damage) - 10 coins",
+        "Watermelon (+3 Damage) - 5 coins",
+        "Exit Shop"
+    };
+    private final int[] itemPrices = {3, 7, 10, 5, 0}; // 0 for exit
     
     public Shopkeeper(int id, Point location) {
         super(id, location.x, location.y, new SpriteSheet(ImageLoader.load("Shopkeeper.png"), 24, 24), "STAND_DOWN");
@@ -83,7 +89,7 @@ public class Shopkeeper extends NPC {
     }
     
     private void selectShopOption(Player player) {
-        if (selectedOption == 2) { // Exit shop
+        if (selectedOption == 4) { // Exit shop
             shopMenuOpen = false;
             return;
         }
@@ -109,13 +115,33 @@ public class Shopkeeper extends NPC {
                         // Give player Archers Bow (set bow flag)
                         try {
                             Class<?> bowClass = Class.forName("EnhancedMapTiles.ArchersBow");
-                            java.lang.reflect.Field hasBowField = bowClass.getDeclaredField("hasBow");
-                            hasBowField.setAccessible(true);
-                            hasBowField.setBoolean(null, true);
-                            player.setHasBow(true);
-                            System.out.println("Purchased Archer's Bow! Attack power adjusted.");
+                            java.lang.reflect.Method giveMethod = bowClass.getMethod("giveToPlayer", Player.class);
+                            giveMethod.invoke(null, player);
+                            System.out.println("Purchased Archer's Bow! Attack power increased.");
                         } catch (Exception e) {
                             System.out.println("Purchased Archer's Bow! Failed to equip.");
+                        }
+                        break;
+                    case 2: // Angel Sword
+                        // Give player Angel Sword
+                        try {
+                            Class<?> angelSwordClass = Class.forName("EnhancedMapTiles.AngelSword");
+                            java.lang.reflect.Method giveMethod = angelSwordClass.getMethod("giveToPlayer", Player.class);
+                            giveMethod.invoke(null, player);
+                            System.out.println("Purchased Angel Sword! Divine power acquired!");
+                        } catch (Exception e) {
+                            System.out.println("Purchased Angel Sword! Failed to equip.");
+                        }
+                        break;
+                    case 3: // Watermelon
+                        // Give player Watermelon
+                        try {
+                            Class<?> watermelonClass = Class.forName("EnhancedMapTiles.Watermelon");
+                            java.lang.reflect.Method giveMethod = watermelonClass.getMethod("giveToPlayer", Player.class);
+                            giveMethod.invoke(null, player);
+                            System.out.println("Purchased Watermelon! Fruity power obtained!");
+                        } catch (Exception e) {
+                            System.out.println("Purchased Watermelon! Failed to equip.");
                         }
                         break;
                 }

@@ -24,6 +24,7 @@ public class Sada extends Player {
 
     private boolean hasSword = false;
     private boolean hasBow = false;
+    private String currentWeapon = ""; // Track which specific weapon is equipped
     private ArrayList<Arrow> arrows = new ArrayList<>(); // Track active arrows
     private long lastArrowTime = 0; // Rate limiting
     private static final long ARROW_COOLDOWN = 1000; // 1000ms between arrows
@@ -61,8 +62,8 @@ public class Sada extends Player {
        }
    }
 
-   // Handle shooting when player has bow and is in shooting state
-   if (hasBow && isInShootingState()) {
+   // Handle shooting when player has archer's bow specifically
+   if (hasBow && "archersbow".equals(currentWeapon) && isInShootingState()) {
        long currentTime = System.currentTimeMillis();
        if (currentTime - lastArrowTime >= ARROW_COOLDOWN) {
            shootArrow();
@@ -173,11 +174,31 @@ public class Sada extends Player {
     @Override
     public void setHasSword(boolean v) {
         if (!v || hasSword) return;
+        equipWeapon("slimehammer");
+    }
+
+    // New method to equip any weapon by name
+    public void equipWeapon(String weaponType) {
+        if (hasSword) return; // Already has a weapon equipped
         hasSword = true;
 
+        String spriteFileName;
+        switch (weaponType.toLowerCase()) {
+            case "angelsword":
+                spriteFileName = "sada-angelSword.png";
+                break;
+            case "watermelon":
+                spriteFileName = "sada-watermelon.png";
+                break;
+            case "slimehammer":
+            default:
+                spriteFileName = "Sada-slimehammer.png";
+                break;
+        }
+
         try {
-            // swap to slimehammer spritesheet
-            SpriteSheet newSheet = new SpriteSheet(ImageLoader.load("Sada-slimehammer.png"), 24, 24);
+            // swap to weapon spritesheet
+            SpriteSheet newSheet = new SpriteSheet(ImageLoader.load(spriteFileName), 24, 24);
 
             // set spriteSheet on superclass chain
             Class<?> cls = this.getClass();
@@ -232,11 +253,31 @@ public class Sada extends Player {
     @Override
     public void setHasBow(boolean v) {
         if (!v || hasBow) return;
+        equipBowWeapon("archersbow");
+    }
+
+    // New method to equip any bow-type weapon by name
+    public void equipBowWeapon(String weaponType) {
+        if (hasBow) return; // Already has a bow-type weapon equipped
         hasBow = true;
 
+        String spriteFileName;
+        switch (weaponType.toLowerCase()) {
+            case "angelsword":
+                spriteFileName = "sada-angelSword.png";
+                break;
+            case "watermelon":
+                spriteFileName = "sada-watermelon.png";
+                break;
+            case "archersbow":
+            default:
+                spriteFileName = "sada-ArchersBow.png";
+                break;
+        }
+
         try {
-            // swap to sada-ArchersBow spritesheet
-            SpriteSheet newSheet = new SpriteSheet(ImageLoader.load("sada-ArchersBow.png"), 24, 24);
+            // swap to weapon spritesheet
+            SpriteSheet newSheet = new SpriteSheet(ImageLoader.load(spriteFileName), 24, 24);
 
             // set spriteSheet on superclass chain
             Class<?> cls = this.getClass();
@@ -287,6 +328,99 @@ public class Sada extends Player {
         System.out.println("Failed to equip bow sprite — ensure Sada-ArchersBow.png exists and matches sprite layout.");
     }
 }
+
+    // ===== Universal weapon equip method =====
+    @Override
+    public void setHasWeapon(String weaponName) {
+        String spriteFileName;
+        boolean isSwordType = false;
+        
+        switch (weaponName.toLowerCase()) {
+            case "slimehammer":
+                spriteFileName = "Sada-slimehammer.png";
+                isSwordType = true;
+                break;
+            case "angelsword":
+                spriteFileName = "sada-angelSword.png";
+                isSwordType = false;
+                break;
+            case "watermelon":
+                spriteFileName = "sada-watermelon.png";
+                isSwordType = false;
+                break;
+            case "archersbow":
+                spriteFileName = "sada-ArchersBow.png";
+                isSwordType = false;
+                break;
+            default:
+                System.out.println("Unknown weapon: " + weaponName);
+                return;
+        }
+
+        // Check if already equipped
+        if (isSwordType && hasSword) return;
+        if (!isSwordType && hasBow) return;
+
+        // Set the appropriate flag and track current weapon
+        if (isSwordType) {
+            hasSword = true;
+        } else {
+            hasBow = true;
+        }
+        currentWeapon = weaponName.toLowerCase(); // Store the weapon name
+
+        try {
+            // Swap to weapon spritesheet
+            SpriteSheet newSheet = new SpriteSheet(ImageLoader.load(spriteFileName), 24, 24);
+
+            // Set spriteSheet on superclass chain
+            Class<?> cls = this.getClass();
+            while (cls != null) {
+                try {
+                    Field spriteSheetField = cls.getDeclaredField("spriteSheet");
+                    spriteSheetField.setAccessible(true);
+                    spriteSheetField.set(this, newSheet);
+                    break;
+                } catch (NoSuchFieldException e) {
+                    cls = cls.getSuperclass();
+                }
+            }
+
+            // Rebuild animations and set on superclass
+            @SuppressWarnings("unchecked")
+            HashMap<String, Frame[]> newAnims = this.loadAnimations(newSheet);
+            cls = this.getClass();
+            while (cls != null) {
+                try {
+                    Field animationsField = cls.getDeclaredField("animations");
+                    animationsField.setAccessible(true);
+                    animationsField.set(this, newAnims);
+                    break;
+                } catch (NoSuchFieldException e) {
+                    cls = cls.getSuperclass();
+                }
+            }
+
+            // Reset to safe default animation
+            try {
+                cls = this.getClass();
+                while (cls != null) {
+                    try {
+                        Field currentAnimField = cls.getDeclaredField("currentAnimationName");
+                        currentAnimField.setAccessible(true);
+                        currentAnimField.set(this, "STAND_RIGHT");
+                        break;
+                    } catch (NoSuchFieldException e) {
+                        cls = cls.getSuperclass();
+                    }
+                }
+            } catch (Exception ignored) {}
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Failed to equip weapon sprite: " + spriteFileName);
+        }
+    }
 
 
     // ===== Animations =====
