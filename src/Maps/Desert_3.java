@@ -10,6 +10,8 @@ import java.util.ArrayList;
 public class Desert_3 extends Map {
     
     private Skeleton skeleton;
+    private Skeleton skeleton2;
+    private Skeleton skeleton3;
 
     public Desert_3() {
         super("Desert_3.txt", new DesertTileset());
@@ -44,6 +46,16 @@ public class Desert_3 extends Map {
         ArrayList<Enemy> enemies = new ArrayList<>();
         skeleton = new Skeleton(11, getMapTile(10, 4).getLocation());
         enemies.add(skeleton);
+
+        skeleton2 = new Skeleton(11, getMapTile(6, 6).getLocation());
+        enemies.add(skeleton2);
+
+        skeleton3 = new Skeleton(11, getMapTile(13, 9).getLocation());
+        enemies.add(skeleton3);
+
+
+
+
         return enemies;
     } 
     

@@ -11,6 +11,8 @@ import java.util.ArrayList;
 public class Desert_1 extends Map {
 
     private Snake snake;
+    private Snake snake2;
+    private Snake snake3;
 
     public Desert_1() {
         super("Desert_1.txt", new DesertTileset());
@@ -40,7 +42,15 @@ public class Desert_1 extends Map {
         ArrayList<Enemy> enemies = new ArrayList<>();
         snake = new Snake(11, getMapTile(4, 4).getLocation());
         enemies.add(snake);
+
+        snake2 = new Snake(11, getMapTile(10, 4).getLocation());
+        enemies.add(snake2);
+
+        snake3 = new Snake(11, getMapTile(13, 4).getLocation());
+        enemies.add(snake3);
+
         return enemies;
+        
     }
 
 }

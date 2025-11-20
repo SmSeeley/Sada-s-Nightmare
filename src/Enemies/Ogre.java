@@ -18,7 +18,7 @@ public class Ogre extends Enemy {
 
     private final int DETECTION_RADIUS = 100;
 
-    public static boolean hasDied = false;
+    public boolean hasDied = false;
 
     private Map currentMap;
 

@@ -22,7 +22,7 @@ public class Snowboss extends Enemy {
     private Map currentMap;
 
     public Snowboss(int id, Point location, Map map) {
-        super(id, location.x, location.y, new SpriteSheet(ImageLoader.load("snowBoss.png"), 24, 24), "STAND_RIGHT",20);
+        super(id, location.x, location.y, new SpriteSheet(ImageLoader.load("snowBoss.png"), 24, 24), "STAND_RIGHT",34);
         this.currentMap = map;
     }  
     
@@ -51,6 +51,22 @@ public class Snowboss extends Enemy {
         if (player instanceof Sada) {
             chase((Sada) player);
         }
+       
+
+        if (currentMap != null) {
+            MapTile currentTile = currentMap.getMapTile((int) getX(), (int) getY());
+            if (currentTile != null) {
+                System.out.println("[Current tile type: " + currentTile.getTileType());
+                if (currentTile.getTileType() == TileType.NOT_PASSABLE) {
+                    setLocation(player.getX()+2, player.getY());
+                    System.out.println("Teleported to player's location due to tile set condition.");
+                }
+            }
+        }
+
+        if(shootTimer > 0) {
+            shootTimer--;
+        }
 
         float snowCenterX = getBounds().getX() + (getBounds().getWidth() / 2);
         float playerCenterX = player.getBounds().getX() + (player.getBounds().getWidth() / 2);
@@ -71,14 +87,15 @@ public class Snowboss extends Enemy {
             }
             if (shootTimer == 0) {
                 shootProjectileToward(playerCenterX, playerCenterY, snowCenterX, snowCenterY);
+            }
         }
 
         if (isDead() && !hasDied) {
             markAsDead();
+            setIsActive(false);
             System.out.println("[Snowboss] has died, dropping key!");
         }
         super.update(player);
-        }
     }
 
     private void shootProjectileToward(float playerX, float playerY, float snowX, float snowY) {
@@ -102,6 +119,8 @@ public class Snowboss extends Enemy {
 
         projectile.setMap(this.map);
         map.addMapEntity(projectile);
+        System.out.println("[Snowboss] Projectile created at: " + snowX + ", " + snowY + " toward: " + playerX + ", " + playerY);
+
 
         shootTimer = SHOOT_COOLDOWN; 
     }
@@ -123,7 +142,10 @@ public class Snowboss extends Enemy {
     public void takeDamage(int amount) {
         boolean wasActive = getIsActive();
         super.takeDamage(amount); // applies cooldown, reduces health, and calls removeEnemy() if <= 0
-        relocate();
+        
+        if(!isDead()) {
+            relocate();
+        }
 
         // if we were active and now we're not, the enemy just died this frame
         if (wasActive && !getIsActive() && !hasDied) {

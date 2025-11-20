@@ -22,7 +22,7 @@ public class Desertboss extends Enemy {
     private Map currentMap;
 
     public Desertboss(int id, Point location, Map map) {
-        super(id, location.x, location.y, new SpriteSheet(ImageLoader.load("desertBoss.png"), 24, 24), "STAND_RIGHT",14);
+        super(id, location.x, location.y, new SpriteSheet(ImageLoader.load("desertBoss.png"), 24, 24), "STAND_RIGHT",24);
         this.currentMap = map;
     }  
     
@@ -49,10 +49,23 @@ public class Desertboss extends Enemy {
 
    @Override
     public void update(Player player) {
-        if (player instanceof Sada) {
-            chase((Sada) player);
+
+            if (player instanceof Sada) {
+                chase((Sada) player);
+            }
+
+
+        if (currentMap != null) {
+        MapTile currentTile = currentMap.getMapTile((int) getX(), (int) getY());
+        if (currentTile != null) {
+            System.out.println("[Desertboss] Current tile type: " + currentTile.getTileType());
+            if (currentTile.getTileType() == TileType.NOT_PASSABLE) {
+                setLocation(player.getX()+2, player.getY());
+                System.out.println("[Desertboss] Teleported to player's location due to tile set condition.");
+            }
         }
-        
+    
+            super.update(player);
 
         float desertCenterX = getBounds().getX() + (getBounds().getWidth() / 2);
         float playerCenterX = player.getBounds().getX() + (player.getBounds().getWidth() / 2);
@@ -72,30 +85,16 @@ public class Desertboss extends Enemy {
                 currentAnimationName = "STAND_RIGHT";
             }
         }
-        //if (!keyDropped && health <= 0) {
-            //dropKey();
-        //}
+
         if (isDead() && !hasDied) {
             markAsDead();
+            setIsActive(false);
             System.out.println("[Desertmonster] has died, dropping key!");
         }
         super.update(player);
-
-        
-    }
-    /*private void dropKey() {
-        keyDropped = true;
-        Point dropLoc = new Point(getBounds().getX(), getBounds().getY());
-        DoorKey key = new DoorKey(dropLoc);
-
-        // Register the key into the current map’s enhanced tiles list
-        if (map != null) {
-            map.addEnhancedMapTile(key);
-            System.out.println("[Ogre] Dropped key at " + dropLoc.x + ", " + dropLoc.y);
-        } else {
-            System.out.println("[Ogre] Map was null, couldn’t add key!");
         }
-    }*/
+    }
+
     public boolean isDead() {
     return hasDied || !getIsActive() || health <= 0;
     }
@@ -104,15 +103,6 @@ public class Desertboss extends Enemy {
         hasDied = true;
     }
 
-    //public boolean hasDroppedKey() {
-        //return keyDropped;
-    //}
-
-    //public DoorKey createKey() {
-        //Point dropLoc = new Point(getBounds().getX(), getBounds().getY());
-        //keyDropped = true;  // mark as dropped
-        //return new DoorKey(dropLoc);
-    //}
     @Override
         public void draw(GraphicsHandler graphicsHandler) {
             super.draw(graphicsHandler);
@@ -123,7 +113,9 @@ public class Desertboss extends Enemy {
         boolean wasActive = getIsActive();
         super.takeDamage(amount); // applies cooldown, reduces health, and calls removeEnemy() if <= 0
 
-        relocate();
+        if(!isDead()) {
+            relocate();
+        }
 
         // if we were active and now we're not, the enemy just died this frame
         if (wasActive && !getIsActive() && !hasDied) {
