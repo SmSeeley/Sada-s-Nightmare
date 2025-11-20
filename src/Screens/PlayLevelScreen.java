@@ -40,6 +40,7 @@ import Maps.Winter_5;
 import Players.Sada;
 import Utils.Direction;
 import Utils.Point;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -50,6 +51,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.imageio.ImageIO;
+
+import Enemies.Projectile;
 import ui.DialogueOverlay;
 
 public class PlayLevelScreen extends Screen implements GameListener {
@@ -138,31 +141,36 @@ public class PlayLevelScreen extends Screen implements GameListener {
     private boolean Fire5SequenceActive = false;
     private int Fire5Phase = 0;
 
+    // Fire_5 Final boss ENDING sequence (after Vlad is defeated)
+    private boolean Fire5EndingActive = false;
+    private int Fire5EndingPhase = 0;
+
     // Portrait paths (relative to Resources/, since ImageLoader adds that)
     private static final String SADA_SAD_PORTRAIT   = "sada/SadaSad.png";
     private static final String BOSS_PORTRAIT_PATH  = "sada/Desert_Boss.png"; // desert boss
     private static final String ANGRY_SAD_PORTRAIT  = "sada/SadaAngry.png";
     private static final String Vladimir_PORTRAIT   = "sada/Vladimir_Ui_Image.png";
     private static final String Boomer_Portrait     = "sada/meow.png";
-    private static final String BOSS_PORTRAIT_PATH2  = "sada/boss_image.png"; // winter boss
+    private static final String BOSS_PORTRAIT_PATH2 = "sada/boss_image.png"; // winter boss
 
-    // Final boss victory guard – make sure we only trigger credits once
+    // Final boss victory guard – make sure we only trigger ending once
     private boolean finalBossVictoryHandled = false;
 
     public PlayLevelScreen(ScreenCoordinator screenCoordinator) {
-
         //reset collectibles
-	    System.out.println("PlayLevelScreen: Resetting coins...");
+        System.out.println("PlayLevelScreen: Resetting coins...");
         EnhancedMapTiles.Coin.resetAllCoinsTest();
         System.out.println("PlayLevelScreen: Reset complete, continuing initialization...");
         this.screenCoordinator = screenCoordinator;
-        
     }
 
     @Override
     public void initialize() {
         // Stop any previous loops/SFX (fresh start for this screen)
         AudioPlayer.stopAll();
+
+        // Reset Vlad flag for a fresh run
+        Enemy.vladmirDefeated = false;
 
         // flags
         flagManager = new FlagManager();
@@ -189,9 +197,13 @@ public class PlayLevelScreen extends Screen implements GameListener {
         gameOverScreen = new GameOverScreen(this);
         playLevelScreenState = PlayLevelScreenState.RUNNING;
 
-        // reset game-over guard
+        // reset guards
         gameOverTriggered = false;
         finalBossVictoryHandled = false;
+
+        // reset ending state
+        Fire5EndingActive = false;
+        Fire5EndingPhase = 0;
 
         // Preload ONLY the gameover SFX so first play has zero I/O latency
         AudioPlayer.preloadSound(GAME_OVER_SFX, 1);
@@ -284,7 +296,7 @@ public class PlayLevelScreen extends Screen implements GameListener {
             }
         }
 
-        // 4) Fire_5 final boss sequence
+        // 4) Fire_5 final boss INTRO sequence
         if (Fire5SequenceActive) {
             handleFire5SequenceProgression();
 
@@ -298,7 +310,21 @@ public class PlayLevelScreen extends Screen implements GameListener {
             }
         }
 
-        // 5) From this point on, no dialogue is blocking and all boss intros are over.
+        // 5) Fire_5 final boss ENDING sequence (after Vlad dies)
+        if (Fire5EndingActive) {
+            handleFire5EndingProgression();
+
+            if (dialogue != null && dialogue.isBlocking()) {
+                dialogue.update();
+                return;
+            }
+
+            if (Fire5EndingActive) {
+                return; // still in ending cutscene
+            }
+        }
+
+        // 6) From this point on, no dialogue is blocking and all boss intros are over.
         //    Gameplay is allowed to run.
 
         // Immediate health check -> trigger game over fast
@@ -319,23 +345,12 @@ public class PlayLevelScreen extends Screen implements GameListener {
                 coinCount = Coin.coinsCollected;
                 keyCount = DoorKey.keysCollected;
 
-                // === NEW: Final boss victory check for Fire_5 ===
-                if (!finalBossVictoryHandled && map instanceof Fire_5) {
-                    boolean vladAlive = false;
-                    for (Enemy enemy : map.getEnemies()) {
-                        if (enemy instanceof Vladmir && enemy.exists()) {
-                            vladAlive = true;
-                            break;
-                        }
-                    }
-
-                    // If no living Vladmir is found, trigger credits
-                    if (!vladAlive) {
-                        finalBossVictoryHandled = true;
-                        AudioPlayer.stopAll();
-                        screenCoordinator.setGameState(GameState.CREDITS);
-                        return;
-                    }
+                // === NEW: Final boss ENDING trigger for Fire_5 ===
+                if (!finalBossVictoryHandled && map instanceof Fire_5 && Enemy.vladmirDefeated) {
+                    finalBossVictoryHandled = true;
+                    System.out.println("[PlayLevelScreen] Detected Vladmir defeat flag, starting ending sequence.");
+                    startFire5Ending();
+                    return;
                 }
 
                 break;
@@ -564,7 +579,7 @@ public class PlayLevelScreen extends Screen implements GameListener {
     }
 
     // =========================
-    // Fire_5 Final Boss Intro Sequence
+    // Fire_5 Final Boss INTRO Sequence
     // =========================
 
     /** Called when we first load Fire_5 */
@@ -637,6 +652,68 @@ public class PlayLevelScreen extends Screen implements GameListener {
                     break;
                 }
             }
+        }
+    }
+
+    // =========================
+    // Fire_5 Final Boss ENDING Sequence (after Vlad dies)
+    // =========================
+
+    /** Called when Vladmir is detected as defeated in Fire_5. */
+    private void startFire5Ending() {
+        Fire5EndingActive = true;
+        Fire5EndingPhase = 0;
+
+        if (dialogue == null) {
+            dialogue = new DialogueOverlay();
+        }
+
+        // Phase 0: Vladmir admits defeat
+        dialogue.start(
+            Vladimir_PORTRAIT,
+            "I've... been defeated..."
+        );
+        AudioPlayer.stopAll();
+        AudioPlayer.playLoop("Resources/audio/EndingMusic.wav", -3.0f);
+    }
+
+    /** Vlad -> Boomer -> Sada -> back to main menu. */
+    private void handleFire5EndingProgression() {
+        if (!Fire5EndingActive) return;
+
+        if (dialogue != null && dialogue.isBlocking()) {
+            return;
+        }
+
+        // Phase 0 finished: Boomer thanks Sada
+        if (Fire5EndingPhase == 0) {
+            Fire5EndingPhase = 1;
+            AudioPlayer.playSound("Resources/audio/boomer.wav", -3.0f);
+            dialogue.start(
+                Boomer_Portrait,
+                "SADA YOU SAVED ME!!"
+            );
+            return;
+        }
+
+        // Phase 1 finished: Sada celebrates
+        if (Fire5EndingPhase == 1) {
+            Fire5EndingPhase = 2;
+            AudioPlayer.playSound("Resources/audio/SadaAngry.wav", -3.0f); // reuse as happy yell
+            dialogue.start(
+                ANGRY_SAD_PORTRAIT,
+                "HOORAY!"
+            );
+            return;
+        }
+
+        // Phase 2 finished: ending done -> back to main menu
+        if (Fire5EndingPhase == 2) {
+            Fire5EndingActive = false;
+            Fire5EndingPhase = 0;
+
+            AudioPlayer.stopAll();
+            screenCoordinator.setGameState(GameState.MENU);
         }
     }
 
