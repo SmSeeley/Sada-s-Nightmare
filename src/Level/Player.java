@@ -3,7 +3,6 @@ package Level;
 import Engine.Key;
 import Engine.KeyLocker;
 import Engine.Keyboard;
-import EnhancedMapTiles.Sword;
 import GameObject.GameObject;
 import GameObject.Rectangle;
 import GameObject.SpriteSheet;
@@ -129,7 +128,7 @@ public abstract class Player extends GameObject {
     java.util.List<Level.NPC> npcs = map.getNPCs();
     java.util.List<Level.Enemy> enemies = map.getEnemies();
     //code for enemies (not just greenNinja) to take damage from melee attacks
-    int damage = Sword.hasSword() ? Sword.getSwordDamage() : 1;
+    int damage = getWeaponDamage(); // Use weapon-specific damage
     for (NPC npc : map.getNPCs()) {
         if (!(npc instanceof greenNinja)) continue;
         greenNinja ninja = (greenNinja) npc;
@@ -483,9 +482,9 @@ public abstract class Player extends GameObject {
 
     public abstract void setHasSword(boolean b);
 
-    public abstract void setHasBow(boolean b);
-
     public abstract void setHasWeapon(String weaponName);
+
+    public abstract int getWeaponDamage();
 
    
     

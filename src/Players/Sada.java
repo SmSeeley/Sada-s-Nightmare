@@ -11,10 +11,6 @@ import GameObject.ImageEffect;
 import GameObject.SpriteSheet;
 import Level.Player;
 import java.util.ArrayList;
-import Level.Arrow;
-import Engine.Keyboard;
-import Engine.Key;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.lang.reflect.Field;
 import java.util.Random;
@@ -25,9 +21,6 @@ public class Sada extends Player {
     private boolean hasSword = false;
     private boolean hasBow = false;
     private String currentWeapon = ""; // Track which specific weapon is equipped
-    private ArrayList<Arrow> arrows = new ArrayList<>(); // Track active arrows
-    private long lastArrowTime = 0; // Rate limiting
-    private static final long ARROW_COOLDOWN = 1000; // 1000ms between arrows
 
 
     // --- swing SFX state ---
@@ -50,26 +43,6 @@ public class Sada extends Player {
     public void update() {
         // Run base update first (so current animation reflects latest inputs)
         super.update();
-
-        // Update all active arrows
-   for (int i = arrows.size() - 1; i >= 0; i--) {
-       Arrow arrow = arrows.get(i);
-       arrow.update();
-
-       // Remove arrows that are off-screen or hit something
-       if (arrow.shouldRemove()) {
-           arrows.remove(i);
-       }
-   }
-
-   // Handle shooting when player has archer's bow specifically
-   if (hasBow && "archersbow".equals(currentWeapon) && isInShootingState()) {
-       long currentTime = System.currentTimeMillis();
-       if (currentTime - lastArrowTime >= ARROW_COOLDOWN) {
-           shootArrow();
-           lastArrowTime = currentTime;
-       }
-   }
 
         // Current animation name after base update
         String anim = getCurrentAnimationNameSafe();
@@ -100,74 +73,9 @@ public class Sada extends Player {
         lastAnimName = anim;
     }
 
-    private boolean isInShootingState() {
-        // Check if player is pressing arrow keys (for bow shooting)
-        return Keyboard.isKeyDown(Key.UP) || Keyboard.isKeyDown(Key.DOWN) ||
-               Keyboard.isKeyDown(Key.LEFT) || Keyboard.isKeyDown(Key.RIGHT);
-    }
-
-    // Add method to shoot arrows:
-    private void shootArrow() {
-    try {
-        // Start from Sada's bounds center (world space)
-        var b = getBounds();
-
-        // Start at Sada's center:
-        float arrowX = b.getX() + b.getWidth() / 2;
-        float arrowY = b.getY() + b.getHeight() / 2;
-
-        String anim = getCurrentAnimationName().toLowerCase();
-
-        // Adjust arrow spawn depending on shooting direction
-        if (anim.contains("right")) {
-            arrowX = b.getX() + b.getWidth() + 6;   // spawn slightly to right
-            arrowY = b.getY() - 11;                  // raise arrow a bit
-        } 
-        else if (anim.contains("left")) {
-            arrowX = b.getX() - 6;                  // left of Sada
-            arrowY = b.getY() - 11;                  // raise arrow a bit
-        } 
-        else if (anim.contains("up")) {
-            arrowX = b.getX() + 15;                 // slightly right to match bow sprite
-            arrowY = b.getY() - 20;                  // above her head
-        } 
-        else if (anim.contains("down")) {
-            arrowX = b.getX() + 15;                 // slight right
-            arrowY = b.getY() + b.getHeight() + 5;  // below Sada
-        }
-
-        // Create arrow
-        Arrow arrow = new Arrow(arrowX, arrowY, anim);
-        //give arrows the same map as sada
-        arrow.setMap(this.map);
-
-        arrows.add(arrow);
-
-        System.out.println("Arrow shot! Direction: " + anim +
-                " Position: (" + arrowX + "," + arrowY + ") " +
-                " Total arrows: " + arrows.size());
-
-    } catch (Exception e) {
-        System.out.println("Failed to shoot arrow: " + e.getMessage());
-        e.printStackTrace();
-    }
-}
-
-
-
     @Override
     public void draw(GraphicsHandler graphicsHandler) {
         super.draw(graphicsHandler);
-
-        // Draw all active arrows
-        for (Arrow arrow : arrows) {
-            arrow.draw(graphicsHandler);
-        }
-    }
-
-    // Add getter for arrows (for collision detection with enemies):
-    public ArrayList<Arrow> getArrows() {
-        return arrows;
     }
 
     // ===== Sword equip (kept from your version) =====
@@ -249,86 +157,6 @@ public class Sada extends Player {
         }
     }
 
-    // ===== Bow equip (similar to sword) =====
-    @Override
-    public void setHasBow(boolean v) {
-        if (!v || hasBow) return;
-        equipBowWeapon("archersbow");
-    }
-
-    // New method to equip any bow-type weapon by name
-    public void equipBowWeapon(String weaponType) {
-        if (hasBow) return; // Already has a bow-type weapon equipped
-        hasBow = true;
-
-        String spriteFileName;
-        switch (weaponType.toLowerCase()) {
-            case "angelsword":
-                spriteFileName = "sada-angelSword.png";
-                break;
-            case "watermelon":
-                spriteFileName = "sada-watermelon.png";
-                break;
-            case "archersbow":
-            default:
-                spriteFileName = "sada-ArchersBow.png";
-                break;
-        }
-
-        try {
-            // swap to weapon spritesheet
-            SpriteSheet newSheet = new SpriteSheet(ImageLoader.load(spriteFileName), 24, 24);
-
-            // set spriteSheet on superclass chain
-            Class<?> cls = this.getClass();
-            while (cls != null) {
-                try {
-                    Field spriteSheetField = cls.getDeclaredField("spriteSheet");
-                    spriteSheetField.setAccessible(true);
-                    spriteSheetField.set(this, newSheet);
-                break;
-                } catch (NoSuchFieldException e) {
-                    cls = cls.getSuperclass();
-                }
-        }
-        
-
-        // rebuild animations and set on superclass
-        @SuppressWarnings("unchecked")
-        HashMap<String, Frame[]> newAnims = this.loadAnimations(newSheet);
-        cls = this.getClass();
-        while (cls != null) {
-            try {
-                Field animationsField = cls.getDeclaredField("animations");
-                animationsField.setAccessible(true);
-                animationsField.set(this, newAnims);
-                break;
-            } catch (NoSuchFieldException e) {
-                cls = cls.getSuperclass();
-            }
-        }
-
-        // reset to safe default animation
-        try {
-            cls = this.getClass();
-            while (cls != null) {
-                try {
-                    Field currentAnimField = cls.getDeclaredField("currentAnimationName");
-                    currentAnimField.setAccessible(true);
-                    currentAnimField.set(this, "STAND_RIGHT");
-                    break;
-                } catch (NoSuchFieldException e) {
-                    cls = cls.getSuperclass();
-                }
-            }
-        } catch (Exception ignored) {}
-
-    } catch (Exception e) {
-         e.printStackTrace();
-        System.out.println("Failed to equip bow sprite — ensure Sada-ArchersBow.png exists and matches sprite layout.");
-    }
-}
-
     // ===== Universal weapon equip method =====
     @Override
     public void setHasWeapon(String weaponName) {
@@ -346,10 +174,6 @@ public class Sada extends Player {
                 break;
             case "watermelon":
                 spriteFileName = "sada-watermelon.png";
-                isSwordType = false;
-                break;
-            case "archersbow":
-                spriteFileName = "sada-ArchersBow.png";
                 isSwordType = false;
                 break;
             default:
@@ -419,6 +243,21 @@ public class Sada extends Player {
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Failed to equip weapon sprite: " + spriteFileName);
+        }
+    }
+
+    // ===== Get current weapon damage =====
+    @Override
+    public int getWeaponDamage() {
+        switch (currentWeapon.toLowerCase()) {
+            case "slimehammer":
+                return EnhancedMapTiles.Sword.getSwordDamage(); // 2 damage
+            case "angelsword":
+                return EnhancedMapTiles.AngelSword.getAngelSwordDamage(); // 10 damage
+            case "watermelon":
+                return EnhancedMapTiles.Watermelon.getWatermelonDamage(); // 1 damage
+            default:
+                return 1; // Default fist damage
         }
     }
 
