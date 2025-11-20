@@ -1,15 +1,16 @@
 package Level;
 
 import Enemies.Projectile;
+import Enemies.Vladmir;
 import Engine.GraphicsHandler;
 import Engine.ImageLoader;
 import GameObject.Frame;
 import GameObject.SpriteSheet;
 import Utils.Direction;
 import Utils.Point;
+
 import java.awt.Color;
 import java.util.HashMap;
-
 
 // This class for enemies
 public class Enemy extends MapEntity {
@@ -26,10 +27,13 @@ public class Enemy extends MapEntity {
     // health variables
     protected int maxHealth = 5;
     protected int health = maxHealth;
-    
+
     // projectile shooting variables
     protected int shootTimer = 0;
     protected final int SHOOT_COOLDOWN = 240;
+
+    // Global flag to detect when Vladmir has been defeated
+    public static boolean vladmirDefeated = false;
 
     // consstructor that handles max health
     public Enemy(int id, float x, float y, SpriteSheet spriteSheet, String startingAnimation, int maxHealth) {
@@ -38,7 +42,7 @@ public class Enemy extends MapEntity {
         this.maxHealth = maxHealth;
         this.health = maxHealth;
     }
-    
+
     public Enemy(int id, float x, float y, SpriteSheet spriteSheet, String startingAnimation) {
         super(x, y, spriteSheet, startingAnimation);
         this.id = id;
@@ -65,7 +69,6 @@ public class Enemy extends MapEntity {
     }
 
     public int getId() { return id; }
-    
 
     public void facePlayer(Player player) {
         float centerPoint = getBounds().getX() + (getBounds().getWidth() / 2);
@@ -136,46 +139,43 @@ public class Enemy extends MapEntity {
         isLocked = false;
     }
 
-
-    protected void performAction(Player player){} 
+    protected void performAction(Player player){}
 
     // method to handle shooting a projectile
     protected void shootProjectile(Direction direction) {
 
-         if (!getIsActive() || isLocked) return;
-        
+        if (!getIsActive() || isLocked) return;
+
         SpriteSheet projectileSpriteSheet = new SpriteSheet(ImageLoader.load("projectile.png"), 16, 16);
 
         if(shootTimer == 0) {
-            float startX; 
+            float startX;
+            float startY = this.y + 28;
 
-            float startY = this.y + 28; 
-            
             if (direction == Direction.LEFT) {
                 // When facing left, spawn the projectile 1 pixel to the left of the zombie's LEFT boundary.
-                startX = this.getBounds().getX2() -  1; 
-            } else { 
+                startX = this.getBounds().getX2() -  1;
+            } else {
                 // When facing right, spawn the projectile 1 pixel to the right of the zombie's RIGHT boundary.
                 startX = this.getBounds().getX2() + 1;
             }
 
             // load the projectile sprite sheet HERE
             Projectile projectile = new Projectile(
-                new Point(startX, startY), 
-                projectileSpriteSheet, 
-                "PROJECTILE",
-                direction
+                    new Point(startX, startY),
+                    projectileSpriteSheet,
+                    "PROJECTILE",
+                    direction
             );
-            
+
             projectile.setMap(this.map);
             map.addMapEntity(projectile);
 
             shootTimer = SHOOT_COOLDOWN; // Reset the shoot timer
-            
         }
     }
-    
-    // draw method to handle drawing the enemy health status 
+
+    // draw method to handle drawing the enemy health status
     @Override
     public void draw(GraphicsHandler graphicsHandler) {
         //drawBounds(graphicsHandler, new Color(255, 0, 0, 100));
@@ -190,40 +190,41 @@ public class Enemy extends MapEntity {
             final int Y_OFFSET = 2;
 
             //  the current entity width from its bounds
-            int entityWidth = Math.round(getBounds().getWidth()); 
+            int entityWidth = Math.round(getBounds().getWidth());
 
-            float entityScreenX = getCalibratedXLocation(); 
+            float entityScreenX = getCalibratedXLocation();
             float entityScreenY = getCalibratedYLocation();
 
             int healthBarX = Math.round(entityScreenX + (entityWidth / 2) - (BAR_WIDTH / 2));
-            int healthBarY = Math.round(entityScreenY - BAR_HEIGHT - Y_OFFSET); 
+            int healthBarY = Math.round(entityScreenY - BAR_HEIGHT - Y_OFFSET);
 
             float healthPercentage = (float)health / maxHealth;
             int currentHealthWidth = (int)(BAR_WIDTH * healthPercentage);
 
             graphicsHandler.drawFilledRectangle(
-                healthBarX, 
-                healthBarY, 
-                BAR_WIDTH, 
-                BAR_HEIGHT, 
-                Color.RED
+                    healthBarX,
+                    healthBarY,
+                    BAR_WIDTH,
+                    BAR_HEIGHT,
+                    Color.RED
             );
 
             graphicsHandler.drawFilledRectangle(
-                healthBarX, 
-                healthBarY, 
-                currentHealthWidth, 
-                BAR_HEIGHT, 
-                Color.GREEN
+                    healthBarX,
+                    healthBarY,
+                    currentHealthWidth,
+                    BAR_HEIGHT,
+                    Color.GREEN
             );
         }
     }
 
     public void takeDamage(int amount) {
-       long now = System.currentTimeMillis();
-       if (now - lastDamageTime < damageCooldown) {
-           return; // Still in cooldown period, ignore damage
+        long now = System.currentTimeMillis();
+        if (now - lastDamageTime < damageCooldown) {
+            return; // Still in cooldown period, ignore damage
         }
+
         lastDamageTime = now; // Update last damage time
         health -= amount;
         System.out.println("Enemy took damage! Health: " + health);
@@ -232,33 +233,36 @@ public class Enemy extends MapEntity {
         }
     }
 
-
-        public void setIsActive(boolean isActive) {
-            this.isActive = isActive;
-            if (!isActive) {
-                // additional safety: lock so no more actions, and clear shoot timer
-                lock();
-                shootTimer = 0;
-            }
+    public void setIsActive(boolean isActive) {
+        this.isActive = isActive;
+        if (!isActive) {
+            // additional safety: lock so no more actions, and clear shoot timer
+            lock();
+            shootTimer = 0;
         }
+    }
 
-        public boolean getIsActive() {
-            return isActive;
-        }
+    public boolean getIsActive() {
+        return isActive;
+    }
 
-    
-
-        public void removeEnemy() {
+    public void removeEnemy() {
         setIsActive(false);
         lock();
         shootTimer = 0;
-        
+
+        // If this enemy is Vladmir, flag him as defeated
+        if (this instanceof Vladmir) {
+            vladmirDefeated = true;
+            System.out.println("[Enemy] Vladmir defeated flag set.");
+        }
+
         // Drop a coin when enemy is defeated
         if (this.map != null) {
             try {
                 EnhancedMapTiles.Coin droppedCoin = new EnhancedMapTiles.Coin(
-                    new Utils.Point(this.x, this.y),
-                    this.map.getMapFileName() // Use map's file name for tracking
+                        new Utils.Point(this.x, this.y),
+                        this.map.getMapFileName() // Use map's file name for tracking
                 );
                 this.map.addEnhancedMapTile(droppedCoin);
                 System.out.println("[Enemy] Dropped coin at x=" + this.x + ", y=" + this.y);
@@ -266,12 +270,6 @@ public class Enemy extends MapEntity {
                 System.out.println("[Enemy] Failed to drop coin: " + e.getMessage());
             }
         }
-
-    ///incrament keys when enemy dies
-    /*if (!keyDropped) {
-    public void removeEnemy() {
-        System.out.println("[Enemy] Enemy defeated — incremented key count to " + EnhancedMapTiles.DoorKey.keysCollected);
-    }*/
 
         try {
             this.setLocation(-10000, -10000);
@@ -286,6 +284,7 @@ public class Enemy extends MapEntity {
             }
         } catch (Exception ignored) {}
     }
+
     // Method to check and apply damage to Sada when colliding
     public void checkPlayerCollision(Player player) {
         if (getIsActive() && this.intersects(player)) {

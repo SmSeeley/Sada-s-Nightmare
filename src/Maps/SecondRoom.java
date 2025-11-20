@@ -61,7 +61,7 @@ public class SecondRoom extends Map {
         Emptybarrel EmptyBarrel_2 = new Emptybarrel(getMapTile(4, 6).getLocation());
         enhancedMapTiles.add(EmptyBarrel_2);
 
-        enhancedMapTiles.add(new HealthPotion(getMapTile(10, 2).getLocation()));
+        enhancedMapTiles.add(new HealthPotion(getMapTile(10, 3).getLocation()));
 
 
         return enhancedMapTiles;
