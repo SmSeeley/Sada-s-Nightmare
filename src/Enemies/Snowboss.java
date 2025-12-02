@@ -22,7 +22,7 @@ public class Snowboss extends Enemy {
     private Map currentMap;
 
     public Snowboss(int id, Point location, Map map) {
-        super(id, location.x, location.y, new SpriteSheet(ImageLoader.load("snowBoss.png"), 24, 24), "STAND_RIGHT",34);
+        super(id, location.x, location.y, new SpriteSheet(ImageLoader.load("snowBoss.png"), 24, 24), "STAND_RIGHT",51);
         this.currentMap = map;
     }  
     

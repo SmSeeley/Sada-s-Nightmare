@@ -24,7 +24,7 @@ public class Sword extends EnhancedMapTile {
     private boolean collected = false;
 
     private static boolean hasSword = false;
-    private static int swordDamage = 2;
+    private static int swordDamage = 5;
 
     // Textbox handling
     private TextboxScriptAction activeTextbox = null;

@@ -22,7 +22,7 @@ public class Desertboss extends Enemy {
     private Map currentMap;
 
     public Desertboss(int id, Point location, Map map) {
-        super(id, location.x, location.y, new SpriteSheet(ImageLoader.load("desertBoss.png"), 24, 24), "STAND_RIGHT",24);
+        super(id, location.x, location.y, new SpriteSheet(ImageLoader.load("desertBoss.png"), 24, 24), "STAND_RIGHT",51);
         this.currentMap = map;
     }  
     
